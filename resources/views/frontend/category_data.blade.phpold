@@ -1,0 +1,350 @@
+ @extends('frontend.includes.main')
+@section('title','All Listing')
+@section('content')
+ <section class="py-3 bg-light">
+      <div class="container">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb custom-breadcumb">
+            <li class="breadcrumb-item"><a href="{{url('/')}}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Listing</li>
+          </ol>
+        </nav>
+      </div>
+    </section>
+    <section class="listing-page my-3">
+      <div class="container">
+        <div class="d-flex">
+          <div class="listing-left-sidebar">
+            <button class="close-listing-btn btn  ml-auto " id="closebtn"><i class="fa fa-close"> </i></button>
+            <div class="categories-section border mb-3">
+              <h5 class="border-bottom p-2 h6 bg-light ">Categories</h5>
+              <div class="panel-group" id="accordionMenu" role="tablist" aria-multiselectable="true">
+
+                 
+                 @php
+                 $count = 0;
+                 @endphp
+                     @if (isset($sidebarData) && count($sidebarData) > 0)
+                       @foreach ($sidebarData as $category)
+                      
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingOne">
+        <h4 class="panel-title">
+        <a role="button" data-toggle="collapse" data-parent="#accordionMenu" href="#collapseOne{{ $count }}" aria-expanded="false" aria-controls="collapseOne{{ $count }}">
+         {{$category->name}} <span></span>
+        </a>
+      </h4>
+      </div>
+      <div id="collapseOne{{ $count }}" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+        <div class="panel-body">
+                    <ul class="nav sidenav-list">
+
+                       @if (isset($category->active_direct_childs) && count($category->active_direct_childs) > 0)
+                        <input type="hidden" name="category" id="category" value="{{ $filter_category }}">
+                         @foreach ($category->active_direct_childs as $subCat)
+
+                          <li><a href="{{ route('listing', 'page=1&category=' . $subCat->slug) }}">{{$subCat->name}} </a></li>
+                        
+                          @endforeach
+                          @endif
+                          <li><a href="{{ route('listing', 'page=1&category=' . $category->slug) }}">View All</a></li>         
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+@php
+$count++;
+@endphp
+       @endforeach
+       @endif
+    
+  </div>            
+            </div>
+
+            <div class="categories-section border mb-3">
+              <h5 class="border-bottom p-2 h6 bg-light ">Fabric</h5>
+              <ul class="categories-listing product-fabric">
+                @if(isset($fabrics) && count($fabrics) > 0)
+                @foreach($fabrics as $fabric)
+                <li @if($filter_fabric && $fabric->fabric == $filter_fabric) class="product-fabric-type selected")
+                @else class="product-fabric-type" @endif fabric_type="{{$fabric->fabric }}">
+                  <div class="fabric-select"></div> {{ $fabric->fabric }}
+                                   
+                     </li>
+               @endforeach
+               @endif
+              </ul>
+            </div>
+         
+         
+          @php
+                $price = array("0-100","100-200","200-500","500-1000","1000-1500","1500-2000");
+             
+                @endphp
+            <div class="price-section border mb-3">
+               
+              <h5 class="border-bottom p-2 h6 bg-light ">Price</h5>
+             
+              
+              <ul class="price-listing product_price">
+                 @foreach($price as $p)
+                <li {{$filter_price_range}} class="product_price_range" price_range={{$p}}> <i class="rupees-icon">₹</i> {{$p}}  </li>
+                @endforeach
+                
+              </ul>
+            </div>
+
+<!-- search products by color -->
+   <div class="price-section border mb-3">
+              <h5 class=" p-2 h6 bg-light ">Color</h5>
+              <div class="select-color-sec p-2">
+                  @if (isset($colors) && count($colors) > 0)
+                 @foreach ($colors as $color)
+                <button @if ($filter_color && $color->id == $filter_color) class="btn select-color highlight_color" 
+                  @else class="btn select-color" @endif style="background-color:{{$color->code}}" color_id="{{ $color->id }}"></button>
+               
+                @endforeach
+                @endif
+              </div>
+            </div>      
+            <!-- end search by color  -->
+
+         {{--   <!-- search product by discount -->
+             @php
+                $discount = array("10","15","20","30");
+             
+                @endphp
+            <div class="size-section border mb-3">
+              <h5 class="border-bottom p-2 h6 bg-light">Discount</h5>
+               @foreach($discount as $dd)
+              <label class="custom-radio-btn ml-2">{{$dd}}% Above
+                <input type="radio" class="discounts"  name="discount[]" value="{{ $dd}}" >
+                <span class="checkmark"></span>
+              </label>
+               @endforeach
+             
+            
+            </div>
+          <!-- endserach productby discount -->
+          --}}
+
+<!-- search product by size -->
+           @if (isset($attributes) && count($attributes) > 0)
+              @foreach ($attributes as $attribute)
+            <div class="discount-section border mb-3">
+              <h5 class="border-bottom p-2 h6 bg-light">{{$attribute->name}}</h5>
+                  @if (isset($attribute->direct_childs) && count($attribute->direct_childs) > 0)
+                  @foreach ($attribute->direct_childs as $direct_child) 
+              <label class="custom-radio-btn ml-2 "> {{ $direct_child->name }}
+                <input type="radio"  class="attributes" name="attribute[]" value="{{ $direct_child->id }}" @if ($filter_attributes && in_array($direct_child->id, explode(',', $filter_attributes))) checked @endif>
+                <span class="checkmark"></span>
+              </label>
+              @endforeach
+             @endif
+                       
+            </div>
+             @endforeach
+              @endif
+           
+
+       
+            <!-- end serach by sze -->
+
+            <!-- Search prduct by ratings  -->
+
+            <div class="rating-section border ">
+              <h5 class="border-bottom p-2 h6 bg-light ">Rating</h5>
+              <label class="custom-radio-btn ml-2">
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star-o"></i>
+              <i class="fa fa-star-o"></i>
+              <i class="fa fa-star-o"></i>
+              <i class="fa fa-star-o"></i> 
+              <span>(0)</span>
+                <input type="radio" class="rating" name="rating" value="1">
+                <span class="checkmark"></span>
+              </label>
+              <label class="custom-radio-btn ml-2">
+                <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star-o"></i>
+              <i class="fa fa-star-o"></i>
+              <i class="fa fa-star-o"></i>
+              <span>(0)</span>
+                <input type="radio" name="rating" class="rating" value="2">
+                <span class="checkmark"></span>
+              </label>
+              <label class="custom-radio-btn ml-2">
+                <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star-o"></i>
+              <i class="fa fa-star-o"></i>
+              <span>(0)</span>
+                <input type="radio" name="rating" class="rating" value="3">
+                <span class="checkmark"></span>
+              </label>
+              <label class="custom-radio-btn ml-2">
+                <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star-o"></i>
+              <span>(0)</span>
+                <input type="radio" name="rating" class="rating" value="4">
+                <span class="checkmark"></span>
+              </label>
+              <label class="custom-radio-btn ml-2">
+                <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <span>(0)</span>
+                <input type="radio" name="rating" class="rating" value="5">
+                <span class="checkmark"></span>
+              </label>
+            </div>
+
+
+            <!-- end search product by ratingd -->
+          </div>
+
+
+          <div class="listing-main-section">
+
+            <div class="listing-pro">
+            <!-- display category data -->
+            @if(!empty($productData) && (count($productData) > 0 ))
+            @foreach($productData as $products)
+
+           
+              <div class="product-col">
+              <div class="pro-img">
+                 @if (isset($products->image) && Storage::exists($products->image))                                
+                  <img src="{{ URL::asset('storage/' . $products->image) }}" />                   
+                 @endif
+             
+              </div>
+              <div class="pro-tex">
+                <h3>  <h3>{{ $products->name }}</h3></h3>
+                <div class="product-price d-flex justify-content-center">
+
+                  <h5><i class="rupees-icon">₹</i> {{$products->min_price}} </h5>
+                    @if ($products->min_mrp > $products->min_price)
+                  <del class="text-muted ml-2 font-weight-normal"><i class="rupees-icon">₹</i> {{ $products->min_mrp }}</del>
+                  @endif
+                </div>
+
+
+                  @php
+                  $rating_point = $products->rating;
+                  @endphp
+
+               <ul class="rating-stars">  
+                  @for($i=1; $i<=5; $i++)
+                  @if($rating_point >= $i)
+                   <i class="fa fa-star" style="color:#ff6600;" ></i>
+                   @else
+                    <i class="fa fa-star" style="color:#ccc;" ></i>
+                    @endif
+                    @endfor
+                 
+                </ul>
+            
+                <a href="{{url('/product-details/'.$products->slug)}}" class="cart-btn">SHOP NOW</a>
+              </div>
+            </div>
+           
+            @endforeach
+            @else
+            <div class="align-center">No data found!</div> 
+            @endif
+       
+          <!-- end display category data -->
+ 
+         
+            <button class="filter-btn btn" id="filterbtn"><i class="fa fa-bars"></i> </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+  
+    function filter(page) {
+        let category_id = (typeof $('#category').val() == 'undefined') ? '' : $('#category').val();
+        // let price_range_start = $('#price_range_start').val();
+        // let price_range_end = $('#price_range_end').val();
+        let color_id = (typeof $('.select-color.highlight_color').attr('color_id') == 'undefined') ? '' : $('.select-color.highlight_color').attr('color_id');
+        let fabric_type = (typeof $('.product-fabric-type.selected').attr('fabric_type') == 'undefined') ? '' : $('.product-fabric-type.selected').attr('fabric_type');
+        let price_range = (typeof $('.product_price_range.selected').attr('price_range') == 'undefined') ? '' : $('.product_price_range.selected').attr('price_range');
+        let attributes = $('.attributes:checked').map(function() {
+            return $(this).val();
+        }).toArray();
+
+         let discount = $('.discounts:checked').map(function() {
+            return $(this).val();
+        }).toArray();
+
+        let brands = $('.brands:checked').map(function() {
+            return $(this).val();
+        }).toArray();
+
+          let rating = (typeof $('.rating:checked').val() == 'undefined') ? '' : $('.rating:checked').val();
+
+        let url = `{{ URL::to('listing') }}`;
+        let paraments = '?page=' + page + '&category=' + category_id + '&color=' + color_id + '&option_attributes=' + attributes + '&brands=' + brands + '&fabric_type=' + fabric_type + '&price_range=' + price_range + '&discounts=' + discount + '&rating=' + rating;
+        window.location = url + paraments;
+    }
+
+    $(document).ready(function() {
+          $(document).on('click', '.select-color', function(event) {
+            $(".select-color").removeClass("highlight_color");
+            $(this).addClass("highlight_color");
+             let page = 1;
+            filter(page);
+        });
+
+        $(document).on('click', '.attributes', function(event) {
+            let page = 1;
+            filter(page);
+        });
+         $(document).on('click', '.discounts', function(event) {
+            let page = 1;
+            filter(page);
+        });
+        $(document).on('click', '.brands', function(event) {
+            let page = 1;
+            filter(page);
+        });
+
+          $(document).on('click', '.product-fabric li', function(event) {
+            $(".product-fabric li").removeClass('selected');
+            $(this).addClass("selected");
+            let page = 1;
+            filter(page);
+        });
+
+           $(document).on('click', '.product_price li', function(event) {
+            $(".product_price li").removeClass('selected');
+            $(this).addClass("selected");
+            let page = 1;
+            filter(page);
+        });
+
+             $(document).on('click', '.rating', function(event) {
+            //$( this ).attr( 'checked', true )
+           // $( this ).prop( 'checked', true )
+           this.setAttribute("checked", "checked");
+            let page = 1;
+            filter(page);
+        })
+         
+    });
+</script>
+
+
+    @endsection
+

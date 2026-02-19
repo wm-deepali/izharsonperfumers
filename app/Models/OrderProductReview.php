@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class OrderProductReview extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'order_id',
+        'order_detail_id',
+        'product_id',
+        'customer_id',
+        'rating',
+        'review',
+    ];
+    
+    public function product(){
+        return $this->hasOne(Product::class,'id','product_id');
+    }
+     public function order(){
+        return $this->hasOne(Order::class,'id','order_id');
+    }
+     public function customer(){
+        return $this->hasOne(Customer::class,'id','customer_id');
+    }
+}
