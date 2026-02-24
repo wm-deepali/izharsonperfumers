@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Zoha\Metable;
 class Product extends Model
 {
-    use HasFactory,Metable;
+    use HasFactory, Metable;
 
     protected $fillable = [
         'category_id',
@@ -56,24 +56,27 @@ class Product extends Model
     //     return $this->hasOne(Brand::class,'id','brand_id');
     // }
 
-   
-    public function categories() {
-        return $this->hasOne(Category::class, 'id','category_id');
+
+    public function categories()
+    {
+        return $this->hasOne(Category::class, 'id', 'category_id');
     }
-    public function subcategories() {
-        return $this->hasOne(Category::class, 'id','subcategory_id');
+    public function subcategories()
+    {
+        return $this->hasOne(Category::class, 'id', 'subcategory_id');
     }
 
     public function product_options()
     {
         return $this->hasMany(ProductOption::class)->with('packaging');
     }
-    public function product_review(){
+    public function product_review()
+    {
         // return $this->hasOneThrough(OrderProductReview::class, Customer::class);
         return $this->hasMany(OrderProductReview::class);
     }
-    
-    
+
+
     public function product_option_images()
     {
         return $this->hasMany(ProductOptionImage::class);
@@ -81,6 +84,15 @@ class Product extends Model
     public function product_categories()
     {
         return $this->hasOne(ProductCategory::class);
+    }
+
+    public function getAvgRatingAttribute()
+    {
+        return round($this->product_review()->avg('rating'), 1);
+    }
+    public function getReviewCountAttribute()
+    {
+        return $this->product_review()->count();
     }
 
 }

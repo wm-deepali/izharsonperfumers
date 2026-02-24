@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="{{ asset('front/css/animate.css') }}">
     <link rel="stylesheet" href="{{ asset('front/css/slider.css') }}">
     <link rel="stylesheet" href="{{ asset('front/css/style.css') }}">
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="../../css2?family=Jost:wght@400;500&family=Poppins:wght@700&display=swap" rel="stylesheet">
@@ -36,7 +37,6 @@
     <link href="{{ asset('front/images/apple-touch-icon-72x72.png') }}" sizes="72x72" rel="apple-touch-icon">
     <link href="{{ asset('front/images/apple-touch-icon-114x114.png') }}" sizes="114x114" rel="apple-touch-icon">
     <link href="{{ asset('front/images/apple-touch-icon-180x180.png') }}" sizes="180x180" rel="apple-touch-icon">
-
 
 
 </head>
@@ -1093,6 +1093,10 @@
     <!-- Wrapper End -->
     <script src="{{ asset('front/js/jquery-3.6.0.js') }}"></script>
     <script src="{{ asset('front/js/jquery-migrate-3.0.0.min.js') }}"></script>
+
+    <!-- Magnific Popup -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
+    
     <script src="{{ asset('front/js/popper.min.js') }}"></script>
     <script src="{{ asset('front/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('front/js/bootstrap-select.min.js') }}"></script>
@@ -1103,6 +1107,26 @@
     <script src="{{ asset('front/js/slider.js') }}"></script>
     <!-- Custom script for all pages -->
     <script src="{{ asset('front/js/script.js') }}"></script>
+    <script>
+        $(document).ready(function () {
+            var scroll_childs = $('.scroll-to-fixed-child');
+            for (var i = 0, length = scroll_childs.length; i < length; i++) {
+                var scroll_child = $(scroll_childs[i]);
+
+                scroll_child.scrollToFixed({
+                    marginTop: $('header').outerHeight(true) + 10,
+                    zIndex: 2,
+                    spacerClass: 'd-none',
+                    removeOffsets: true,
+                    limit: function () {
+                        var parent = this.parents('.scroll-to-fixed-parent');
+                        return parent.offset().top + parent.outerHeight(true) - this.outerHeight(true) - 20;
+
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

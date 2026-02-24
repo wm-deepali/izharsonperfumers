@@ -93,18 +93,19 @@ Route::get('/send-email', function() {
 });
 // Frontend Route List 
 
-//Route::get('/', [HomeController::class, 'homepage'])->name('homepage');
-Route::get('/',[FrontController::class, 'index']);
+Auth::routes(['register' => false]);
 Route::get('forget-password', [ForgotPasswordController::class, 'showForgetPasswordForm'])->name('forget.password.get');
 Route::post('forget-password', [ForgotPasswordController::class, 'submitForgetPasswordForm'])->name('forget.password.post'); 
 Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetPasswordForm'])->name('reset.password.get');
 Route::post('reset-password', [ForgotPasswordController::class, 'submitResetPasswordForm'])->name('reset.password.post');
 
-Route::get('/home', [HomeController::class, 'index'])->name('home');
-Auth::routes(['register' => false]);
+
+Route::get('/',[FrontController::class, 'index']);
+Route::get('/about-us', [FrontController::class, 'aboutUs'])->name('aboutUs');
+Route::get('/product-details', [FrontController::class, 'productDetails'])->name('product-details');
 
 Route::get('/faqs', [ContentController::class, 'getFaqs'])->name('faqs');
-Route::get('/about-us', [ContentController::class, 'aboutUs'])->name('aboutUs');
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/feedback', [ContentController::class, 'getFeedback'])->name('getFeedback');
 Route::post('/postFeedback', [ContentController::class, 'postFeedback'])->name('postFeedback');
 Route::get('/blogs', [ContentController::class, 'getBlogData'])->name('getBlogData');
