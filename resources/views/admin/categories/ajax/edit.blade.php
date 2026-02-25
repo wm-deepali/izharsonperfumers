@@ -18,19 +18,19 @@
 
                 <div class="row">
 
-                    <div class="col-sm-4 form-group">
+                    <div class="col-sm-6 form-group">
                         <label class="label-control label"> @if(isset($category->parent_id)) Sub Category @else Category @endif Name <span class="required">*</span></label>
                         <input type="text" class="form-control" placeholder="Enter Category Name" name="name" id="name" value="{{ $category->name }}">
                         <div class="text-danger validation-err" id="name-err"></div>
                     </div>
                    
-                    <div class="col-sm-4 form-group">
+                    <div class="col-sm-6 form-group">
                         <label class="label-control label">URL Slug <span class="required">*</span></label>
                         <input type="text" class="form-control" placeholder="Enter URL Slug" name="slug" id="slug" value="{{ $category->slug }}">
                         <div class="text-danger validation-err" id="slug-err"></div>
                     </div>
 
-                      <div class="col-sm-4 form-group">
+                      <div class="col-sm-6 form-group">
                         <label class="label-control label">Status <span class="required">*</span></label>
                         <select class="form-control" name="status" id="status">
                             <option value="active" @if ($category->status == 'active') selected @endif>Active</option>
@@ -38,6 +38,17 @@
                         </select>
                         <div class="text-danger validation-err" id="status-err"></div>
                     </div>
+
+                       <div class="col-sm-6 form-group">
+                        <label class="label-control label">Premium Category</label>
+                        <select class="form-control" name="is_premium" id="is_premium">
+                            <option value="0" @if ($category->is_premium == 0) selected @endif>No</option>
+                            <option value="1" @if ($category->is_premium == 1) selected @endif>Yes</option>
+                        </select>
+                        <div class="text-danger validation-err" id="is_premium-err"></div>
+                    </div>
+
+                    
                     @if(!isset($category->parent_id))
                     <div class="col-md-6 form-group">
                         <label class="label-control label">@if(isset($category->parent_id)) Sub-Category @else Category @endif Icon <span class="required">*</span> <span class="text-danger">(@if(isset($category->parent_id)) Sub-Category @else Category @endif Icon Size 500*500)</span></label>

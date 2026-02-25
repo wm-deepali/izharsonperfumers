@@ -17,9 +17,13 @@ class Category extends Model
         'code',
         'slug',
         'image',
-        'status'
+        'status',
+        'is_premium',
     ];
 
+    protected $casts = [
+    'is_premium' => 'boolean',
+];
     public function parent()
     {
         return $this->hasOne(Category::class, 'id', 'parent_id');

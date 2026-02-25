@@ -86,7 +86,7 @@
     </section>
     <!-- Extra Features Section End -->
 
-    <!-- static Deal of the Day Section Start -->
+    <!-- Deal of the Day Section Start -->
     <section class="deliver-divider pt30 pb70">
         <div class="container">
             <div class="row">
@@ -116,261 +116,85 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="navi_pagi_bottom_center shop_item_5grid_slider dod_slider owl-carousel owl-theme">
-                        <div class="item ovh">
-                            <div class="shop_item bdrtrb1 px-2 px-sm-3 wow fadeIn" data-wow-duration="1.0s">
-                                <div class="thumb pb30"> <img
-                                        src="https://izharsonperfumers.com/admin-login/storage/products/2WevnYsXAanphZHlsyYX8VWrjtfZo4yomNgoFtIj.jpg"
-                                        alt="Deal Day1">
-                                    <div class="thumb_info">
-                                        <ul class="mb0">
-                                            <li><a href="page-dashboard-wish-list.html"><span
-                                                        class="flaticon-heart"></span></a></li>
-                                            <li><a href="page-dashboard-wish-list.html"><span
-                                                        class="flaticon-show"></span></a></li>
-                                            <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="shop_item_cart_btn d-grid"> <a href="page-shop-cart.html"
-                                            class="btn btn-thm">Add to
-                                            Cart</a> </div>
-                                </div>
-                                <div class="details">
-                                    <div class="sub_title">SAMSUNG</div>
-                                    <div class="title"><a href="product-details.html">Samsung 65" 4K UHD HDR QLED Tizen
-                                            Smart
-                                            TV</a></div>
-                                    <div class="review d-flex db-500">
-                                        <ul class="mb0 me-2">
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                        </ul>
-                                        <div class="review_count"><a href="#">3,014 reviews</a></div>
-                                    </div>
-                                    <div class="si_footer">
-                                        <div class="price">₹32.50 <small><del>₹45</del> <span class="off_tag text-thm1">20%
-                                                    Off</span></small></div>
-                                        <div class="line mt20"></div>
-                                        <div class="sell_stock mt10">
-                                            <div class="sell">Sold 56</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item ovh">
-                            <div class="shop_item bdrtrb1 px-2 px-sm-3 wow fadeIn" data-wow-duration="1.2s">
-                                <div class="thumb pb30"> <img
-                                        src="https://izharsonperfumers.com/admin-login/storage/products/Z3NVuSXKpCdxUH6xR7XspwWqajvWnSU9h7nftioZ.jpg"
-                                        alt="Deal Day2">
-                                    <div class="thumb_info">
-                                        <ul class="mb0">
-                                            <li><a href="page-dashboard-wish-list.html"><span
-                                                        class="flaticon-heart"></span></a></li>
-                                            <li><a href="page-dashboard-wish-list.html"><span
-                                                        class="flaticon-show"></span></a></li>
-                                            <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="shop_item_cart_btn d-grid"> <a href="page-shop-cart.html"
-                                            class="btn btn-thm">Add to
-                                            Cart</a> </div>
-                                </div>
-                                <div class="details">
-                                    <div class="sub_title">SONY</div>
-                                    <div class="title"><a href="product-details.html">Ozark Trail 6-Person Clip & Camp
-                                            Dome
-                                            Tent</a></div>
-                                    <div class="review d-flex db-500">
-                                        <ul class="mb0 me-2">
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                        </ul>
-                                        <div class="review_count"><a href="#">3,014 reviews</a></div>
-                                    </div>
-                                    <div class="si_footer">
-                                        <div class="price">₹32.50 <small><del>₹45</del></small></div>
-                                        <div class="line mt20"></div>
-                                        <div class="sell_stock mt10">
-                                            <div class="sell">Sold 56</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item ovh">
-                            <div class="shop_item bdrtrb1 px-2 px-sm-3 wow fadeIn" data-wow-duration="1.4s">
-                                <div class="thumb pb30"> <img
-                                        src="https://izharsonperfumers.com/admin-login/storage/products/2adWeZDgxSD3LGtqjWmjvp0AykiMnt4Hu0k2mTsI.jpg"
-                                        alt="Deal Day3">
-                                    <div class="thumb_info">
-                                        <ul class="mb0">
-                                            <li><a href="page-dashboard-wish-list.html"><span
-                                                        class="flaticon-heart"></span></a></li>
-                                            <li><a href="page-dashboard-wish-list.html"><span
-                                                        class="flaticon-show"></span></a></li>
-                                            <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="shop_item_cart_btn d-grid"> <a href="page-shop-cart.html"
-                                            class="btn btn-thm">Add to
-                                            Cart</a> </div>
-                                </div>
-                                <div class="details">
-                                    <div class="sub_title">SONY</div>
-                                    <div class="title"><a href="product-details.html">Beats by Dr. Dre Studio3 Skyline
-                                            Over-Ear
-                                            Noise Cancelling</a></div>
-                                    <div class="review d-flex db-500">
-                                        <ul class="mb0 me-2">
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                        </ul>
-                                        <div class="review_count"><a href="#">3,014 reviews</a></div>
-                                    </div>
-                                    <div class="si_footer">
-                                        <div class="price">₹399.00 <small><del>₹45</del></small></div>
-                                        <div class="line mt20"></div>
-                                        <div class="sell_stock mt10">
-                                            <div class="sell">Sold 56</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        @foreach($dealProducts as $product)
 
-                        <div class="item ovh">
-                            <div class="shop_item bdrtrb1 px-2 px-sm-3 wow fadeIn" data-wow-duration="1.8s">
-                                <div class="thumb pb30"> <img
-                                        src="https://izharsonperfumers.com/admin-login/storage/products/b2vIJy1wlvMj0LUrzZasqpN28FBEFm8kAGiowwWG.jpg"
-                                        alt="Deal Da5">
-                                    <div class="thumb_info">
-                                        <ul class="mb0">
-                                            <li><a href="page-dashboard-wish-list.html"><span
-                                                        class="flaticon-heart"></span></a></li>
-                                            <li><a href="page-dashboard-wish-list.html"><span
-                                                        class="flaticon-show"></span></a></li>
-                                            <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="shop_item_cart_btn d-grid"> <a href="page-shop-cart.html"
-                                            class="btn btn-thm">Add to
-                                            Cart</a> </div>
-                                </div>
-                                <div class="details">
-                                    <div class="sub_title">SHABAB</div>
-                                    <div class="title"><a href="product-details.html">Pre-Owned Rolex Day-date 1802 Gold
-                                            Watch
-                                            (Certified Authenti...</a></div>
-                                    <div class="review d-flex db-500">
-                                        <ul class="mb0 me-2">
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                        </ul>
-                                        <div class="review_count"><a href="#">3,014 reviews</a></div>
-                                    </div>
-                                    <div class="si_footer">
-                                        <div class="price">₹18.124 <small><del>₹45</del></small></div>
-                                        <div class="line mt20"></div>
-                                        <div class="sell_stock mt10">
-                                            <div class="sell">Sold 56</div>
+                            <div class="item ovh">
+                                <div class="shop_item bdrtrb1 px-2 px-sm-3 wow fadeIn" data-wow-duration="1.0s">
+                                    <div class="thumb pb30">
+                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+                                        <div class="thumb_info">
+                                            <ul class="mb0">
+                                                <li><a href="page-dashboard-wish-list.html"><span
+                                                            class="flaticon-heart"></span></a></li>
+                                                <li><a href="{{ url('product-details/' . $product->slug) }}"><span
+                                                            class="flaticon-show"></span></a></li>
+                                                <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="shop_item_cart_btn d-grid">
+                                            <a href="#" class="btn btn-thm">Add to Cart</a>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="shop_item bdrtrb1 px-2 px-sm-3">
-                                <div class="thumb pb30"> <img
-                                        src="https://izharsonperfumers.com/admin-login/storage/products/45k5ywDFDWRgnsfUYQgLXbea0MqFmUUyz792wDUq.jpg"
-                                        alt="Deal Day1">
-                                    <div class="thumb_info">
-                                        <ul class="mb0">
-                                            <li><a href="page-dashboard-wish-list.html"><span
-                                                        class="flaticon-heart"></span></a></li>
-                                            <li><a href="page-dashboard-wish-list.html"><span
-                                                        class="flaticon-show"></span></a></li>
-                                            <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="shop_item_cart_btn d-grid"> <a href="page-shop-cart.html"
-                                            class="btn btn-thm">Add to
-                                            Cart</a> </div>
-                                </div>
-                                <div class="details">
-                                    <div class="sub_title">SAMSUNG</div>
-                                    <div class="title"><a href="product-details.html">Samsung 65" 4K UHD HDR QLED Tizen
-                                            Smart
-                                            TV</a></div>
-                                    <div class="review d-flex db-500">
-                                        <ul class="mb0 me-2">
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                            <li class="list-inline-item"><a href="#"><i class="fas fa-star"></i></a>
-                                            </li>
-                                        </ul>
-                                        <div class="review_count"><a href="#">3,014 reviews</a></div>
-                                    </div>
-                                    <div class="si_footer">
-                                        <div class="price">₹32.50 <small><del>₹45</del> <span class="off_tag text-thm1">20%
-                                                    Off</span></small></div>
-                                        <div class="line mt20"></div>
-                                        <div class="sell_stock mt10">
-                                            <div class="sell">Sold 56</div>
+                                    <div class="details">
+                                        {{-- BRAND / CATEGORY --}}
+                                        <div class="sub_title">
+                                            {{ $product->subcategories->name ?? ($product->categories->name ?? '')}}
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
+                                        {{-- NAME --}}
+                                        <div class="title">
+                                            <a href="{{ url('product-details/' . $product->slug) }}">
+                                                {{ Str::limit($product->name, 40) }}
+                                            </a>
+                                        </div>
+                                        {{-- RATING --}}
+                                        <div class="review d-flex db-500">
+                                            <ul class="mb0 me-2">
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    <li class="list-inline-item">
+                                                        <a href="#">
+                                                            <i
+                                                                class="fas fa-star {{ $i <= $product->avg_rating ? '' : 'text-muted' }}"></i>
+                                                        </a>
+                                                    </li>
+                                                @endfor
+                                            </ul>
+
+                                            <div class="review_count">
+                                                <a href="#">{{ $product->review_count }} reviews</a>
+                                            </div>
+                                        </div>
+                                        {{-- PRICE --}}
+                                        <div class="si_footer">
+                                            <div class="price">
+                                                ₹{{ $product->product_options[0]->price ?? $product->min_price }}
+
+                                                @if(!empty($product->product_options[0]->mrp))
+                                                    <small>
+                                                        <del>₹{{ $product->product_options[0]->mrp }}</del>
+                                                        <span
+                                                            class="off_tag text-thm1">{{ $product->product_options[0]->discount_percentage }}
+                                                            %off</span>
+                                                    </small>
+                                                @endif
+                                            </div>
+                                            <div class="line mt20"></div>
+                                            <div class="sell_stock mt10">
+                                                <div class="sell">Sold 56</div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    <!-- static Deal of the Day Section End -->
+    <!-- Deal of the Day Section End -->
 
     <!-- Category Section Start -->
     <section class="top-category pb30 pt20">
@@ -808,47 +632,33 @@
         </div>
     </section>
     <!-- Hot New Arrival Product End -->
+<script>
+    const dealEndTime = "{{ $maxDealEnd->toIso8601String() }}";
 
-    <!-- static Our Partners -->
-    <section id="our-partners" class="our-partners pt0 pb60">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="text-center mb35">
-                        <h5 class="fz16">Trusted by the world’s best</h5>
-                    </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="shop_item_6grid_slider slider_dib_sm dots_none nav_none owl-carousel owl-theme">
-                        <div class="item">
-                            <div class="partner_item wow fadeInUp" data-wow-duration="0.3s"><img
-                                    src="{{ asset('front/images/partners/1.png') }}" alt="1.png"></div>
-                        </div>
-                        <div class="item">
-                            <div class="partner_item wow fadeInUp" data-wow-duration="0.5s"><img
-                                    src="{{ asset('front/images/partners/2.png') }}" alt="2.png"></div>
-                        </div>
-                        <div class="item">
-                            <div class="partner_item wow fadeInUp" data-wow-duration="0.7s"><img
-                                    src="{{ asset('front/images/partners/3.png') }}" alt="3.png"></div>
-                        </div>
-                        <div class="item">
-                            <div class="partner_item wow fadeInUp" data-wow-duration="0.9s"><img
-                                    src="{{ asset('front/images/partners/4.png') }}" alt="4.png"></div>
-                        </div>
-                        <div class="item">
-                            <div class="partner_item wow fadeInUp" data-wow-duration="1.1s"><img
-                                    src="{{ asset('front/images/partners/5.png') }}" alt="5.png"></div>
-                        </div>
-                        <div class="item">
-                            <div class="partner_item wow fadeInUp" data-wow-duration="1.3s"><img
-                                    src="{{ asset('front/images/partners/6.png') }}" alt="6.png"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- static Our Partners -->
+function makeTimer() {
+
+    const endTime = new Date(dealEndTime).getTime();
+    const now = new Date().getTime();
+    const timeLeft = endTime - now;
+
+    if (timeLeft <= 0) {
+        document.getElementById("timer").innerHTML = "Deal Expired";
+        return;
+    }
+
+    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    document.querySelector(".days").innerHTML = days;
+    document.querySelector(".hours").innerHTML = hours.toString().padStart(2,'0');
+    document.querySelector(".minutes").innerHTML = minutes.toString().padStart(2,'0');
+    document.querySelector(".seconds").innerHTML = seconds.toString().padStart(2,'0');
+}
+
+setInterval(makeTimer, 1000);
+makeTimer();
+</script>
 
 @endsection

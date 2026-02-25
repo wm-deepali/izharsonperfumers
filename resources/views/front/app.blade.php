@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="{{ asset('front/css/animate.css') }}">
     <link rel="stylesheet" href="{{ asset('front/css/slider.css') }}">
     <link rel="stylesheet" href="{{ asset('front/css/style.css') }}">
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="../../css2?family=Jost:wght@400;500&family=Poppins:wght@700&display=swap" rel="stylesheet">
@@ -41,17 +41,35 @@
 
 </head>
 
+@php
+    $settings = \App\Models\HeaderSetting::first();
+    $socialLinks = \App\Models\SocialLinkSetting::first();
+    $menuCategories = \App\Models\Category::whereNull('parent_id')
+        ->where('status', 'active')
+        ->with([
+            'direct_childs' => function ($q) {
+                $q->where('status', 'active');
+            }
+        ])
+        ->get();
+    $premiumMenuCategories = \App\Models\Category::where('is_premium', 1)
+        ->with('direct_childs')
+        ->orderBy('name')
+        ->get();
+@endphp
+
 <body data-spy="scroll">
     <div class="wrapper ovh">
         <div class="preloader"></div>
-        <!-- header middle -->
+
+        <!-- header middle start-->
         <div class="header_middle pt20 pb20 dn-992">
             <div class="container">
                 <div class="row" style="align-items: center;">
                     <div class="col-lg-2 col-xxl-2">
                         <div class="header_top_logo_home1">
                             <div class="logo"><img
-                                    src="https://izharsonperfumers.com/admin-login/storage/logo/awQrarVaGtUQtwtFSSNi78JDai2I5TQH7VIBThZE.png"
+                                    src="{{ $settings->header_logo ? asset('storage/' . $settings->header_logo) : 'https://izharsonperfumers.com/admin-login/storage/logo/awQrarVaGtUQtwtFSSNi78JDai2I5TQH7VIBThZE.png' }}"
                                     style="border-radius: 7px; height: 60px;" /></div>
                         </div>
                     </div>
@@ -61,89 +79,26 @@
                                 <div class="row">
                                     <div class="col-auto pr0">
                                         <div class="actegory">
-                                            <select class="selectpicker" id="selectbox_alCategory">
-                                                <option value="AllCategory">All Category</option>
-                                                <option value="Today’sHotDeals">Today’s Hot Deals</option>
-                                                <option value="Babies&Moms">Babies & Moms</option>
-                                                <option value="Clothing&Accessories">Clothing & Accessories</option>
-                                                <option value="Electronics">Electronics</option>
-                                                <option value="Grocery&Market">Grocery & Market</option>
-                                                <option value="Health&Beauty">Health & Beauty</option>
-                                                <option value="Home&Kitchen">Home & Kitchen</option>
-                                                <option value="Home&Furniture">Home & Furniture</option>
-                                                <option value="Health&Beauty">Health & Beauty</option>
-                                                <option value="Sport&Outdoor">Sport & Outdoor</option>
-                                                <option value="Toy&VideoGames">Toy & Video Games</option>
+                                            <select class="selectpicker" id="selectbox_alCategory" name="category">
+                                                <option value="">All Categories</option>
+
+                                                @foreach($menuCategories as $category)
+                                                    <option value="{{ $category->id }}">
+                                                        {{ $category->name }}
+                                                    </option>
+                                                @endforeach
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-auto p0">
                                         <div class="top-search">
-                                            <form action="#" method="get" class="form-search" accept-charset="utf-8">
+                                            <form action="#" method="GET" class="form-search">
                                                 <div class="box-search pre_line">
-                                                    <input class="form_control" type="text" name="search"
-                                                        placeholder="Search products…">
+                                                    <input class="form_control" type="text" name="q" id="searchInput"
+                                                        placeholder="Search products…" autocomplete="off">
                                                     <div class="search-suggestions">
                                                         <div class="box-suggestions">
-                                                            <ul>
-                                                                <li>
-                                                                    <div class="thumb"><img
-                                                                            src="{{ asset('front/images/listing/sf1.png') }}"
-                                                                            alt="sf1.png"></div>
-                                                                    <div class="info-product">
-                                                                        <div class="item_title">Sony DJ Headphones
-                                                                            4334205465, Black, Standard</div>
-                                                                        <div class="price"><span
-                                                                                class="sale">₹32.50</span></div>
-                                                                    </div>
-                                                                </li>
-                                                                <li>
-                                                                    <div class="thumb"><img
-                                                                            src="{{ asset('front/images/listing/sf2.png') }}"
-                                                                            alt="sf2.png"></div>
-                                                                    <div class="info-product">
-                                                                        <div class="item_title">Sony E-Mount Full Frame
-                                                                            FE 24-70mm f/2.8 GM II G Master
-                                                                        </div>
-                                                                        <div class="price"><span
-                                                                                class="sale">₹32.50</span></div>
-                                                                    </div>
-                                                                </li>
-                                                                <li>
-                                                                    <div class="thumb"><img
-                                                                            src="{{ asset('front/images/listing/sf3.png') }}"
-                                                                            alt="sf3.png"></div>
-                                                                    <div class="info-product">
-                                                                        <div class="item_title">TV 55" 4-Series 4K UHD
-                                                                            smart TV</div>
-                                                                        <div class="price"><span
-                                                                                class="sale">₹32.50</span></div>
-                                                                    </div>
-                                                                </li>
-                                                                <li>
-                                                                    <div class="thumb"><img
-                                                                            src="{{ asset('front/images/listing/sf4.png') }}"
-                                                                            alt="sf4.png"></div>
-                                                                    <div class="info-product">
-                                                                        <div class="item_title">Hugolog Baby Monitor, 2K
-                                                                            Security Camera, PT Cameras for
-                                                                        </div>
-                                                                        <div class="price"><span
-                                                                                class="sale">₹32.50</span></div>
-                                                                    </div>
-                                                                </li>
-                                                                <li>
-                                                                    <div class="thumb"><img
-                                                                            src="{{ asset('front/images/listing/sf5.png') }}"
-                                                                            alt="sf5.png"></div>
-                                                                    <div class="info-product">
-                                                                        <div class="item_title">Apple iPhone Retina 6s
-                                                                            Plus 64GB</div>
-                                                                        <div class="price"><span
-                                                                                class="sale">₹32.50</span></div>
-                                                                    </div>
-                                                                </li>
-                                                            </ul>
+                                                            <ul id="suggestionList"></ul>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -152,7 +107,7 @@
                                     </div>
                                     <div class="col-auto p0">
                                         <div class="advscrh_frm_btn">
-                                            <button type="submit" class="btn search-btn"><span
+                                            <button type="button" class="btn search-btn" id="searchBtn"><span
                                                     class="flaticon-search"></span></button>
                                         </div>
                                     </div>
@@ -165,7 +120,7 @@
                             <div class="wrapper">
                                 <ul class="mb0">
                                     <li class="list-inline-item"><a class="header_top_iconbox"
-                                            href="page-account-wishlist.html">
+                                            href="{{ route('wishlist') }}">
                                             <div class="d-block d-md-flex">
                                                 <div class="icon"><span class="flaticon-heart"></span></div>
                                                 <div class="details">
@@ -203,8 +158,10 @@
                 </div>
             </div>
         </div>
+        <!-- header middle end-->
 
-        <!-- Main Header Nav -->
+
+        <!-- Main Header Nav Start -->
         <header class="header-nav menu_style_home_one main-menu">
             <nav class="posr">
                 <div class="container posr menu_bdrt1">
@@ -217,97 +174,74 @@
                                     src="{{ asset('front/images/desktop-nav-menu-white.svg') }}"
                                     alt="Desktop Menu Icon"> <span class="fw500 fz16 color-white vam">Browse
                                     Categories</span> </a>
+
                             <ul class="menu">
-                                <li> <a class="dropdown" href="#"> <span class="menu-icn flaticon-diamond"></span> <span
-                                            class="menu-title">Today’s Hot Deals</span> </a>
-                                    <div class="drop-menu">
-                                        <div class="one-third">
-                                            <div class="cat-title">Electronics</div>
-                                            <ul class="mb20">
-                                                <li><a href="#">Shop All</a></li>
-                                            </ul>
-                                            <div class="cat-title">TV & Video</div>
-                                            <ul class="mb0">
-                                                <li><a href="#">Shop all TVs</a></li>
-                                                <li><a href="#">TVs by Size</a></li>
-                                                <li><a href="#">Smart TVs</a></li>
-                                                <li><a href="#">Roku TVs</a></li>
-                                                <li><a href="#">Streaming</a></li>
-                                                <li><a href="#">TV Mounts & Accessories</a></li>
-                                                <li><a href="#">DVD & Blu-Ray Players</a></li>
-                                            </ul>
+
+                                <li>
+                                    <a class="dropdown" href="#">
+                                        <span class="menu-icn flaticon-diamond"></span>
+                                        <span class="menu-title">All Categories</span>
+                                    </a>
+
+                                    @if($menuCategories->count())
+                                        <div class="drop-menu">
+
+                                            @foreach($menuCategories as $category)
+                                                <div class="one-third">
+
+                                                    {{-- Category Title --}}
+                                                    <div class="cat-title">{{ $category->name }}</div>
+
+                                                    <ul class="mb0">
+                                                        @foreach($category->direct_childs as $sub)
+                                                            <li>
+                                                                <a href="{{ url($sub->slug) }}">
+                                                                    {{ $sub->name }}
+                                                                </a>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+
+                                                </div>
+                                            @endforeach
+
                                         </div>
-                                        <div class="one-third">
-                                            <div class="cat-title">Computers</div>
-                                            <ul class="mb0">
-                                                <li><a href="#">Shop All Computers</a></li>
-                                                <li><a href="#">Laptops</a></li>
-                                                <li><a href="#">Chromebook</a></li>
-                                                <li><a href="#">PC Gaming</a></li>
-                                                <li><a href="#">Desktops</a></li>
-                                                <li><a href="#">Monitors</a></li>
-                                                <li><a href="#">Networking</a></li>
-                                                <li><a href="#">Computer Accessories</a></li>
-                                                <li><a href="#">Computer Components</a></li>
-                                                <li><a href="#">Tax Software</a></li>
-                                                <li><a href="#">Computer Software</a></li>
-                                            </ul>
-                                        </div>
-                                        <div class="one-third">
-                                            <div class="cat-title">Cell Phones</div>
-                                            <ul class="mb0">
-                                                <li><a href="#">Shop All Cell Phones</a></li>
-                                                <li><a href="#">Wireless Deals</a></li>
-                                                <li><a href="#">5G Phones</a></li>
-                                                <li><a href="#">iPhone</a></li>
-                                                <li><a href="#">Galaxy Phones</a></li>
-                                                <li><a href="#">Phone Chargers & Power Banks</a></li>
-                                                <li><a href="#">Grips & Phone Stands</a></li>
-                                                <li><a href="#">Phone Cables</a></li>
-                                                <li><a href="#">Car Mounts</a></li>
-                                                <li><a href="#">iPhone Accessories</a></li>
-                                                <li><a href="#">Cell Phone Accessory Deals</a></li>
-                                            </ul>
-                                        </div>
-                                        <div class="one-third">
-                                            <div class="cat-title">Smart Home</div>
-                                            <ul class="mb20">
-                                                <li><a href="#">Shop All Smart Home</a></li>
-                                                <li><a href="#">Smart Assistants & Hubs</a></li>
-                                                <li><a href="#">Smart Security</a></li>
-                                                <li><a href="#">Smart Energy & Lighting</a></li>
-                                            </ul>
-                                            <div class="cat-title">Photo Services</div>
-                                            <ul class="mb0">
-                                                <li><a href="#">All Photo Services</a></li>
-                                                <li><a href="#">Same Day Services</a></li>
-                                                <li><a href="#">Photo Cards</a></li>
-                                                <li><a href="#">Photo Gifts</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
+                                    @endif
                                 </li>
-                                <li> <a class="dropdown" href="#"> <span class="menu-icn flaticon-cooking"></span> <span
-                                            class="menu-title">Home & Kitchen</span> </a>
-                                </li>
-                                <li> <a class="dropdown" href="#"> <span class="menu-icn flaticon-armchair"></span>
-                                        <span class="menu-title">Home & Furniture</span> </a>
-                                </li>
-                                <li> <a class="dropdown" href="#"> <span class="menu-icn flaticon-smartphone-1"></span>
-                                        <span class="menu-title">Electronics</span> </a>
-                                </li>
-                                <li> <a class="dropdown" href="#"> <span class="menu-icn flaticon-bride-dress"></span>
-                                        <span class="menu-title">Clothing & Accessories</span> </a>
-                                </li>
-                                <li> <a class="dropdown" href="#"> <span class="menu-icn flaticon-heart-beat"></span>
-                                        <span class="menu-title">Health & Beauty</span> </a>
-                                </li>
-                                <li> <a class="dropdown" href="#"> <span class="menu-icn flaticon-volleyball"></span>
-                                        <span class="menu-title">Sport & Outdoor</span> </a>
-                                </li>
-                                <li> <a class="dropdown" href="#"> <span class="menu-icn flaticon-groceries"></span>
-                                        <span class="menu-title">Grocery & Market</span> </a>
-                                </li>
+                                @foreach($menuCategories as $category)
+
+                                    <li>
+                                        <a class="{{ $category->direct_childs->count() ? 'dropdown' : '' }}"
+                                            href="{{ url($category->slug) }}">
+                                            <span class="menu-icn flaticon-diamond"></span>
+                                            <span class="menu-title">{{ $category->name }}</span>
+                                        </a>
+
+                                        {{-- SHOW DROPDOWN ONLY IF CHILD EXISTS --}}
+                                        @if($category->direct_childs->count())
+                                            <div class="drop-menu">
+
+                                                @foreach($category->direct_childs->chunk(6) as $chunk)
+                                                    <div class="one-third">
+                                                        <!-- <div class="cat-title">{{ $category->name }}</div> -->
+                                                        <ul class="mb0">
+                                                            @foreach($chunk as $sub)
+                                                                <li>
+                                                                    <a href="{{ url($sub->slug) }}">
+                                                                        {{ $sub->name }}
+                                                                    </a>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                @endforeach
+
+                                            </div>
+                                        @endif
+
+                                    </li>
+
+                                @endforeach
 
                             </ul>
                         </div>
@@ -316,142 +250,57 @@
                     <ul id="respMenu" class="ace-responsive-menu menu_list_custom_code wa pl200"
                         data-menu-style="horizontal">
 
+                        @foreach($premiumMenuCategories as $category)
 
-                        <li class="megamenu_style"> <a href="#"><span class="title">Our Products</span></a>
-                            <ul class="row dropdown-megamenu">
-                                <li class="col mega_menu_list pl30">
-                                    <h4 class="title">Attars</h4>
-                                    <ul>
-                                        <li><a href="#">woody attars</a></li>
-                                        <li><a href="#">fresh citrus attars</a></li>
-                                        <li><a href="#">traditional attars</a></li>
-                                        <li><a href="#">floral attars</a></li>
-                                        <li><a href="#">Individual flowers attars</a></li>
+                            <li class="visible_list">
+                                <a href="{{ url($category->slug) }}">
+                                    <span class="title">{{ $category->name }}</span>
+                                </a>
 
-                                    </ul>
-                                </li>
-                                <li class="col mega_menu_list">
-                                    <h4 class="title">Perfumes</h4>
+                                {{-- show dropdown ONLY if subcategories exist --}}
+                                @if($category->direct_childs->count())
                                     <ul>
-                                        <li><a href="#">fresh Citrus perfumes</a></li>
-                                        <li><a href="#">Floral perfumes</a></li>
-                                        <li><a href="#">woody perfumes</a></li>
-                                        <li><a href="#">Traditional perfumes</a></li>
-                                        <li><a href="#">fruity perfumes</a></li>
-                                        <li><a href="#">Individual flowers perfumes</a></li>
-                                        <li><a href="#">fresh Citrus perfumes</a></li>
+                                        @foreach ($category->direct_childs as $child)
+                                            <li>
+                                                <a href="{{ url($child->slug) }}">
+                                                    {{ $child->name }}
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
 
-                                    </ul>
-                                </li>
-                                <li class="col mega_menu_list">
-                                    <h4 class="title">User Dashboard</h4>
-                                    <ul>
-                                        <li><a href="page-dashboard.html">Dashboard</a></li>
-                                        <li><a href="page-dashboard-order.html">Orders</a></li>
-                                        <li><a href="page-dashboard-wish-list.html">Downloads</a></li>
-                                        <li><a href="page-dashboard-address.html">Addresses</a></li>
-                                        <li><a href="page-dashboard-account-details.html">Account Details</a></li>
-                                        <li><a href="page-dashboard-wish-list.html">Wishlist</a></li>
-                                        <li><a href="page-login.html">Logout</a></li>
-                                    </ul>
-                                </li>
-                                <!-- <li class="col mega_menu_list">
-                  <h4 class="title">Woo Pages</h4>
-                  <ul>
-                    <li><a href="page-shop-cart.html">Cart</a></li>
-                    <li><a href="page-shop-checkout.html">Checkout</a></li>
-                    <li><a href="page-shop-order-received.html">Wishlist</a></li>
-                    <li><a href="page-account-details.html">My account</a></li>
-                    <li><a href="page-compare.html">Compare</a></li>
-                    <li><a href="page-order-tracking.html">Order Tracking</a></li>
-                  </ul>
-                </li> -->
-                                <li class="col mega_menu_list">
-                                    <div class="banner_one megamenu_style home1_style color1 mb30">
-                                        <div class="thumb style1"> <img class="float-end"
-                                                src="{{ asset('front/images/banner/smartwatch.png') }}"
-                                                alt="smartwatch"> </div>
-                                        <div class="details">
-                                            <p class="para color-light-blue">Starting from <span
-                                                    class="fw500">₹899.</span></p>
-                                            <h3 class="title">Health Care Monitor</h3>
-                                            <a href="page-shop-list-v1.html" class="shop_btn">Shop Now</a>
-                                        </div>
-                                    </div>
-                                    <div class="banner_one megamenu_style home1_style color1">
-                                        <div class="thumb"> <img class="float-end"
-                                                src="{{ asset('front/images/banner/earphone.png') }}" alt="EarPhone">
-                                        </div>
-                                        <div class="details">
-                                            <p class="para color-light-blue">Starting from <span
-                                                    class="fw500">₹899.</span></p>
-                                            <h3 class="title">Stainless Steel Scissors</h3>
-                                            <a href="page-shop-list-v1.html" class="shop_btn">Shop Now</a>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="visible_list"> <a href="#"><span class="title">Pages</span></a>
-                            <ul>
-                                <li><a href="about.html">About Us</a></li>
-                                <li> <a href="#"><span class="title">Accounts</span></a>
-                                    <ul>
-                                        <li><a href="page-account-details.html">Account Details</a></li>
-                                        <li><a href="page-account-order.html">Account Order</a></li>
-                                        <li><a href="page-account-address.html">Account Address</a></li>
-                                        <li><a href="page-account-wishlist.html">Account Wishlist</a></li>
-                                        <li><a href="page-account-invoice.html">Account Invoice</a></li>
-                                    </ul>
-                                </li>
-                                <li><a href="page-become-vendor.html">Become Vendor</a></li>
-                                <li> <a href="#"><span class="title">Vendor Pages</span></a>
-                                    <ul>
-                                        <li><a href="page-vendor-list.html">Vendor List</a></li>
-                                        <li><a href="page-vendor-single.html">Vendor Single</a></li>
-                                        <li><a href="page-dashboard.html">Dashboard</a></li>
-                                        <li><a href="page-dashboard-products.html">Products</a></li>
-                                        <li><a href="page-dashboard-order.html">Order</a></li>
-                                        <li><a href="page-dashboard-customer.html">Customer</a></li>
-                                        <li><a href="page-dashboard-categories.html">Categories</a></li>
-                                        <li><a href="page-dashboard-message.html">Message</a></li>
-                                        <li><a href="page-dashboard-setting.html">Settings</a></li>
-                                    </ul>
-                                </li>
-                                <li><a href="page-brands.html">Brands</a></li>
-                                <li><a href="page-contact.html">Contact</a></li>
-                                <li><a href="page-coming-soon.html">Coming Soon</a></li>
-                                <li><a href="page-help.html">Help</a></li>
-                                <li><a href="page-error.html">404 Page</a></li>
-                                <li><a href="page-faq.html">Faq</a></li>
-                                <li><a href="page-invoices.html">Invoices</a></li>
-                                <li><a href="page-login.html">Login</a></li>
-                                <li><a href="page-register.html">Register</a></li>
-                                <li><a href="page-terms.html">Terms and Conditions</a></li>
-                                <li><a href="page-ui-element.html">UI Elements</a></li>
-                            </ul>
-                        </li>
-                        <!-- <li class="visible_list"> <a href="#"><span class="title">Blog</span></a>
-              <ul>
-                <li><a href="page-blog-grid.html">Blog Grid</a></li>
-                <li><a href="page-blog-grid-sidebar.html">Blog Grid Sidebar</a></li>
-                <li><a href="page-blog-details.html">Blog Details</a></li>
-                <li><a href="page-blog-list.html">Blog List</a></li>
-                <li><a href="page-blog-single.html">Blog Single</a></li>
-                <li><a href="page-blog-single2.html">Blog Single v2</a></li>
-              </ul>
-            </li> -->
+                            </li>
+
+                        @endforeach
+
                     </ul>
+
                     <ul id="respMenu2" class="ace-responsive-menu widget_menu_home2 wa" data-menu-style="horizontal">
-                        <li><a href="about.html">About Us</a></li>
-                        <li class="list-inline-item list_c"><a href="page-faq.html">Faq</a></li>
-                        <li class="list-inline-item list_c"><a href="page-blog-grid.html">Blogs & Article</a></li>
-                        <li class="list-inline-item list_c"><a href="page-contact.html">Contact Us</a></li>
-                        <li class="list-inline-item list_c"><a href="#">Feedback</a></li>
+
+                        <li><a href="{{ route('about') }}">About Us</a></li>
+
+                        <li class="list-inline-item list_c">
+                            <a href="{{ route('faq') }}">Faq</a>
+                        </li>
+
+                        <li class="list-inline-item list_c">
+                            <a href="{{ route('blogs') }}">Blogs & Article</a>
+                        </li>
+
+                        <li class="list-inline-item list_c">
+                            <a href="{{ route('contact') }}">Contact Us</a>
+                        </li>
+
+                        <li class="list-inline-item list_c">
+                            <a href="{{ route('feedback') }}">Feedback</a>
+                        </li>
+
                     </ul>
                 </div>
             </nav>
         </header>
+        <!-- Main Header Nav Start -->
 
         <!-- Body Ovelay Behind Sidebar -->
         <div class="hiddenbar-body-ovelay"></div>
@@ -627,10 +476,20 @@
             <div class="mobile-menu">
                 <div class="header stylehome1">
                     <div class="menu_and_widgets">
-                        <div class="mobile_menu_bar float-start"> <a class="menubar" href="#menu"><span></span></a> <a
-                                class="mobile_logo" href="#"><img
-                                    src="https://izharsonperfumers.com/admin-login/storage/logo/awQrarVaGtUQtwtFSSNi78JDai2I5TQH7VIBThZE.png"
-                                    style="height: 50px;" /></a> </div>
+                        <div class="mobile_menu_bar float-start">
+
+                            <!-- MENU TOGGLE -->
+                            <a class="menubar" href="#menu">
+                                <span></span>
+                            </a>
+
+                            <!-- MOBILE LOGO -->
+                            <a class="mobile_logo" href="{{ url('/') }}">
+                                <img src="{{ $settings->header_logo ? asset('storage/' . $settings->header_logo) : asset('front/images/logo.png') }}"
+                                    alt="logo" style="height:50px;">
+                            </a>
+
+                        </div>
                         <div class="mobile_menu_widget_icons">
                             <ul class="cart mt15">
                                 <li class="list-inline-item"> <a class="cart_btn signin-filter-btn" href="#"><span
@@ -650,80 +509,13 @@
                                         <div class="top-search text-start">
                                             <form action="#" method="get" class="form-search" accept-charset="utf-8">
                                                 <div class="box-search">
-                                                    <input class="form_control" type="text" name="search"
-                                                        placeholder="Search products…">
+                                                    <input class="form_control" type="text" id="mobileSearchInput"
+                                                        placeholder="Search products…" autocomplete="off">
+
                                                     <div class="search-suggestions text-start">
                                                         <div class="box-suggestions">
-                                                            <ul>
-                                                                <li>
-                                                                    <div class="thumb"> <img
-                                                                            src="{{ asset('front/images/listing/sf1.png') }}"
-                                                                            alt="sf1.png"> </div>
-                                                                    <div class="info-product">
-                                                                        <div class="item_title">Sony DJ Headphones
-                                                                            4334205465,
-                                                                            Black, Standard</div>
-                                                                        <div class="price"><span
-                                                                                class="sale">₹32.50</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                                <li>
-                                                                    <div class="thumb"> <img
-                                                                            src="{{ asset('front/images/listing/sf2.png') }}"
-                                                                            alt="sf2.png"> </div>
-                                                                    <div class="info-product">
-                                                                        <div class="item_title">Sony E-Mount Full Frame
-                                                                            FE
-                                                                            24-70mm f/2.8 GM II G Master
-                                                                        </div>
-                                                                        <div class="price"><span
-                                                                                class="sale">₹32.50</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                                <li>
-                                                                    <div class="thumb"> <img
-                                                                            src="{{ asset('front/images/listing/sf3.png') }}"
-                                                                            alt="sf3.png"> </div>
-                                                                    <div class="info-product">
-                                                                        <div class="item_title">TV 55" 4-Series 4K UHD
-                                                                            smart TV
-                                                                        </div>
-                                                                        <div class="price"><span
-                                                                                class="sale">₹32.50</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                                <li>
-                                                                    <div class="thumb"> <img
-                                                                            src="{{ asset('front/images/listing/sf4.png') }}"
-                                                                            alt="sf4.png"> </div>
-                                                                    <div class="info-product">
-                                                                        <div class="item_title">Hugolog Baby Monitor, 2K
-                                                                            Security Camera, PT Cameras for
-                                                                        </div>
-                                                                        <div class="price"><span
-                                                                                class="sale">₹32.50</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                                <li>
-                                                                    <div class="thumb"> <img
-                                                                            src="{{ asset('front/images/listing/sf5.png') }}"
-                                                                            alt="sf5.png"> </div>
-                                                                    <div class="info-product">
-                                                                        <div class="item_title">Apple iPhone Retina 6s
-                                                                            Plus 64GB
-                                                                        </div>
-                                                                        <div class="price"><span
-                                                                                class="sale">₹32.50</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                            </ul>
+                                                            <ul id="mobileSuggestionList"></ul>
                                                         </div>
-                                                        <!-- /.box-suggestions -->
                                                     </div>
                                                 </div>
                                             </form>
@@ -731,7 +523,7 @@
                                     </div>
                                     <div>
                                         <div class="advscrh_frm_btn">
-                                            <button type="submit" class="btn search-btn"><span
+                                            <button type="button" class="btn search-btn" id="mobileSearchBtn"><span
                                                     class="flaticon-search"></span></button>
                                         </div>
                                     </div>
@@ -747,171 +539,57 @@
             <!-- /.mobile-menu -->
             <nav id="menu" class="stylehome1">
                 <ul>
-                    <li><span>Home</span>
-                        <ul>
-                            <li><a href="index1.html">Home V1</a></li>
-                            <li><a href="index2.html">Home V2</a></li>
-                            <li><a href="index3.html">Home V3</a></li>
-                            <li><a href="index4.html">Home V4</a></li>
-                            <li><a href="index5.html">Home V5</a></li>
-                            <li><a href="index6.html">Home V6</a></li>
-                            <li><a href="index7.html">Home V7</a></li>
-                            <li><a href="index8.html">Home V8</a></li>
-                            <li><a href="index9.html">Home V9</a></li>
-                            <li><a href="index10.html">Home V10</a></li>
-                        </ul>
+                    <li>
+                        <a href="{{ url('/') }}">Home</a>
                     </li>
-                    <li><span>Shop</span>
-                        <ul>
-                            <li><span>Shop Listing</span>
+
+                    {{-- SHOP --}}
+                    <li>
+                        <a href="{{ route('shop') }}">Shop</a>
+                    </li>
+                    <li class="title my-3 bb1 pl20 fz20 fw500 pb-3">Categories</li>
+                    @foreach ($menuCategories as $category)
+                        <li>
+                            <span><i class="flaticon-cooking mr20"></i><a
+                                    href="{{ url($category->slug) }}">{{ $category->name }}</a></span>
+                            @if ($category->direct_childs->count() > 0)
                                 <ul>
-                                    <li><a href="page-shop-list-v1.html">Listing v1</a></li>
-                                    <li><a href="page-shop-list-v2.html">Listing v2</a></li>
-                                    <li><a href="page-shop-list-v3.html">Listing v3</a></li>
-                                    <li><a href="page-shop-list-v4.html">Listing v4</a></li>
-                                    <li><a href="page-shop-list-v5.html">Listing v5</a></li>
-                                    <li><a href="page-shop-list-v6.html">Listing v6</a></li>
-                                    <li><a href="page-shop-list-v7.html">Listing v7</a></li>
-                                    <li><a href="page-shop-list-v8.html">Listing v8</a></li>
+                                    @foreach($category->direct_childs as $sub)
+                                        <li>
+                                            <a href="{{ url($sub->slug) }}">
+                                                {{ $sub->name }}
+                                            </a>
+                                        </li>
+                                    @endforeach
                                 </ul>
-                            </li>
-                            <li><span>Shop Single</span>
-                                <ul>
-                                    <li><a href="product-details.html">Version 1</a></li>
-                                    <li><a href="page-shop-single-v2.html">Version 2</a></li>
-                                    <li><a href="page-shop-single-v3.html">Version 3</a></li>
-                                    <li><a href="page-shop-single-v4.html">Version 4</a></li>
-                                    <li><a href="page-shop-single-v5.html">Version 5</a></li>
-                                    <li><a href="product-details.html">Color Switch</a></li>
-                                    <li><a href="page-shop-single-image-switch.html">Image Switch</a></li>
-                                    <li><a href="page-shop-single-countdown.html">Single Countdown</a></li>
-                                    <li><a href="page-shop-single-external-product.html">External Product</a></li>
-                                    <li><a href="page-shop-single-grouped-product.html">Grouped Product</a></li>
-                                    <li><a href="page-shop-single-bought-together.html">Bought Together</a></li>
-                                </ul>
-                            </li>
-                            <li><span>User Dashboard</span>
-                                <ul>
-                                    <li><a href="page-dashboard.html">Dashboard</a></li>
-                                    <li><a href="page-dashboard-order.html">Orders</a></li>
-                                    <li><a href="page-dashboard-wish-list.html">Downloads</a></li>
-                                    <li><a href="page-dashboard-address.html">Addresses</a></li>
-                                    <li><a href="page-dashboard-account-details.html">Account Details</a></li>
-                                    <li><a href="page-dashboard-wish-list.html">Wishlist</a></li>
-                                    <li><a href="page-login.html">Logout</a></li>
-                                </ul>
-                            </li>
-                            <li><span>Shop Pages</span>
-                                <ul>
-                                    <li><a href="page-shop-cart.html">Cart</a></li>
-                                    <li><a href="page-shop-checkout.html">Checkout</a></li>
-                                    <li><a href="page-shop-order-received.html">Order Received</a></li>
-                                    <li><a href="page-order-tracking.html">Order Tracking</a></li>
-                                    <li><a href="page-store-location.html">Store Locator</a></li>
-                                </ul>
-                            </li>
-                        </ul>
+
+                            @endif
+                        </li>
+
+                    @endforeach
+                    <hr class="mt-4 mb-3">
+
+                    <li><a href="{{ route('about') }}">About Us</a></li>
+
+                    <li class="list-inline-item list_c">
+                        <a href="{{ route('faq') }}">Faq</a>
                     </li>
-                    <li><span>Pages</span>
-                        <ul>
-                            <li><a href="page-about.html">About Us</a></li>
-                            <li><span>Accounts</span>
-                                <ul>
-                                    <li><a href="page-account-details.html">Account Details</a></li>
-                                    <li><a href="page-account-order.html">Account Order</a></li>
-                                    <li><a href="page-account-address.html">Account Address</a></li>
-                                    <li><a href="page-account-wishlist.html">Account Wishlist</a></li>
-                                    <li><a href="page-account-invoice.html">Account Invoice</a></li>
-                                </ul>
-                            </li>
-                            <li><a href="page-become-vendor.html">Become Vendor</a></li>
-                            <li><span>Vendor Pages</span>
-                                <ul>
-                                    <li><a href="page-vendor-list.html">Vendor List</a></li>
-                                    <li><a href="page-vendor-single.html">Vendor Single</a></li>
-                                    <li><a href="page-dashboard.html">Dashboard</a></li>
-                                    <li><a href="page-dashboard-products.html">Products</a></li>
-                                    <li><a href="page-dashboard-order.html">Order</a></li>
-                                    <li><a href="page-dashboard-customer.html">Customer</a></li>
-                                    <li><a href="page-dashboard-categories.html">Categories</a></li>
-                                    <li><a href="page-dashboard-message.html">Message</a></li>
-                                    <li><a href="page-dashboard-setting.html">Settings</a></li>
-                                </ul>
-                            </li>
-                            <li><a href="page-brands.html">Brands</a></li>
-                            <li><a href="page-contact.html">Contact</a></li>
-                            <li><a href="page-coming-soon.html">Coming Soon</a></li>
-                            <li><a href="page-help.html">Help</a></li>
-                            <li><a href="page-error.html">404 Page</a></li>
-                            <li><a href="page-faq.html">Faq</a></li>
-                            <li><a href="page-invoices.html">Invoices</a></li>
-                            <li><a href="page-login.html">Login</a></li>
-                            <li><a href="page-register.html">Register</a></li>
-                            <li><a href="page-terms.html">Terms and Conditions</a></li>
-                            <li><a href="page-ui-element.html">UI Elements</a></li>
-                        </ul>
+
+                    <li class="list-inline-item list_c">
+                        <a href="{{ route('blogs') }}">Blogs & Article</a>
                     </li>
-                    <li><span>Blog</span>
-                        <ul>
-                            <li><a href="page-blog-grid.html">Blog Grid</a></li>
-                            <li><a href="page-blog-grid-sidebar.html">Blog Grid Sidebar</a></li>
-                            <li><a href="page-blog-details.html">Blog Details</a></li>
-                            <li><a href="page-blog-list.html">Blog List</a></li>
-                            <li><a href="page-blog-single.html">Blog Single</a></li>
-                            <li><a href="page-blog-single2.html">Blog Single v2</a></li>
-                        </ul>
+
+                    <li class="list-inline-item list_c">
+                        <a href="{{ route('contact') }}">Contact Us</a>
                     </li>
-                    <li class="title my-3 bb1 pl20 fz20 fw500 pb-3">Departments</li>
-                    <li><span><i class="flaticon-cooking mr20"></i>Home & Kitchen</span>
-                        <ul>
-                            <li><a href="page-shop-list-v1.html">Home & Kitchen</a></li>
-                        </ul>
-                    </li>
-                    <li><span><i class="flaticon-armchair mr20"></i>Home & Furniture</span>
-                        <ul>
-                            <li><a href="page-shop-list-v1.html">Home & Furniture</a></li>
-                        </ul>
-                    </li>
-                    <li><span><i class="flaticon-smartphone-1 mr20"></i>Electronics</span>
-                        <ul>
-                            <li><a href="page-shop-list-v1.html">Electronics</a></li>
-                        </ul>
-                    </li>
-                    <li><span><i class="flaticon-bride-dress mr20"></i>Clothing & Accessories</span>
-                        <ul>
-                            <li><a href="page-shop-list-v1.html">Clothing & Accessories</a></li>
-                        </ul>
-                    </li>
-                    <li><span><i class="flaticon-heart-beat mr20"></i>Health & Beauty</span>
-                        <ul>
-                            <li><a href="page-shop-list-v1.html">Health & Beauty</a></li>
-                        </ul>
-                    </li>
-                    <li><span><i class="flaticon-volleyball mr20"></i>Sport & Outdoor</span>
-                        <ul>
-                            <li><a href="page-shop-list-v1.html">Sport & Outdoor</a></li>
-                        </ul>
-                    </li>
-                    <li><span><i class="flaticon-groceries mr20"></i>Grocery & Market</span>
-                        <ul>
-                            <li><a href="page-shop-list-v1.html">Grocery & Market</a></li>
-                        </ul>
-                    </li>
-                    <li><span><i class="flaticon-remote-control mr20"></i>Toy & Video Games</span>
-                        <ul>
-                            <li><a href="page-shop-list-v1.html">Toy & Video Games</a></li>
-                        </ul>
-                    </li>
-                    <li><span><i class="flaticon-feeding-bottle mr20"></i>Babies & Moms</span>
-                        <ul>
-                            <li><a href="page-shop-list-v1.html">Babies & Moms</a></li>
-                        </ul>
-                    </li>
-                    <li><a class="tdu text-thm1 text-capitalize" href="#">See More <i class="far fa-angle-down"></i></a>
+
+                    <li class="list-inline-item list_c">
+                        <a href="{{ route('feedback') }}">Feedback</a>
                     </li>
                     <!-- Only for Mobile View -->
                 </ul>
             </nav>
+
         </div>
 
 
@@ -932,14 +610,18 @@
                                 </div>
                             </div>
                             <div class="footer_social_widget">
-                                <form class="footer_mailchimp_form">
+                                <form id="subscribeForm" class="footer_mailchimp_form">
+                                    @csrf
                                     <div class="row align-items-center">
                                         <div class="col-auto">
-                                            <input type="email" class="form-control" placeholder="Your email address">
+                                            <input type="email" name="email" class="form-control"
+                                                placeholder="Your email address" required>
                                             <button class="ms-sm-2 btn-thm" type="submit">Subscribe</button>
                                         </div>
                                     </div>
                                 </form>
+
+                                <div id="subscribeMsg" style="margin-top:8px;"></div>
                             </div>
                         </div>
                     </div>
@@ -947,18 +629,25 @@
                         <div class="col-sm-6 col-md-5 col-lg-3 col-xl-3">
                             <div class="footer_contact_widget">
                                 <h4>Contact Us</h4>
+                                <div class="footer_contact_iconbox d-flex">
+                                    <div class="icon"><span class="flaticon-location"></span></div>
+                                    <div class="details ms-4">
+                                        <h5 class="title"></h5>
+                                        <a href="#">{{ $settings->address }}</a>
+                                    </div>
+                                </div>
                                 <div class="footer_contact_iconbox d-flex mb-4">
                                     <div class="icon"><span class="flaticon-phone-call"></span></div>
                                     <div class="details ms-4">
                                         <h5 class="title">Monday-Friday: 08am-9pm</h5>
-                                        <a href="#">7800001928</a>
+                                        <a href="#">{{ $settings->tollfree_number }}</a>
                                     </div>
                                 </div>
                                 <div class="footer_contact_iconbox d-flex">
                                     <div class="icon"><span class="flaticon-email"></span></div>
                                     <div class="details ms-4">
                                         <h5 class="title">Need help with your order?</h5>
-                                        <a href="#">info@izharsonperfumers.com</a>
+                                        <a href="#">{{ $settings->email }}</a>
                                     </div>
                                 </div>
                             </div>
@@ -969,8 +658,8 @@
                                 <ul class="list-unstyled">
                                     <li><a href="#">Track Your Order</a></li>
                                     <li><a href="#">Product Guides</a></li>
-                                    <li><a href="#">Wishlists</a></li>
-                                    <li><a href="#">Privacy Policy</a></li>
+                                    <li><a href="{{ route('wishlist') }}">Wishlists</a></li>
+                                    <li><a href="{{ route('privacy-policy') }}">Privacy Policy</a></li>
                                     <li><a href="#">Store Locator</a></li>
                                 </ul>
                             </div>
@@ -979,7 +668,7 @@
                             <div class="footer_qlink_widget">
                                 <h4>Customer Support</h4>
                                 <ul class="list-unstyled">
-                                    <li><a href="#">Contact Us</a></li>
+                                    <li><a href="{{ route(name: 'contact') }}">Contact Us</a></li>
                                     <li><a href="#">Help Centre</a></li>
                                     <li><a href="#">Returns & Exchanges</a></li>
                                     <li><a href="#">Best Buy Financing</a></li>
@@ -1004,13 +693,24 @@
                                 <h4 class="title">Follow us</h4>
                                 <div class="social_icon_list mt30">
                                     <ul class="mb20">
-                                        <li class="list-inline-item"><a href="#"><i class="fab fa-facebook"></i></a>
+                                        <li class="list-inline-item"><a href="{{ $socialLinks->fb_name }}"><i
+                                                    class="fab fa-facebook"></i></a>
                                         </li>
-                                        <li class="list-inline-item"><a href="#"><i class="fab fa-x-twitter"></i></a>
+                                        <li class="list-inline-item"><a href="{{ $socialLinks->twit_name }}"><i
+                                                    class="fab fa-x-twitter"></i></a>
                                         </li>
-                                        <li class="list-inline-item"><a href="#"><i class="fab fa-instagram"></i></a>
+                                        <li class="list-inline-item"><a href="{{ $socialLinks->insta_name }}"><i
+                                                    class="fab fa-instagram"></i></a>
                                         </li>
-                                        <li class="list-inline-item"><a href="#"><i class="fab fa-linkedin-in"></i></a>
+                                        <li class="list-inline-item"><a href="{{ $socialLinks->linkedin_name }}"><i
+                                                    class="fab fa-linkedin-in"></i></a>
+                                        </li>
+                                        <li class="list-inline-item"><a href="{{ $socialLinks->youtube_name }}"><i
+                                                    class="fab fa-youtube"></i></a>
+                                        </li>
+                                        <li class="list-inline-item"><a
+                                                href="https://wa.me/{{ $settings->whatsapp_number }}" target="_blank"><i
+                                                    class="fab fa-whatsapp"></i></a>
                                         </li>
                                     </ul>
                                 </div>
@@ -1058,7 +758,9 @@
                         <div class="col-lg-6">
                             <div class="copyright-widget text-center text-lg-start d-block d-lg-flex mb15-md">
                                 <p class="me-4">© 2025 Izharson Perfumers. All Rights Reserved</p>
-                                <p><a href="#">Privacy</a>·<a href="#">Terms</a>·<a href="#">Sitemap</a></p>
+                                <p><a href="{{ route('privacy-policy') }}">Privacy</a>·<a
+                                        href="{{ route('terms-conditions') }}">Terms</a>·<a
+                                        href="{{ route('sitemap') }}">Sitemap</a></p>
                             </div>
                         </div>
                         <div class="col-lg-6">
@@ -1096,7 +798,7 @@
 
     <!-- Magnific Popup -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
-    
+
     <script src="{{ asset('front/js/popper.min.js') }}"></script>
     <script src="{{ asset('front/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('front/js/bootstrap-select.min.js') }}"></script>
@@ -1126,6 +828,151 @@
                 });
             }
         });
+
+        const shopURL = "{{ route('shop') }}"; // main listing page
+
+        // search suggestions for desktop
+        document.getElementById('searchInput').addEventListener('keyup', function () {
+
+            let query = this.value;
+
+            fetch(`/search-suggestions?q=${query}`)
+                .then(res => res.json())
+                .then(data => {
+
+                    let html = '';
+
+                    data.forEach(product => {
+                        html += `
+<li>
+    <a href="/product-details/${product.slug}" class="d-flex align-items-center">
+        <div class="thumb">
+            <img src="/storage/${product.image}" alt="${product.name}">
+        </div>
+        <div class="info-product">
+            <div class="item_title">${product.name}</div>
+            <div class="price">
+                <span class="sale">
+                    ₹${product.product_options[0]?.price ?? product.min_price}
+                </span>
+            </div>
+        </div>
+    </a>
+</li>
+            `;
+                    });
+
+                    document.getElementById('suggestionList').innerHTML = html;
+                });
+        });
+
+        // search button click
+        document.getElementById("searchBtn").addEventListener("click", performSearch);
+
+        // perform search on submit
+        function performSearch() {
+            let query = document.getElementById("searchInput").value.trim();
+            let category = document.getElementById("selectbox_alCategory").value;
+
+            let params = new URLSearchParams();
+
+            if (query) params.append("q", query);
+            if (category) params.append("category", category);
+
+            window.location.href = shopURL + "?" + params.toString();
+        }
+
+        /* ================= MOBILE SEARCH SUGGESTIONS ================= */
+
+        const mobileInput = document.getElementById('mobileSearchInput');
+        const mobileList = document.getElementById('mobileSuggestionList');
+
+        if (mobileInput) {
+
+            mobileInput.addEventListener('keyup', function () {
+
+                let query = this.value;
+
+                if (query.length < 2) {
+                    mobileList.innerHTML = '';
+                    return;
+                }
+
+                fetch(`/search-suggestions?q=${query}`)
+                    .then(res => res.json())
+                    .then(data => {
+
+                        let html = '';
+
+                        data.forEach(product => {
+                            html += `
+<li>
+    <a href="/product-details/${product.slug}" class="d-flex align-items-center">
+        <div class="thumb">
+            <img src="/storage/${product.image}" alt="${product.name}">
+        </div>
+        <div class="info-product">
+            <div class="item_title">${product.name}</div>
+            <div class="price">
+                <span class="sale">
+                    ₹${product.product_options[0]?.price ?? product.min_price}
+                </span>
+            </div>
+        </div>
+    </a>
+</li>`;
+                        });
+
+                        mobileList.innerHTML = html;
+                    });
+            });
+
+            /* MOBILE SEARCH BUTTON */
+            document.getElementById("mobileSearchBtn").addEventListener("click", function () {
+                let query = mobileInput.value.trim();
+                if (!query) return;
+                window.location.href = shopURL + "?q=" + query;
+            });
+
+            /* ENTER KEY SEARCH */
+            mobileInput.addEventListener("keypress", function (e) {
+                if (e.key === "Enter") {
+                    window.location.href = shopURL + "?q=" + mobileInput.value.trim();
+                }
+            });
+
+        }
+
+
+        // newsletter subscription
+        document.getElementById("subscribeForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            let form = this;
+            let email = form.querySelector("input[name='email']").value;
+            let msgBox = document.getElementById("subscribeMsg");
+
+            fetch("{{ route('subscribe') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({ email: email })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status) {
+                        msgBox.innerHTML = "<span style='color:green'>" + data.message + "</span>";
+                        form.reset();
+                    } else {
+                        msgBox.innerHTML = "<span style='color:red'>" + data.message + "</span>";
+                    }
+                })
+                .catch(err => {
+                    msgBox.innerHTML = "<span style='color:red'>Something went wrong</span>";
+                });
+        });
+
     </script>
 </body>
 

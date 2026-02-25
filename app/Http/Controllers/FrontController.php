@@ -7,8 +7,10 @@ use App\Models\HomepageSetting;
 use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\Slider;
+use App\Models\Subscriber;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class FrontController extends Controller
 {
@@ -145,6 +147,15 @@ class FrontController extends Controller
             ->take(12)
             ->get();
 
+        $dealProducts = Product::activeDeals()
+            ->with('product_options')
+            ->where('status', 'active')
+             ->latest()
+            ->take(12)
+            ->get();
+
+        $maxDealEnd = $dealProducts->max('deal_end');
+
         return view('front.index', compact(
             'banner',
             'deliveryBanner1',
@@ -162,10 +173,64 @@ class FrontController extends Controller
             'categoryProducts',
             'newArrivals',
             'topSellingArrivals',
-            'attarArrivals'
+            'attarArrivals',
+            'dealProducts',
+            'maxDealEnd'
         ));
     }
 
+    public function suggestions(Request $request)
+    {
+        $products = Product::where('name', 'like', '%' . $request->q . '%')
+            ->with('product_options')
+            ->where('status', 'active')
+            ->take(5)
+            ->get(['name', 'slug', 'image', 'min_price']);
+
+        return response()->json($products);
+    }
+
+    public function productList(Request $request)
+    {
+        $categories = Category::whereNull('parent_id')
+            ->with([
+                'active_all_childs.productssn' => function ($query) use ($request) {
+
+                    if ($request->q) {
+                        $query->where('name', 'LIKE', '%' . $request->q . '%');
+                    }
+
+                }
+            ])
+            ->where('status', 'active')
+            ->get();
+
+        return view('front.shop', compact('categories'));
+    }
+
+
+    public function subscribers(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|unique:subscribers,email'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first()
+            ], 422);
+        }
+
+        Subscriber::create([
+            'email' => $request->email
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => "You successfully subscribed!"
+        ]);
+    }
     public function aboutUs()
     {
         return view('front.about-us');

@@ -23,7 +23,8 @@
                     <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
                     <div class="heading-elements">
                         <ul class="list-inline mb-0">
-                            <li><a href="{{ route('admin.manage-product.create') }}"><i class="fa fa-plus"></i> Add Product </a></li>
+                            <li><a href="{{ route('admin.manage-product.create') }}"><i class="fa fa-plus"></i> Add
+                                    Product </a></li>
                             <li><a href="javascript:history.go(-1)"><i class="fa fa-backward"></i> Go Back</a></li>
                         </ul>
                     </div>
@@ -48,26 +49,26 @@
 @include('admin.footer')
 <script>
 
-$(document).on("click", ".show-product", function(event) {
-            let id = $(this).attr('product_id');
-            $.ajax({
-                url: `{{ url('admin/manage-product/${id}') }}`,
-                type: "get",
-                dataType: "json",
-                success: function(result) {
-                    if (result.success) {
-                        $("#product-modal").html(result.html);
-                        $("#product-modal").modal('show');
-                    } else {
-                        toastr.error('error encountered ' + result.msgText);
-                    }
-                },
-                error: function(error) {
-                    toastr.error('error encountered ' + error.statusText);
+    $(document).on("click", ".show-product", function (event) {
+        let id = $(this).attr('product_id');
+        $.ajax({
+            url: `{{ url('admin/manage-product/${id}') }}`,
+            type: "get",
+            dataType: "json",
+            success: function (result) {
+                if (result.success) {
+                    $("#product-modal").html(result.html);
+                    $("#product-modal").modal('show');
+                } else {
+                    toastr.error('error encountered ' + result.msgText);
                 }
-            });
+            },
+            error: function (error) {
+                toastr.error('error encountered ' + error.statusText);
+            }
         });
-     function updateStatus(id){
+    });
+    function updateStatus(id) {
         Swal.fire({
             title: 'Are you sure?',
             icon: 'success',
@@ -81,12 +82,12 @@ $(document).on("click", ".show-product", function(event) {
                     url: `{{ URL::to('admin/manage-product/change-status/${id}') }}`,
                     type: "POST",
                     brandType: "json",
-                    success: function(result) {
+                    success: function (result) {
                         if (result.success) {
                             Swal.fire(
                                 "Status changed Succesfully"
                             );
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 location.reload();
                             }, 40);
                         } else {
@@ -96,7 +97,7 @@ $(document).on("click", ".show-product", function(event) {
                 });
 
             }
-        }) 
+        })
     }
     function deleteConfirmation(id) {
         Swal.fire({
@@ -113,13 +114,13 @@ $(document).on("click", ".show-product", function(event) {
                     url: `{{ URL::to('admin/manage-product/${id}') }}`,
                     type: "DELETE",
                     dataType: "json",
-                    success: function(result) {
+                    success: function (result) {
                         if (result.success) {
                             Swal.fire(
                                 'Deleted!',
                                 'success'
                             );
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 location.reload();
                             }, 400);
                         } else {
@@ -146,13 +147,13 @@ $(document).on("click", ".show-product", function(event) {
                     url: `{{ URL::to('admin/product-option-image/${id}') }}`,
                     type: "DELETE",
                     dataType: "json",
-                    success: function(result) {
+                    success: function (result) {
                         if (result.success) {
                             Swal.fire(
                                 'Deleted!',
                                 'success'
                             );
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $(`div [product_option_image_id="${result.product_option_image_id}"]`).remove();
                             }, 400);
                         } else {
@@ -165,8 +166,8 @@ $(document).on("click", ".show-product", function(event) {
         })
     }
 
-    $(document).ready(function() {
-        $(document).on('click', '.pagination a', function(event) {
+    $(document).ready(function () {
+        $(document).on('click', '.pagination a', function (event) {
             event.preventDefault();
             $('li').removeClass('active');
             $(this).parent('li').addClass('active');
@@ -179,19 +180,19 @@ $(document).on("click", ".show-product", function(event) {
                 url: '?page=' + page,
                 type: "get",
                 datatype: "json",
-                success: function(result) {
+                success: function (result) {
                     $("#data-container").empty().html(result.html);
                 }
             });
         }
 
-        $(document).on("click", ".upload-image", function(event) {
+        $(document).on("click", ".upload-image", function (event) {
             let id = $(this).attr('product_id');
             $.ajax({
                 url: `{{ URL::to('admin/product-option-image/${id}') }}`,
                 type: "GET",
                 dataType: "json",
-                success: function(result) {
+                success: function (result) {
                     console.log(result)
                     if (result.success) {
                         $("#product-modal").html(result.html);
@@ -203,13 +204,13 @@ $(document).on("click", ".show-product", function(event) {
             });
         });
 
-        $(document).on('click', '.delete-product-option-image', function(event) {
+        $(document).on('click', '.delete-product-option-image', function (event) {
             let id = $(this).attr('product_option_image_id');
             $.ajax({
                 url: `{{ URL::to('admin/product-option-image/${id}') }}`,
                 type: "GET",
                 dataType: "json",
-                success: function(result) {
+                success: function (result) {
                     if (result.success) {
                         $("#product-modal").html(result.html);
                         $("#product-modal").modal('show');
@@ -222,22 +223,60 @@ $(document).on("click", ".show-product", function(event) {
     });
 </script>
 <script>
-        Dropzone.options.dropzone =
-        {
-            maxFilesize: 10,
-            renameFile: function (file) {
-                var dt = new Date();
-                var time = dt.getTime();
-                return time + file.name;
-            },
-            acceptedFiles: ".jpeg,.jpg,.png,.gif",
-            addRemoveLinks: true,
-            timeout: 60000,
-            success: function (file, response) {
-                console.log(response);
-            },
-            error: function (file, response) {
-                return false;
+    Dropzone.options.dropzone =
+    {
+        maxFilesize: 10,
+        renameFile: function (file) {
+            var dt = new Date();
+            var time = dt.getTime();
+            return time + file.name;
+        },
+        acceptedFiles: ".jpeg,.jpg,.png,.gif",
+        addRemoveLinks: true,
+        timeout: 60000,
+        success: function (file, response) {
+            console.log(response);
+        },
+        error: function (file, response) {
+            return false;
+        }
+    };
+</script>
+
+<script>
+function toggleDeal(id) {
+
+    Swal.fire({
+        title: 'Enter deal duration',
+        input: 'number',
+        inputLabel: 'Deal duration in hours',
+        inputPlaceholder: 'Example: 12',
+        showCancelButton: true,
+        confirmButtonText: 'Set Deal',
+        inputValidator: (value) => {
+            if (!value || value <= 0) {
+                return 'Please enter valid hours';
             }
-        };
-    </script>
+        }
+    }).then((result) => {
+
+        if (result.isConfirmed) {
+
+            fetch("{{ route('admin.product.toggleDeal') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    id: id,
+                    hours: result.value
+                })
+            })
+            .then(res => res.json())
+            .then(() => location.reload());
+        }
+
+    });
+}
+</script>

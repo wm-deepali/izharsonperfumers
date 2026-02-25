@@ -53,6 +53,7 @@
                                                     <th>Category Name</th>
                                                     <th>URL Slug</th>
                                                     <th>Sub-Categories</th>
+                                                    <th>Is Premium</th>
                                                     <th>Status</th>
                                                     <th>Action</th>
                                                 </tr>
@@ -85,7 +86,7 @@
                                                             <td>{{ $category->name }}</td>
                                                             <td>{{ $category->slug }}</td>
                                                             <td><a href="{{ route('admin.manage-category.show', $category->id) }}" title="Children">{{ count($category->direct_childs) }}</a></td>
-                                                            
+                                                            <td>{{ $category->is_premium == 1 ? "Yes" : "No" }}</td>
                                                             <td>{{ $category->status=="active" ? "Active" : "De-Active" }}</td>
                                                             <td class="text-truncate">
                                                                 <ul class="actions">
@@ -258,6 +259,7 @@
             formData.append('twitter_cards', $('#twitter_cards').val());
             formData.append('og_tags', $('#og_tags').val());
             formData.append('status', $('#status').val());
+            formData.append('is_premium', $('#is_premium').val()); 
             formData.append('image', (typeof $('#image')[0].files[0] == 'undefined') ? '' : $('#image')[0].files[0]);
             formData.append('banner_image', (typeof $('#banner_image')[0].files[0] == 'undefined') ? '' : $('#banner_image')[0].files[0]);
             $.ajax({
@@ -327,6 +329,7 @@
             formData.append('meta_keyword', $('#meta_keyword').val());
             formData.append('meta_description', $('#meta_description').val());
             formData.append('status', $('#status').val());
+            formData.append('is_premium', $('#is_premium').val()); 
             formData.append('meta_title_ar', $('#meta_title_ar').val());
             formData.append('meta_keyword_ar', $('#meta_keyword_ar').val());
             formData.append('canonical_tags', $('#canonical_tags').val());

@@ -74,6 +74,7 @@ class CategoryController extends Controller
                     'image' => $imageName ?? null,
                     'banner_image' => $imageNamebanner ?? null,
                     'status' => $request->status,
+                    'is_premium' => $request->is_premium ?? 0,
                 ]);
                 if($request->parent_id) {
                     $code = 'Category-'.$request->parent_id.'-'.$category->id;
@@ -155,6 +156,7 @@ class CategoryController extends Controller
                     'name_ar' => $request->name_ar,
                     'slug' => $request->slug,
                     'status' => $request->status,
+                    'is_premium' => $request->is_premium ?? 0,
                 );
                 
                 if($request->hasFile('banner_image')){

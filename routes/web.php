@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\BookAppointMentController;
 use App\Http\Controllers\Admin\ReasonController;
 use App\Http\Controllers\Admin\CompanyAddressController;
 use App\Http\Controllers\Admin\PromotionController;
+use App\Http\Controllers\Admin\HomeFeatureController;
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
@@ -64,128 +65,134 @@ use App\Mail\AdminOrderMail;
 |
 */
 // Password Reset links 
-Route::get('/clear', function() {
-    Artisan::call('optimize:clear');
-  
-    dd("Cache Clear All");
+Route::get('/clear', function () {
+  Artisan::call('optimize:clear');
+
+  dd("Cache Clear All");
 });
-Route::get('/send-email', function() {
-        $admin= User::first();
-        $orders = Order::where('sendmailstatus',0)->get();
-        foreach($orders as $order){
-            $customer = Customer::where('id',$order->customer_id)->first();
-            $datas=array('email' => $customer->email,
-                'mobile_number'=>$customer->mobile_number,
-                'name' => $customer->name,
-                'order_id'=>$order->order_number,
-                'pdf_url'=>url('storage').$order->invoice_url,
-                'order'=>$order,
-                
-                );
-                
-              Mail::to($customer->email)->send(new OrderMail($datas));
-              Mail::to($admin->alert_email)->send(new AdminOrderMail($datas));  
-              Order::where('id',$order->id)->update(['sendmailstatus'=>1]);
-        // dispatch(new \App\Jobs\SendEmailJob($customer->email,$datas,$admin->alert_email));
-        
-        }
-        
+Route::get('/send-email', function () {
+  $admin = User::first();
+  $orders = Order::where('sendmailstatus', 0)->get();
+  foreach ($orders as $order) {
+    $customer = Customer::where('id', $order->customer_id)->first();
+    $datas = array(
+      'email' => $customer->email,
+      'mobile_number' => $customer->mobile_number,
+      'name' => $customer->name,
+      'order_id' => $order->order_number,
+      'pdf_url' => url('storage') . $order->invoice_url,
+      'order' => $order,
+
+    );
+
+    Mail::to($customer->email)->send(new OrderMail($datas));
+    Mail::to($admin->alert_email)->send(new AdminOrderMail($datas));
+    Order::where('id', $order->id)->update(['sendmailstatus' => 1]);
+    // dispatch(new \App\Jobs\SendEmailJob($customer->email,$datas,$admin->alert_email));
+
+  }
+
 });
 // Frontend Route List 
 
 Auth::routes(['register' => false]);
 Route::get('forget-password', [ForgotPasswordController::class, 'showForgetPasswordForm'])->name('forget.password.get');
-Route::post('forget-password', [ForgotPasswordController::class, 'submitForgetPasswordForm'])->name('forget.password.post'); 
+Route::post('forget-password', [ForgotPasswordController::class, 'submitForgetPasswordForm'])->name('forget.password.post');
 Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetPasswordForm'])->name('reset.password.get');
 Route::post('reset-password', [ForgotPasswordController::class, 'submitResetPasswordForm'])->name('reset.password.post');
 
 
-Route::get('/',[FrontController::class, 'index']);
-Route::get('/about-us', [FrontController::class, 'aboutUs'])->name('aboutUs');
+Route::get('/', [FrontController::class, 'index']);
+Route::get('/search-suggestions', [FrontController::class, 'suggestions']);
+Route::post('/subscribe', [FrontController::class, 'subscribers'])->name('subscribe');
+Route::get('/shop', [FrontController::class, 'productList'])->name('shop');
+Route::get('/about-us', [FrontController::class, 'aboutUs'])->name('about');
 Route::get('/product-details', [FrontController::class, 'productDetails'])->name('product-details');
+Route::view('/faq', 'front.faqs')->name('faq');
+Route::view('/blogs', 'front.blogs')->name('blogs');
+Route::view('/contact-us', 'front.contact-us')->name('contact');
+Route::view('/feedback', 'front.feedback')->name('feedback');
+Route::view('/wishlist', 'front.wishlist')->name('wishlist');
+Route::view('/privacy-policy', 'front.privacy-policy')->name('privacy-policy');
+Route::view('/terms-conditions', 'front.terms-conditions')->name('terms-conditions');
+Route::view('/sitemap', 'front.sitemap')->name('sitemap');
 
-Route::get('/faqs', [ContentController::class, 'getFaqs'])->name('faqs');
 Route::get('/home', [HomeController::class, 'index'])->name('home');
-Route::get('/feedback', [ContentController::class, 'getFeedback'])->name('getFeedback');
 Route::post('/postFeedback', [ContentController::class, 'postFeedback'])->name('postFeedback');
-Route::get('/blogs', [ContentController::class, 'getBlogData'])->name('getBlogData');
 Route::get('/blog/{slug}', [ContentController::class, 'getBlogDetails'])->name('getBlogDetails');
-Route::get('/contact-us', [ContentController::class, 'getContactUsForm'])->name('getContactUsForm');
 Route::post('/postContactData', [ContentController::class, 'postContactData'])->name('postContactData');
 Route::get('/refund-cancellation', [ContentController::class, 'getRefundCancellation'])->name('getRefundCancellation');
-Route::get('/privacy-policy', [ContentController::class, 'getPrivacyPolicy'])->name('getPrivacyPolicy');
 Route::get('/cookies-policy', [ContentController::class, 'getCookiePolicy'])->name('getCookiePolicy');
-Route::get('/terms-conditions', [ContentController::class, 'getTermsConditions'])->name('getTermsConditions');
 Route::get('/view-all/{id}', [HomeController::class, 'getCatgoryData'])->name('getCatgoryData');
 Route::get('/product-details/{slug}', [HomeController::class, 'productsdetails'])->name('productsdetails');
 Route::get('/best-selling', [HomeController::class, 'getBestSales'])->name('getBestSales');
 Route::get('/listing', [HomeController::class, 'listing'])->name('listing');
-Route::post('fetch-product-option-by-color',[HomeController::class,'fetchProductOptionByColor'])->name('fetch-product-option-by-color');
-Route::post('fetch-product-option-by-attribute',[HomeController::class,'fetchProductOptionByAttribute'])->name('fetch-product-option-by-attribute');
+Route::post('fetch-product-option-by-color', [HomeController::class, 'fetchProductOptionByColor'])->name('fetch-product-option-by-color');
+Route::post('fetch-product-option-by-attribute', [HomeController::class, 'fetchProductOptionByAttribute'])->name('fetch-product-option-by-attribute');
 
 // start cart and orders routes 
 
-Route::post('add-to-cart',[CartController::class,'addToCart'])->name('add-to-cart');
-Route::get('/cart-details',[CartController::class,'cart'])->name('cart');
+Route::post('add-to-cart', [CartController::class, 'addToCart'])->name('add-to-cart');
+Route::get('/cart-details', [CartController::class, 'cart'])->name('cart');
 
-Route::delete('remove-from-cart/{cart_id}',[CartController::class,'removeFromCart'])->name('remove-from-cart');
-Route::post('decrease-cart-item-quantity/{cart_id}/{quantity}',[CartController::class,'decreaseCartItemQuantity'])->name('decrease-cart-item-quantity');
-Route::post('increase-cart-item-quantity/{cart_id}/{quantity}',[CartController::class,'increaseCartItemQuantity'])->name('increase-cart-item-quantity');
-Route::get('/register',[CartController::class,'registrationForm'])->name('registrationForm');
-Route::get('/sign-in',[CartController::class,'signInForm'])->name('signInForm');
+Route::delete('remove-from-cart/{cart_id}', [CartController::class, 'removeFromCart'])->name('remove-from-cart');
+Route::post('decrease-cart-item-quantity/{cart_id}/{quantity}', [CartController::class, 'decreaseCartItemQuantity'])->name('decrease-cart-item-quantity');
+Route::post('increase-cart-item-quantity/{cart_id}/{quantity}', [CartController::class, 'increaseCartItemQuantity'])->name('increase-cart-item-quantity');
+Route::get('/register', [CartController::class, 'registrationForm'])->name('registrationForm');
+Route::get('/sign-in', [CartController::class, 'signInForm'])->name('signInForm');
 
-Route::get('/user-signin/{slug}',[CartController::class,'signInCustomer'])->name('signInCustomer');
-Route::post('user-signin',[CartController::class,'signInBuyNow'])->name('user-signin');
+Route::get('/user-signin/{slug}', [CartController::class, 'signInCustomer'])->name('signInCustomer');
+Route::post('user-signin', [CartController::class, 'signInBuyNow'])->name('user-signin');
 
-Route::post('register',[CartController::class,'register'])->name('register');
-Route::post('sign-in',[CartController::class,'signIn'])->name('sign-in');
-Route::post('log-out',[CartController::class,'logOut'])->name('log-out');
-Route::post('check-pincode-delivery',[CartController::class,'CheckPincodeDelivery'])->name('check-pincode-delivery');
+Route::post('register', [CartController::class, 'register'])->name('register');
+Route::post('sign-in', [CartController::class, 'signIn'])->name('sign-in');
+Route::post('log-out', [CartController::class, 'logOut'])->name('log-out');
+Route::post('check-pincode-delivery', [CartController::class, 'CheckPincodeDelivery'])->name('check-pincode-delivery');
 // end cart routes and order routes
 
 // Routes for customer after login 
-Route::middleware('auth:customer')->group(function(){
-    Route::post('buy-now-process',[CartController::class,'buyNowProcess'])->name('buy-now-process');
-    
-    Route::get('checkout',[CartController::class,'checkout'])->name('checkout');
-    Route::post('apply-coupon',[CartController::class,'applyCoupon'])->name('apply-coupon');
-    Route::post('customer-address',[CartController::class,'submitCustomerAddress'])->name('customer-address');
-    Route::post('customer-billing-address',[CartController::class,'submitBillingAddress'])->name('customer-billing-address');
-    Route::post('calculate-cart-total',[CartController::class,'calculateCartTotal'])->name('calculate-cart-total');
+Route::middleware('auth:customer')->group(function () {
+  Route::post('buy-now-process', [CartController::class, 'buyNowProcess'])->name('buy-now-process');
 
-    Route::delete('customer-address/{id}',[CartController::class,'deleteCustomerAddress'])->name('delete-customer-address');
-    Route::delete('customer-billing-address/{id}',[CartController::class,'deleteCustomerBillingAddress'])->name('delete-customer-billing-address');
-    Route::post('submit-order',[CartController::class,'submitOrder'])->name('submit-order');
-    Route::get('thank-you',[CartController::class,'ThankYou'])->name('thank-you');
+  Route::get('checkout', [CartController::class, 'checkout'])->name('checkout');
+  Route::post('apply-coupon', [CartController::class, 'applyCoupon'])->name('apply-coupon');
+  Route::post('customer-address', [CartController::class, 'submitCustomerAddress'])->name('customer-address');
+  Route::post('customer-billing-address', [CartController::class, 'submitBillingAddress'])->name('customer-billing-address');
+  Route::post('calculate-cart-total', [CartController::class, 'calculateCartTotal'])->name('calculate-cart-total');
 
-    Route::get('dashboard',[CartController::class,'dashboard'])->name('dashboard');
-    Route::get('my-orders',[CartController::class,'myOrders'])->name('my-orders');
-    Route::get('order-details/{order_id}',[CartController::class,'orderDetails'])->name('orderDetails');
-    Route::get('invoice/{order_number}',[CartController::class,'invoice'])->name('invoice');
-    Route::get('track-order',[CartController::class,'trackOrder'])->name('track-order');
-    Route::get('order-reviews',[CartController::class,'orderReviews'])->name('order-reviews');
-    Route::get('change-password',[CartController::class,'changePassword'])->name('change-password');
-    Route::post('change-password',[CartController::class,'updatePassword'])->name('update-password');
-    Route::post('order-review/{order_id}/{order_detail_id}',[CartController::class,'submitOrderReview'])->name('order-review');
+  Route::delete('customer-address/{id}', [CartController::class, 'deleteCustomerAddress'])->name('delete-customer-address');
+  Route::delete('customer-billing-address/{id}', [CartController::class, 'deleteCustomerBillingAddress'])->name('delete-customer-billing-address');
+  Route::post('submit-order', [CartController::class, 'submitOrder'])->name('submit-order');
+  Route::get('thank-you', [CartController::class, 'ThankYou'])->name('thank-you');
 
-    Route::get('my-activities',[CartController::class,'myActivities'])->name('my-activities');
-    Route::get('my-enquiries',[CartController::class,'myEnquiries'])->name('my-enquiries');
-    Route::get('my-wishlist',[CartController::class,'myWishlist'])->name('my-wishlist');
+  Route::get('dashboard', [CartController::class, 'dashboard'])->name('dashboard');
+  Route::get('my-orders', [CartController::class, 'myOrders'])->name('my-orders');
+  Route::get('order-details/{order_id}', [CartController::class, 'orderDetails'])->name('orderDetails');
+  Route::get('invoice/{order_number}', [CartController::class, 'invoice'])->name('invoice');
+  Route::get('track-order', [CartController::class, 'trackOrder'])->name('track-order');
+  Route::get('order-reviews', [CartController::class, 'orderReviews'])->name('order-reviews');
+  Route::get('change-password', [CartController::class, 'changePassword'])->name('change-password');
+  Route::post('change-password', [CartController::class, 'updatePassword'])->name('update-password');
+  Route::post('order-review/{order_id}/{order_detail_id}', [CartController::class, 'submitOrderReview'])->name('order-review');
 
-    Route::post('update-wishlist/{id}',[CartController::class,'updateWishlist'])->name('update-wishlist');
-    Route::get('my-address-book',[CartController::class,'myAddressBook'])->name('my-address-book');
+  Route::get('my-activities', [CartController::class, 'myActivities'])->name('my-activities');
+  Route::get('my-enquiries', [CartController::class, 'myEnquiries'])->name('my-enquiries');
+  Route::get('my-wishlist', [CartController::class, 'myWishlist'])->name('my-wishlist');
 
-    Route::get('customer-address/{id}',[CartController::class,'editCustomerAddress'])->name('customer-address');
-    Route::post('customer-address/{id}',[CartController::class,'updateCustomerAddress'])->name('customer-address');
-    Route::get('my-account',[CartController::class,'myAccount'])->name('my-account');
-    Route::post('my-account',[CartController::class,'updateMyAccount'])->name('my-account');
-    Route::get('invite-friends',[CartController::class,'inviteFriends'])->name('invite-friends');
+  Route::post('update-wishlist/{id}', [CartController::class, 'updateWishlist'])->name('update-wishlist');
+  Route::get('my-address-book', [CartController::class, 'myAddressBook'])->name('my-address-book');
 
-    //  Route::get('razorpay', [PaymentController::class, 'create'])->name('pay.with.razorpay'); // create payment
+  Route::get('customer-address/{id}', [CartController::class, 'editCustomerAddress'])->name('customer-address');
+  Route::post('customer-address/{id}', [CartController::class, 'updateCustomerAddress'])->name('customer-address');
+  Route::get('my-account', [CartController::class, 'myAccount'])->name('my-account');
+  Route::post('my-account', [CartController::class, 'updateMyAccount'])->name('my-account');
+  Route::get('invite-friends', [CartController::class, 'inviteFriends'])->name('invite-friends');
 
-    Route::post('/proceed-to-pay', [PaymentController::class, 'ProceedToPay'])->name('proceed-to-pay');
+  //  Route::get('razorpay', [PaymentController::class, 'create'])->name('pay.with.razorpay'); // create payment
 
-    Route::post('/place-order', [PaymentController::class, 'PlaceOrder'])->name('place-order');
+  Route::post('/proceed-to-pay', [PaymentController::class, 'ProceedToPay'])->name('proceed-to-pay');
+
+  Route::post('/place-order', [PaymentController::class, 'PlaceOrder'])->name('place-order');
 });
 // end routes for customer 
 
@@ -194,189 +201,191 @@ Route::middleware('auth:customer')->group(function(){
 // Admin Routes list
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::middleware(['auth', 'isAdmin'])->group(function () {
-        Route::get('/dashboard',[DashboardController::class,'index'])->name('dashboard');
+  Route::middleware(['auth', 'isAdmin'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        Route::resource('/manage-category',CategoryController::class);
-        Route::post('/manage-category/change-status/{id}',[CategoryController::class,'changestatus']);
-        Route::get('/manage-category/show-category/{id}',[CategoryController::class,'showcategory']);
+    Route::resource('/manage-category', CategoryController::class);
+    Route::post('/manage-category/change-status/{id}', [CategoryController::class, 'changestatus']);
+    Route::get('/manage-category/show-category/{id}', [CategoryController::class, 'showcategory']);
 
-        Route::resource('/manage-team',TeamController::class);
-        Route::resource('/manage-garage',GarageController::class);
-        Route::resource('/manage-brand',BrandController::class);
-        Route::post('/manage-brand/change-status/{id}',[BrandController::class,'changestatus']);
-        Route::resource('/manage-brand-models',BrandModelController::class);
-        Route::post('/manage-brand-models/change-status/{id}',[BrandModelController::class,'changestatus']);
-        Route::resource('/manage-cylinder',CylinderController::class);
-        Route::post('/manage-cylinder/change-status/{id}',[CylinderController::class,'changestatus']);
-        Route::resource('/manage-oil-grade',OilGradeController::class);
-        Route::post('/manage-oil-grade/change-status/{id}',[OilGradeController::class,'changestatus']);
-        Route::resource('/manage-attribute',AttributeController::class);
-        Route::resource('/manage-color',ColorController::class);
-        Route::resource('/manage-order',OrderController::class);
-        Route::get('manage-order/show/{id}',[OrderController::class,'show']);
-        Route::get('manage-order/rating/{id}',[OrderController::class,'getrating']);
-        Route::resource('/manage-career',CareerController::class);
-        Route::resource('/manage-carorigin',CarOriginContrroller::class);
-        Route::post('/manage-carorigin/change-status/{id}',[CarOriginContrroller::class,'changestatus']);
+    Route::resource('/manage-team', TeamController::class);
+    Route::resource('/manage-garage', GarageController::class);
+    Route::resource('/manage-brand', BrandController::class);
+    Route::post('/manage-brand/change-status/{id}', [BrandController::class, 'changestatus']);
+    Route::resource('/manage-brand-models', BrandModelController::class);
+    Route::post('/manage-brand-models/change-status/{id}', [BrandModelController::class, 'changestatus']);
+    Route::resource('/manage-cylinder', CylinderController::class);
+    Route::post('/manage-cylinder/change-status/{id}', [CylinderController::class, 'changestatus']);
+    Route::resource('/manage-oil-grade', OilGradeController::class);
+    Route::post('/manage-oil-grade/change-status/{id}', [OilGradeController::class, 'changestatus']);
+    Route::resource('/manage-attribute', AttributeController::class);
+    Route::resource('/manage-color', ColorController::class);
+    Route::resource('/manage-order', OrderController::class);
+    Route::get('manage-order/show/{id}', [OrderController::class, 'show']);
+    Route::get('manage-order/rating/{id}', [OrderController::class, 'getrating']);
+    Route::resource('/manage-career', CareerController::class);
+    Route::resource('/manage-carorigin', CarOriginContrroller::class);
+    Route::post('/manage-carorigin/change-status/{id}', [CarOriginContrroller::class, 'changestatus']);
 
-        Route::post('/update-order-status',[OrderController::class,'updateOrderStatus'])->name('update-order-status');
-        Route::post('/update-transit-order-status',[OrderController::class,'updatetransitorderstatus'])->name('update-transit-order-status');
-        Route::post('/update-cancel-order-status',[OrderController::class,'updatecancelorderstatus'])->name('update-cancel-order-status');
-        Route::post('/refund',[OrderController::class,'refund'])->name('refund');
-        Route::get('/manage-shipping',[OrderController::class,'viewShippingDetails'])->name('manage-shipping');
-        Route::post('/manage-shipping/change-status/{id}',[OrderController::class,'changestatus']);
-        Route::post('/approvepayment/{id}',[OrderController::class,'approvepayment']);
-        Route::get('/add-new-shipping',[OrderController::class,'addNewShipping'])->name('add-new-shipping');
-        Route::post('/add-shipping',[OrderController::class,'addShipping'])->name('add-shipping');
-        Route::get('/edit-shipping/{id}',[OrderController::class,'EditShippingDetails'])->name('edit-shipping');
-        Route::get('/edit-free-shipping/{id}',[OrderController::class,'EditFreeShippingDetails'])->name('edit-free-shipping');
-        Route::post('/update-shipping/{id}',[OrderController::class,'updateShipping'])->name('update-shipping');
-        Route::post('/update-free-shipping/{id}',[OrderController::class,'updateFreeShipping'])->name('update-free-shipping');
-        Route::delete('/delete-shipping/{id}',[OrderController::class,'DeleteShipping'])->name('delete-shipping');
-        Route::get('/manage-shipping/showshipping/{id}',[OrderController::class,'showshipping'])->name('delete-shipping');
-        Route::get('/online-cancellation-refund',[OrderController::class,'onlinecancellationrefund'])->name('online-cancellation-refund');
-        Route::get('/order-customer-request/{id}',[OrderController::class,'ordercustomerrequest'])->name('ordercustomerrequest');
-        Route::post('/order-customer-request-message',[OrderController::class,'ordercustomerrequestmessage'])->name('ordercustomerrequestmessage');
-        Route::get('/view-all-transactions',[OrderController::class,'viewalltransaction'])->name('viewalltransaction');
-        Route::get('invoice/{order_number}',[OrderController::class,'invoice'])->name('invoice');
-        Route::get('manage-customer-review',[OrderController::class,'managecustomerreview'])->name('manage-customer-review');
-        // Route::get('manage-reasons-category',[OrderController::class,'managereasonscategory'])->name('manage-reasons-category');
-        Route::resource('manage-reasons-category',ReasonController::class);
-        Route::post('/manage-reasons-category/change-status/{id}',[ReasonController::class,'changestatus']);
-        Route::get('manage-ticket',[OrderController::class,'manageticket'])->name('manage-ticket');
-        Route::resource('/manage-product',ProductController::class);
-        Route::post('/manage-product/change-status/{id}',[ProductController::class,'changestatus']);
+    Route::post('/update-order-status', [OrderController::class, 'updateOrderStatus'])->name('update-order-status');
+    Route::post('/update-transit-order-status', [OrderController::class, 'updatetransitorderstatus'])->name('update-transit-order-status');
+    Route::post('/update-cancel-order-status', [OrderController::class, 'updatecancelorderstatus'])->name('update-cancel-order-status');
+    Route::post('/refund', [OrderController::class, 'refund'])->name('refund');
+    Route::get('/manage-shipping', [OrderController::class, 'viewShippingDetails'])->name('manage-shipping');
+    Route::post('/manage-shipping/change-status/{id}', [OrderController::class, 'changestatus']);
+    Route::post('/approvepayment/{id}', [OrderController::class, 'approvepayment']);
+    Route::get('/add-new-shipping', [OrderController::class, 'addNewShipping'])->name('add-new-shipping');
+    Route::post('/add-shipping', [OrderController::class, 'addShipping'])->name('add-shipping');
+    Route::get('/edit-shipping/{id}', [OrderController::class, 'EditShippingDetails'])->name('edit-shipping');
+    Route::get('/edit-free-shipping/{id}', [OrderController::class, 'EditFreeShippingDetails'])->name('edit-free-shipping');
+    Route::post('/update-shipping/{id}', [OrderController::class, 'updateShipping'])->name('update-shipping');
+    Route::post('/update-free-shipping/{id}', [OrderController::class, 'updateFreeShipping'])->name('update-free-shipping');
+    Route::delete('/delete-shipping/{id}', [OrderController::class, 'DeleteShipping'])->name('delete-shipping');
+    Route::get('/manage-shipping/showshipping/{id}', [OrderController::class, 'showshipping'])->name('delete-shipping');
+    Route::get('/online-cancellation-refund', [OrderController::class, 'onlinecancellationrefund'])->name('online-cancellation-refund');
+    Route::get('/order-customer-request/{id}', [OrderController::class, 'ordercustomerrequest'])->name('ordercustomerrequest');
+    Route::post('/order-customer-request-message', [OrderController::class, 'ordercustomerrequestmessage'])->name('ordercustomerrequestmessage');
+    Route::get('/view-all-transactions', [OrderController::class, 'viewalltransaction'])->name('viewalltransaction');
+    Route::get('invoice/{order_number}', [OrderController::class, 'invoice'])->name('invoice');
+    Route::get('manage-customer-review', [OrderController::class, 'managecustomerreview'])->name('manage-customer-review');
+    // Route::get('manage-reasons-category',[OrderController::class,'managereasonscategory'])->name('manage-reasons-category');
+    Route::resource('manage-reasons-category', ReasonController::class);
+    Route::post('/manage-reasons-category/change-status/{id}', [ReasonController::class, 'changestatus']);
+    Route::get('manage-ticket', [OrderController::class, 'manageticket'])->name('manage-ticket');
+    Route::resource('/manage-product', ProductController::class);
+    Route::post('/product/toggleDeal', [ProductController::class, 'toggleDeal'])->name('product.toggleDeal');
+    Route::post('/manage-product/change-status/{id}', [ProductController::class, 'changestatus']);
 
-        Route::post('/getbrandmodel',[ProductController::class,'getbrandmodel'])->name('getbrandmodel');
-        Route::post('/carmodel',[ProductController::class,'carmodel'])->name('carmodel');
-        Route::get('/deletegallery',[ProductController::class,'deletegallery'])->name('gallery.delete');
-        
-        Route::post('/generate-product-row-by-attributes',[ProductController::class,'generateProductRowByAttributes'])->name('generate-product-row-by-attributes');
-        Route::get('/product-option-image/{id}',[ProductController::class,'productOptionImage'])->name('product-option-image');
-        Route::post('/product-option-image/{id}',[ProductController::class,'uploadOptionImage'])->name('product-option-image');
-        Route::delete('/product-option-image/{id}',[ProductController::class,'deleteOptionImage'])->name('product-option-image');
-        Route::get('/delete-variant-image',[ProductController::class,'deletevariantImage'])->name('delete-variant-image');
-        Route::get('/product-option-gallery-image/{id}',[ProductController::class,'allGalleryImage'])->name('product-option-gallery-image');
+    Route::post('/getbrandmodel', [ProductController::class, 'getbrandmodel'])->name('getbrandmodel');
+    Route::post('/carmodel', [ProductController::class, 'carmodel'])->name('carmodel');
+    Route::get('/deletegallery', [ProductController::class, 'deletegallery'])->name('gallery.delete');
 
-        Route::delete('/product-variant-option/{id}',[ProductController::class,'deleteVariantOptions'])->name('deleteVariantOptions');
-        Route::post('/fetch-subcategory-by-category',[ProductController::class,'fetchsubcategorybycategory'])->name('fetchsubcategorybycategory');
+    Route::post('/generate-product-row-by-attributes', [ProductController::class, 'generateProductRowByAttributes'])->name('generate-product-row-by-attributes');
+    Route::get('/product-option-image/{id}', [ProductController::class, 'productOptionImage'])->name('product-option-image');
+    Route::post('/product-option-image/{id}', [ProductController::class, 'uploadOptionImage'])->name('product-option-image');
+    Route::delete('/product-option-image/{id}', [ProductController::class, 'deleteOptionImage'])->name('product-option-image');
+    Route::get('/delete-variant-image', [ProductController::class, 'deletevariantImage'])->name('delete-variant-image');
+    Route::get('/product-option-gallery-image/{id}', [ProductController::class, 'allGalleryImage'])->name('product-option-gallery-image');
 
-        Route::resource('/manage-about-us',AboutUsController::class);
-         Route::resource('/manage-promotion',PromotionController::class);
+    Route::delete('/product-variant-option/{id}', [ProductController::class, 'deleteVariantOptions'])->name('deleteVariantOptions');
+    Route::post('/fetch-subcategory-by-category', [ProductController::class, 'fetchsubcategorybycategory'])->name('fetchsubcategorybycategory');
 
-        Route::resource('/manage-slider',SliderController::class);
-        Route::resource('/manage-feedback',FeedbackController::class);
-        Route::post('/manage-feedback/change-status/{id}',[FeedbackController::class,'changestatus']);
-        Route::resource('/manage-contact-us',ContactUsController::class);
-        Route::get('manage-email-subscriber',[ContactUsController::class,'emailsubscriber'])->name('email-subscriber');
-        Route::delete('manage-email-subscriber/{id}',[ContactUsController::class,'deleteemailsubscriber'])->name('delete.email-subscriber');
-        Route::resource('/manage-blog',BlogController::class);
-        Route::resource('/manage-faq-category',FaqCategoryController::class);
-        Route::resource('/manage-faq',FaqController::class);
-        Route::get('/manage-policy/{name}',[PolicyController::class,'index'])->name('manage-policy');
-        Route::post('/manage-policy/{name}',[PolicyController::class,'store']);
-        Route::resource('manage-pages',PageController::class);
-        Route::get('/manage-account',[GeneralSettingController::class,'accountSetting'])->name('accountSetting');
-         Route::post('update-password',[GeneralSettingController::class,'updatePasswordnew'])->name('update-password-new');
-         Route::post('saverazorpay',[GeneralSettingController::class,'saverazorpay'])->name('saverazorpay');
-         Route::post('updatebank',[GeneralSettingController::class,'updatebank'])->name('updatebank');
-         Route::post('logout',[GeneralSettingController::class,'logout'])->name('logout');
-        Route::post('update-admin-profile', [GeneralSettingController::class, 'updateadminprofile'])->name('updateadminprofile');
-        Route::post('update-email-setting', [GeneralSettingController::class, 'updateemailsetting'])->name('updateemailsetting');
- 
-        Route::get('/manage-customer',[CustomerController::class,'index'])->name('manageCustomer');
-        Route::post('/manage-customer-changepassword/{id}',[CustomerController::class,'changepassword'])->name('manageCustomer.changepassword');
-        
-         Route::resource('manage-companyaddress',CompanyAddressController::class);
-        Route::post('/manage-companyaddress/change-status/{id}',[CompanyAddressController::class,'changestatus'])->name('changestatus');
-        
-        Route::get('/manage-customers/{id}',[CustomerController::class,'viewcustomer'])->name('viewcustomer');
-        Route::get('/customer-orders/{id}',[CustomerController::class,'cutomerOrders'])->name('cutomerOrders');
-        Route::post('/update-customer/{id}',[CustomerController::class,'updateCustomer'])->name('updateCustomer');
-        Route::delete('/manage-customers/{id}',[CustomerController::class,'destroy'])->name('destroycustomer');
-        Route::post('fetch-states', [CustomerController::class, 'fetchState']);
-        Route::post('fetch-cities', [CustomerController::class, 'fetchCity']);
-        Route::get('edit-customer-billing/{id}', [CustomerController::class, 'editcustomerbilling']);
-        Route::post('update-customer-billing', [CustomerController::class, 'updatecustomerbilling'])->name('updatecustomerbilling');
-        Route::post('update-customer-shipping', [CustomerController::class, 'updatecustomershipping'])->name('updatecustomershipping');
-        Route::post('update-customer-profile', [CustomerController::class, 'updatecustomerprofile'])->name('updatecustomerprofile');
-        Route::get('edit-customer-shipping/{id}', [CustomerController::class, 'editcustomershipping']);
+    Route::resource('/manage-about-us', AboutUsController::class);
+    Route::resource('/manage-promotion', PromotionController::class);
 
-        // Route for General settings 
-        Route::resource('/manage-general-setting',GeneralSettingController::class);
+    Route::resource('/manage-slider', SliderController::class);
+    Route::resource('/manage-feedback', FeedbackController::class);
+    Route::post('/manage-feedback/change-status/{id}', [FeedbackController::class, 'changestatus']);
+    Route::resource('/manage-contact-us', ContactUsController::class);
+    Route::get('manage-email-subscriber', [ContactUsController::class, 'emailsubscriber'])->name('email-subscriber');
+    Route::delete('manage-email-subscriber/{id}', [ContactUsController::class, 'deleteemailsubscriber'])->name('delete.email-subscriber');
+    Route::resource('/manage-blog', BlogController::class);
+    Route::resource('/manage-faq-category', FaqCategoryController::class);
+    Route::resource('/manage-faq', FaqController::class);
+    Route::get('/manage-policy/{name}', [PolicyController::class, 'index'])->name('manage-policy');
+    Route::post('/manage-policy/{name}', [PolicyController::class, 'store']);
+    Route::resource('manage-pages', PageController::class);
+    Route::get('/manage-account', [GeneralSettingController::class, 'accountSetting'])->name('accountSetting');
+    Route::post('update-password', [GeneralSettingController::class, 'updatePasswordnew'])->name('update-password-new');
+    Route::post('saverazorpay', [GeneralSettingController::class, 'saverazorpay'])->name('saverazorpay');
+    Route::post('updatebank', [GeneralSettingController::class, 'updatebank'])->name('updatebank');
+    Route::post('logout', [GeneralSettingController::class, 'logout'])->name('logout');
+    Route::post('update-admin-profile', [GeneralSettingController::class, 'updateadminprofile'])->name('updateadminprofile');
+    Route::post('update-email-setting', [GeneralSettingController::class, 'updateemailsetting'])->name('updateemailsetting');
 
-        Route::post('/general-sttings-header',[GeneralSettingController::class, 'saveHeaderSetting'])->name('saveHeaderSetting');
+    Route::get('/manage-customer', [CustomerController::class, 'index'])->name('manageCustomer');
+    Route::post('/manage-customer-changepassword/{id}', [CustomerController::class, 'changepassword'])->name('manageCustomer.changepassword');
 
-        Route::post('/general-sttings-footer',[GeneralSettingController::class, 'saveFooterSetting'])->name('saveFooterSetting');
-        Route::post('/general-sttings-sociallinks',[GeneralSettingController::class, 'saveSocialLinks'])->name('saveSocialLinks');
-        Route::post('/general-sttings-save-gst',[GeneralSettingController::class, 'saveGSTDetails'])->name('saveGSTDetails');
-        Route::post('/general-sttings-save-cod',[GeneralSettingController::class, 'saveCODDetails'])->name('saveCODDetails');
-        Route::post('/general-sttings-save-lang',[GeneralSettingController::class, 'saveLangDetails'])->name('saveLangDetails');
-        
-        // end general setting routes
+    Route::resource('manage-companyaddress', CompanyAddressController::class);
+    Route::post('/manage-companyaddress/change-status/{id}', [CompanyAddressController::class, 'changestatus'])->name('changestatus');
 
-        Route::resource('/manage-homepage-setting',HomepageSettingController::class);
-        Route::resource('/manage-pincode',PincodeController::class);
-        Route::resource('/manage-coupon',CouponController::class);
+    Route::get('/manage-customers/{id}', [CustomerController::class, 'viewcustomer'])->name('viewcustomer');
+    Route::get('/customer-orders/{id}', [CustomerController::class, 'cutomerOrders'])->name('cutomerOrders');
+    Route::post('/update-customer/{id}', [CustomerController::class, 'updateCustomer'])->name('updateCustomer');
+    Route::delete('/manage-customers/{id}', [CustomerController::class, 'destroy'])->name('destroycustomer');
+    Route::post('fetch-states', [CustomerController::class, 'fetchState']);
+    Route::post('fetch-cities', [CustomerController::class, 'fetchCity']);
+    Route::get('edit-customer-billing/{id}', [CustomerController::class, 'editcustomerbilling']);
+    Route::post('update-customer-billing', [CustomerController::class, 'updatecustomerbilling'])->name('updatecustomerbilling');
+    Route::post('update-customer-shipping', [CustomerController::class, 'updatecustomershipping'])->name('updatecustomershipping');
+    Route::post('update-customer-profile', [CustomerController::class, 'updatecustomerprofile'])->name('updatecustomerprofile');
+    Route::get('edit-customer-shipping/{id}', [CustomerController::class, 'editcustomershipping']);
 
-        Route::post('/fetch-childs-by-attributes',[CommonController::class,'fetchChildsByAttributes'])->name('fetch-childs-by-attributes');
-        Route::post('/image-upload',[CommonController::class,'imageUpload'])->name('image-upload');
-        
-        // ankit
-        Route::resource('/manage-service-category', ServiceCategoryController::class);
-        Route::post('/manage-service-category/change-status/{id}',[ServiceCategoryController::class,'changestatus']);
-        Route::get('manage-service-category/show/{id}',[ServiceCategoryController::class,'showservice']);
+    // Route for General settings 
+    Route::resource('/manage-general-setting', GeneralSettingController::class);
 
-        Route::resource('/manage-services', ServicesController::class);
-        Route::post('/manage-services/change-status/{id}',[ServicesController::class,'changestatus']);
-        Route::get('manage-services/show/{id}',[ServicesController::class,'showservices'])->name('services.show');
+    Route::post('/general-sttings-header', [GeneralSettingController::class, 'saveHeaderSetting'])->name('saveHeaderSetting');
 
-        Route::resource('/manage-packages', PackagesController::class);
-        Route::post('/manage-packages/change-status/{id}',[PackagesController::class,'changestatus']);
-        
-        Route::get('manage-packages/show/{id}',[PackagesController::class,'showpackage'])->name('manage-packages.showpack');
+    Route::post('/general-sttings-footer', [GeneralSettingController::class, 'saveFooterSetting'])->name('saveFooterSetting');
+    Route::post('/general-sttings-sociallinks', [GeneralSettingController::class, 'saveSocialLinks'])->name('saveSocialLinks');
+    Route::post('/general-sttings-save-gst', [GeneralSettingController::class, 'saveGSTDetails'])->name('saveGSTDetails');
+    Route::post('/general-sttings-save-cod', [GeneralSettingController::class, 'saveCODDetails'])->name('saveCODDetails');
+    Route::post('/general-sttings-save-lang', [GeneralSettingController::class, 'saveLangDetails'])->name('saveLangDetails');
 
-        Route::resource('/manage-service-bookings', ServiceBookingController::class);
-        Route::get('/customer-service-bookings/{id}', [ServiceBookingController::class,'customerservice'])->name('customer.service');
-        Route::resource('/manage-service-fleets', FleetServiceController::class);
-        Route::get('getServices/{id}', [PackagesController::class, 'GetServicesByCategory'])->name('services-by-categories');
-        Route::get('appointment-booking', [BookAppointMentController::class, 'index'])->name('appointmentbooking');
-        
-        
-        
-        Route::get('loyality-program',function(){
-          return view('admin.loyality-program.loyality-program');  
-        });
-       
-        Route::get('service-cancellation-refund',function(){
-          return view('admin.service-cancellation-refund.service-cancellation-refund');  
-        });
-      
-         Route::get('manage-garages',function(){
-          return view('admin.manage-garage.manage-garage');  
-        });
-         Route::get('manage-franchise-inquiry',function(){
-          return view('admin.manage-franchise-inquiry.manage-franchise-inquiry');  
-        });
-         
-         Route::get('manage-reasons',function(){
-          return view('admin.manage-reasons-category.manage-reasons');  
-        });
-          
-       
-        
-         Route::get('add-garage',function(){
-          return view('admin.add-garage.index');  
-        });
-         Route::get('view-garage-detail',function(){
-          return view('admin.add-garage.view-garage-detail');  
-        });
-        
-        
-        //
-        
+    // end general setting routes
+
+    Route::resource('/manage-homepage-setting', HomepageSettingController::class);
+    Route::resource('home-features', HomeFeatureController::class)->names('home-features');
+    Route::resource('/manage-pincode', PincodeController::class);
+    Route::resource('/manage-coupon', CouponController::class);
+
+    Route::post('/fetch-childs-by-attributes', [CommonController::class, 'fetchChildsByAttributes'])->name('fetch-childs-by-attributes');
+    Route::post('/image-upload', [CommonController::class, 'imageUpload'])->name('image-upload');
+
+    // ankit
+    Route::resource('/manage-service-category', ServiceCategoryController::class);
+    Route::post('/manage-service-category/change-status/{id}', [ServiceCategoryController::class, 'changestatus']);
+    Route::get('manage-service-category/show/{id}', [ServiceCategoryController::class, 'showservice']);
+
+    Route::resource('/manage-services', ServicesController::class);
+    Route::post('/manage-services/change-status/{id}', [ServicesController::class, 'changestatus']);
+    Route::get('manage-services/show/{id}', [ServicesController::class, 'showservices'])->name('services.show');
+
+    Route::resource('/manage-packages', PackagesController::class);
+    Route::post('/manage-packages/change-status/{id}', [PackagesController::class, 'changestatus']);
+
+    Route::get('manage-packages/show/{id}', [PackagesController::class, 'showpackage'])->name('manage-packages.showpack');
+
+    Route::resource('/manage-service-bookings', ServiceBookingController::class);
+    Route::get('/customer-service-bookings/{id}', [ServiceBookingController::class, 'customerservice'])->name('customer.service');
+    Route::resource('/manage-service-fleets', FleetServiceController::class);
+    Route::get('getServices/{id}', [PackagesController::class, 'GetServicesByCategory'])->name('services-by-categories');
+    Route::get('appointment-booking', [BookAppointMentController::class, 'index'])->name('appointmentbooking');
+
+
+
+    Route::get('loyality-program', function () {
+      return view('admin.loyality-program.loyality-program');
     });
+
+    Route::get('service-cancellation-refund', function () {
+      return view('admin.service-cancellation-refund.service-cancellation-refund');
+    });
+
+    Route::get('manage-garages', function () {
+      return view('admin.manage-garage.manage-garage');
+    });
+    Route::get('manage-franchise-inquiry', function () {
+      return view('admin.manage-franchise-inquiry.manage-franchise-inquiry');
+    });
+
+    Route::get('manage-reasons', function () {
+      return view('admin.manage-reasons-category.manage-reasons');
+    });
+
+
+
+    Route::get('add-garage', function () {
+      return view('admin.add-garage.index');
+    });
+    Route::get('view-garage-detail', function () {
+      return view('admin.add-garage.view-garage-detail');
+    });
+
+
+    //
+
+  });
 });
 
 Route::get('cities-by-state/{state_id}', [CommonController::class, 'citiesByState'])->name('cities-by-state');

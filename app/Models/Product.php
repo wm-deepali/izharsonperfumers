@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Zoha\Metable;
+use Carbon\Carbon;
+
 class Product extends Model
 {
     use HasFactory, Metable;
@@ -23,16 +25,19 @@ class Product extends Model
         'additional_information',
         'youtube_code',
         'alert_quantity',
+
         'is_featured',
         'is_premium',
         'is_top',
         'new_arrivals',
         'is_hotDeals',
         'is_popular',
+
         'has_cash_on_delivery',
         'min_discount_percentage',
         'max_discount_percentage',
         'allow_rating',
+
         'variant_options',
         'stock',
         'min_mrp',
@@ -47,20 +52,29 @@ class Product extends Model
         'cancellation_allowed',
         'express_sheeping',
         'terms_condition',
+
         'product_code',
         'fragrance',
+
+        // ✅ DEAL FIELDS
+        'is_deal',
+        'deal_start',
+        'deal_end',
     ];
 
-    // public function brand()
-    // {
-    //     return $this->hasOne(Brand::class,'id','brand_id');
-    // }
+    protected $casts = [
+        'is_deal' => 'boolean',
+        'deal_start' => 'datetime',
+        'deal_end' => 'datetime',
+    ];
 
+    /* ================= RELATIONSHIPS ================= */
 
     public function categories()
     {
         return $this->hasOne(Category::class, 'id', 'category_id');
     }
+
     public function subcategories()
     {
         return $this->hasOne(Category::class, 'id', 'subcategory_id');
@@ -70,29 +84,90 @@ class Product extends Model
     {
         return $this->hasMany(ProductOption::class)->with('packaging');
     }
+
     public function product_review()
     {
-        // return $this->hasOneThrough(OrderProductReview::class, Customer::class);
         return $this->hasMany(OrderProductReview::class);
     }
-
 
     public function product_option_images()
     {
         return $this->hasMany(ProductOptionImage::class);
     }
+
     public function product_categories()
     {
         return $this->hasOne(ProductCategory::class);
     }
 
+    /* ================= ATTRIBUTES ================= */
+
     public function getAvgRatingAttribute()
     {
         return round($this->product_review()->avg('rating'), 1);
     }
+
     public function getReviewCountAttribute()
     {
         return $this->product_review()->count();
     }
 
+    /**
+     * Check if deal is currently active
+     */
+    public function getIsDealActiveAttribute()
+    {
+        if (!$this->is_deal) {
+            return false;
+        }
+
+        if ($this->deal_start && Carbon::now()->lt($this->deal_start)) {
+            return false;
+        }
+
+        if ($this->deal_end && Carbon::now()->gt($this->deal_end)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get remaining deal time in seconds
+     */
+    public function getDealTimeLeftAttribute()
+    {
+        if (!$this->is_deal_active || !$this->deal_end) {
+            return null;
+        }
+
+        return Carbon::now()->diffInSeconds($this->deal_end, false);
+    }
+
+    /**
+     * Human readable remaining time
+     */
+    public function getDealTimeLeftHumanAttribute()
+    {
+        if (!$this->is_deal_active || !$this->deal_end) {
+            return null;
+        }
+
+        return Carbon::now()->diffForHumans($this->deal_end, true) . ' left';
+    }
+
+    /* ================= SCOPES ================= */
+
+    public function scopeActiveDeals($query)
+    {
+        return $query->where('is_deal', true)
+            ->where(function ($q) {
+                $q->whereNull('deal_start')
+                    ->orWhere('deal_start', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('deal_end')
+                    ->orWhere('deal_end', '>', now());
+            });
+    }
 }

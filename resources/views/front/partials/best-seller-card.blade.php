@@ -52,7 +52,6 @@
                 </div>
             </div>
             {{-- PRICE --}}
-
             <div class="si_footer">
                 <div class="price">
                     ₹{{ $product->product_options[0]->price ?? $product->min_price }}
