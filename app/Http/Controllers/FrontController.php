@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\HomepageSetting;
+use App\Models\OilGrade;
 use App\Models\OrderDetail;
+use App\Models\Packages;
 use App\Models\Product;
 use App\Models\Slider;
 use App\Models\Subscriber;
@@ -150,7 +153,7 @@ class FrontController extends Controller
         $dealProducts = Product::activeDeals()
             ->with('product_options')
             ->where('status', 'active')
-             ->latest()
+            ->latest()
             ->take(12)
             ->get();
 
@@ -190,24 +193,243 @@ class FrontController extends Controller
         return response()->json($products);
     }
 
-    public function productList(Request $request)
+
+    public function productList(Request $request, $categorySlug = null, $subSlug = null)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Parent Categories (Top Menu)
+        |--------------------------------------------------------------------------
+        */
         $categories = Category::whereNull('parent_id')
-            ->with([
-                'active_all_childs.productssn' => function ($query) use ($request) {
-
-                    if ($request->q) {
-                        $query->where('name', 'LIKE', '%' . $request->q . '%');
-                    }
-
-                }
-            ])
             ->where('status', 'active')
             ->get();
 
-        return view('front.shop', compact('categories'));
-    }
+        /*
+        |--------------------------------------------------------------------------
+        | Detect Category & Subcategory
+        |--------------------------------------------------------------------------
+        */
+        $currentCategory = null;
+        $currentSubcategory = null;
 
+        if ($categorySlug) {
+            $currentCategory = Category::where('slug', $categorySlug)->first();
+        }
+
+        if ($subSlug && $currentCategory) {
+            $currentSubcategory = Category::where('slug', $subSlug)
+                ->where('parent_id', $currentCategory->id)
+                ->first();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Base Product Query
+        |--------------------------------------------------------------------------
+        */
+        $products = Product::where('status', 'active')
+            ->with('product_options');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Category Filtering
+        |--------------------------------------------------------------------------
+        */
+        if ($currentSubcategory) {
+
+            $products->where('subcategory_id', $currentSubcategory->id);
+
+        } elseif ($currentCategory) {
+
+            $childIds = $currentCategory->active_direct_childs()->pluck('id');
+
+            $products->where(function ($q) use ($currentCategory, $childIds) {
+                $q->where('category_id', $currentCategory->id)
+                    ->orWhereIn('subcategory_id', $childIds);
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 🔎 SEARCH
+        |--------------------------------------------------------------------------
+        */
+        if ($request->q) {
+            $products->where('name', 'LIKE', '%' . $request->q . '%');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 💰 PRICE FILTER
+        |--------------------------------------------------------------------------
+        */
+        if ($request->price) {
+            $products->where(function ($q) use ($request) {
+                foreach ($request->price as $range) {
+
+                    if ($range == '0-500') {
+                        $q->orWhereBetween('min_price', [0, 500]);
+                    }
+
+                    if ($range == '500-1000') {
+                        $q->orWhereBetween('min_price', [500, 1000]);
+                    }
+
+                    if ($range == '1000-3000') {
+                        $q->orWhereBetween('min_price', [1000, 3000]);
+                    }
+
+                    if ($range == '3000+') {
+                        $q->orWhere('min_price', '>', 3000);
+                    }
+                }
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 🏷 BRAND FILTER
+        |--------------------------------------------------------------------------
+        */
+        // if ($request->brand) {
+        //     $products->whereHas('product_options', function ($q) use ($request) {
+        //         $q->whereIn('brand_id', $request->brand);
+        //     });
+        // }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 📦 PACK SIZE FILTER
+        |--------------------------------------------------------------------------
+        */
+        if ($request->size) {
+            $products->whereHas('product_options.packaging', function ($q) use ($request) {
+                $q->whereIn('id', $request->size);
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 🌸 FRAGRANCE FILTER
+        |--------------------------------------------------------------------------
+        */
+        if ($request->fragrance) {
+            $products->whereJsonContains('fragrance', $request->fragrance);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 🔥 DEAL FILTER
+        |--------------------------------------------------------------------------
+        */
+        if ($request->deal) {
+            $products->activeDeals();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ⭐ RATING FILTER
+        |--------------------------------------------------------------------------
+        */
+        if ($request->rating) {
+            $products->where('rating', '>=', $request->rating);
+        }
+
+        /*
+|--------------------------------------------------------------------------
+| Sorting
+|--------------------------------------------------------------------------
+*/
+        if ($request->sort == 'latest') {
+            $products->latest();
+        }
+
+        if ($request->sort == 'price_low') {
+            $products->orderBy('min_price', 'asc');
+        }
+
+        if ($request->sort == 'price_high') {
+            $products->orderBy('min_price', 'desc');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pagination
+        |--------------------------------------------------------------------------
+        */
+        $perPage = $request->perPage ?? 20;
+        $products = $products->latest()
+            ->paginate($perPage)
+            ->withQueryString();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Sidebar Subcategories
+        |--------------------------------------------------------------------------
+        */
+        $subcategories = collect();
+
+        if ($currentCategory) {
+            $subcategories = $currentCategory->active_direct_childs()
+                ->withCount('productssn')
+                ->get();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ⭐ BEST SELLERS (Optimized)
+        |--------------------------------------------------------------------------
+        */
+        $bestSellers = OrderDetail::select('product_id')
+            ->whereHas('order', fn($q) => $q->where('created_at', '>=', now()->subDays(30)))
+            ->selectRaw('SUM(quantity) as total_sold')
+            ->groupBy('product_id')
+            ->orderByDesc('total_sold')
+            ->with('product.product_options')
+            ->limit(20)
+            ->get()
+            ->pluck('product');
+
+        // filter best sellers
+        if ($currentSubcategory) {
+            $bestSellers = $bestSellers->where('subcategory_id', $currentSubcategory->id);
+        } elseif ($currentCategory) {
+            $bestSellers = $bestSellers->filter(
+                fn($p) =>
+                $p->category_id == $currentCategory->id ||
+                $p->subcategory_id == $currentCategory->id
+            );
+        }
+
+        $bestSellers = $bestSellers->take(4)->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Data for Sidebar
+        |--------------------------------------------------------------------------
+        */
+        $packSizes = Brand::where('status', 'active')->get();
+        $fragranceTypes = OilGrade::where('status', 'active')->get();
+        $shopBanners = HomepageSetting::where('page', 'shop')->get();
+        // dd($shopBanners->toArray());
+        /*
+        |--------------------------------------------------------------------------
+        | Return View
+        |--------------------------------------------------------------------------
+        */
+        return view('front.shop', compact(
+            'categories',
+            'currentCategory',
+            'currentSubcategory',
+            'subcategories',
+            'bestSellers',
+            'products',
+            'packSizes',
+            'fragranceTypes',
+            'shopBanners'
+        ));
+    }
 
     public function subscribers(Request $request)
     {
@@ -231,14 +453,53 @@ class FrontController extends Controller
             'message' => "You successfully subscribed!"
         ]);
     }
+
+
+    public function productDetails($slug)
+    {
+        $product = Product::with(['product_options', 'categories', 'subcategories'])
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+            // dd($product->toArray());
+
+        /*
+        |--------------------------------------------------------------------------
+        | Related Products (same subcategory/category)
+        |--------------------------------------------------------------------------
+        */
+        $relatedProducts = Product::where('status', 'active')
+            ->where('id', '!=', $product->id)
+            ->when($product->subcategory_id, function ($q) use ($product) {
+                $q->where('subcategory_id', $product->subcategory_id);
+            }, function ($q) use ($product) {
+                $q->where('category_id', $product->category_id);
+            })
+            ->latest()
+            ->take(12)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | You May Also Like (random products)
+        |--------------------------------------------------------------------------
+        */
+        $recommendedProducts = Product::where('status', 'active')
+            ->where('id', '!=', $product->id)
+            ->inRandomOrder()
+            ->take(12)
+            ->get();
+
+        return view('front.product-details', compact(
+            'product',
+            'relatedProducts',
+            'recommendedProducts'
+        ));
+    }
+
     public function aboutUs()
     {
         return view('front.about-us');
-    }
-
-    public function productDetails()
-    {
-        return view('front.product-details');
     }
 
 }

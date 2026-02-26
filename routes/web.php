@@ -105,9 +105,19 @@ Route::post('reset-password', [ForgotPasswordController::class, 'submitResetPass
 Route::get('/', [FrontController::class, 'index']);
 Route::get('/search-suggestions', [FrontController::class, 'suggestions']);
 Route::post('/subscribe', [FrontController::class, 'subscribers'])->name('subscribe');
-Route::get('/shop', [FrontController::class, 'productList'])->name('shop');
+Route::get('/shop/{categorySlug?}/{subSlug?}', [FrontController::class, 'productList'])->name('shop.category');
+Route::post('/cart/store', [CartController::class, 'storeCart'])->name('cart.store');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/update/{id}', [CartController::class,'updateQty']);
+Route::post('/cart/remove/{id}', [CartController::class,'removeItem']);
+Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])
+    ->name('cart.applyCoupon');
+
+Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])
+    ->name('cart.removeCoupon');
+    
 Route::get('/about-us', [FrontController::class, 'aboutUs'])->name('about');
-Route::get('/product-details', [FrontController::class, 'productDetails'])->name('product-details');
+Route::get('/product-details/{slug}', [FrontController::class, 'productDetails'])->name('product-details');
 Route::view('/faq', 'front.faqs')->name('faq');
 Route::view('/blogs', 'front.blogs')->name('blogs');
 Route::view('/contact-us', 'front.contact-us')->name('contact');
@@ -124,7 +134,6 @@ Route::post('/postContactData', [ContentController::class, 'postContactData'])->
 Route::get('/refund-cancellation', [ContentController::class, 'getRefundCancellation'])->name('getRefundCancellation');
 Route::get('/cookies-policy', [ContentController::class, 'getCookiePolicy'])->name('getCookiePolicy');
 Route::get('/view-all/{id}', [HomeController::class, 'getCatgoryData'])->name('getCatgoryData');
-Route::get('/product-details/{slug}', [HomeController::class, 'productsdetails'])->name('productsdetails');
 Route::get('/best-selling', [HomeController::class, 'getBestSales'])->name('getBestSales');
 Route::get('/listing', [HomeController::class, 'listing'])->name('listing');
 Route::post('fetch-product-option-by-color', [HomeController::class, 'fetchProductOptionByColor'])->name('fetch-product-option-by-color');

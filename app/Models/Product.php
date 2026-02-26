@@ -66,6 +66,7 @@ class Product extends Model
         'is_deal' => 'boolean',
         'deal_start' => 'datetime',
         'deal_end' => 'datetime',
+        'fragrance' => 'array',
     ];
 
     /* ================= RELATIONSHIPS ================= */
@@ -169,5 +170,40 @@ class Product extends Model
                 $q->whereNull('deal_end')
                     ->orWhere('deal_end', '>', now());
             });
+    }
+
+    public function getFragranceNamesAttribute()
+    {
+        if (!$this->fragrance) {
+            return [];
+        }
+
+        return \App\Models\OilGrade::whereIn('id', $this->fragrance)
+            ->pluck('title')
+            ->toArray();
+    }
+
+    public function getRatingBreakdownAttribute()
+    {
+        $total = $this->product_review()->count();
+
+        if ($total == 0) {
+            return [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
+        }
+
+        $ratings = $this->product_review()
+            ->selectRaw('rating, COUNT(*) as count')
+            ->groupBy('rating')
+            ->pluck('count', 'rating')
+            ->toArray();
+
+        $result = [];
+
+        for ($i = 5; $i >= 1; $i--) {
+            $count = $ratings[$i] ?? 0;
+            $result[$i] = round(($count / $total) * 100);
+        }
+
+        return $result;
     }
 }

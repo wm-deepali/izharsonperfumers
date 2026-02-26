@@ -37,7 +37,8 @@
         },
 
         "files": [
-            "app/helpers.php"
+            "app/helpers.php",
+            "app/Helpers/ShippingHelper.php"
         ]
 
     },

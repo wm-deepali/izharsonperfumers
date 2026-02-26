@@ -7,7 +7,6 @@
 
             <div class="thumb_info">
                 <ul class="mb0">
-
                     <li><a href="page-dashboard-wish-list.html"><span class="flaticon-heart"></span></a></li>
                     <li><a href="{{ url('product-details/' . $product->slug) }}"><span class="flaticon-show"></span></a>
                     </li>

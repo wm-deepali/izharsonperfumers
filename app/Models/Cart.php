@@ -9,7 +9,7 @@ class Cart extends Model
 {
     use HasFactory;
 
-      protected $fillable = [
+    protected $fillable = [
         'customer_id',
         'coupon_id',
         'total_price',
@@ -17,20 +17,43 @@ class Cart extends Model
         'discount_amount',
         'total_price_after_discount',
     ];
-protected $casts = [
-    'total_price' => 'string',
-    'pre_discount' => 'string',
-    'total_price_after_discount' => 'string',
-];
-    public function customer() {
+
+    protected $casts = [
+        'total_price' => 'string',
+        'pre_discount' => 'string',
+        'total_price_after_discount' => 'string',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONS
+    |--------------------------------------------------------------------------
+    */
+
+    public function customer()
+    {
         return $this->belongsTo(Customer::class);
     }
 
-    public function coupon() {
+    public function coupon()
+    {
         return $this->belongsTo(Coupon::class);
     }
 
-    public function cart_details(){
+    public function cart_details()
+    {
         return $this->hasMany(CartDetail::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESSORS
+    |--------------------------------------------------------------------------
+    */
+
+    // total items quantity (badge count)
+    public function getItemsCountAttribute()
+    {
+        return $this->cart_details()->sum('quantity');
     }
 }

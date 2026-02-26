@@ -20,57 +20,80 @@ class CartController extends Controller
     {
         try {
 
-            // $user = Auth::user();
+            // 👉 replace with auth later
             $user = Customer::find(284);
 
             // create cart if not exists
             $cart = Cart::firstOrCreate(['customer_id' => $user->id]);
 
-            // load coupon
+            // load coupon relation
             $cart->load('coupon:id,coupon_code,end_date,status,products,categories');
 
             // cart items
             $cartItems = CartDetail::where('cart_id', $cart->id)
-                ->with(
-                    'products',
-                    'product_options'
-                )
+                ->with('products', 'product_options')
                 ->get();
 
             /*
-            |--------------------------------
+            |--------------------------------------------------------------------------
             | VALIDATE COUPON
-            |--------------------------------
+            |--------------------------------------------------------------------------
             */
+
             if ($cart->coupon) {
 
+                // ❌ expired OR inactive
                 if (
-                    $cart->coupon->end_date < now() ||
+                    \Carbon\Carbon::parse($cart->coupon->end_date)->isPast() ||
                     strtolower($cart->coupon->status) !== 'active'
                 ) {
-
                     $cart->update([
                         'discount_amount' => 0,
                         'coupon_id' => null
                     ]);
                 } else {
 
-                    $productIds = $cartItems->pluck('product_id')->toArray();
-                    $categories = $cartItems->pluck('products.category_id')->toArray();
+                    $cartProductIds = $cartItems->pluck('product_id')->toArray();
 
-                    $couponCategories = $cart->coupon->categories
-                        ? explode(',', $cart->coupon->categories)
-                        : [];
+                    // collect category & subcategory ids
+                    $cartCategories = Product::whereIn('id', $cartProductIds)
+                        ->select('category_id', 'subcategory_id')
+                        ->get();
 
-                    $couponProducts = $cart->coupon->products
-                        ? explode(',', $cart->coupon->products)
-                        : [];
+                    $categoryIds = [];
 
-                    $valid =
-                        count(array_intersect($categories, $couponCategories)) > 0 ||
-                        count(array_intersect($productIds, $couponProducts)) > 0;
+                    foreach ($cartCategories as $product) {
+                        if ($product->category_id)
+                            $categoryIds[] = $product->category_id;
+                        if ($product->subcategory_id)
+                            $categoryIds[] = $product->subcategory_id;
+                    }
 
-                    if (!$valid) {
+                    $categoryIds = array_unique($categoryIds);
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | FIND COUPON
+                    |--------------------------------------------------------------------------
+                    */
+                    $coupon = Coupon::where('coupon_code', $cart->coupon->coupon_code)
+                        ->whereDate('start_date', '<=', now())
+                        ->whereDate('end_date', '>=', now())
+                        ->where('status', 'active')
+                        ->where(function ($query) use ($cartProductIds, $categoryIds) {
+
+                            foreach ($categoryIds as $cat) {
+                                $query->orWhereRaw("find_in_set(?, categories)", [$cat]);
+                            }
+
+                            foreach ($cartProductIds as $pid) {
+                                $query->orWhereRaw("find_in_set(?, products)", [$pid]);
+                            }
+
+                        })
+                        ->first();
+
+                    if (!$coupon) {
                         $cart->update([
                             'discount_amount' => 0,
                             'coupon_id' => null
@@ -80,31 +103,61 @@ class CartController extends Controller
             }
 
             /*
-            |--------------------------------
+            |--------------------------------------------------------------------------
             | CALCULATE TOTALS
-            |--------------------------------
+            |--------------------------------------------------------------------------
             */
 
             $subtotal = 0;
-            $discount = 0;
+            $preDiscount = 0;
             $quantity = 0;
 
             foreach ($cartItems as $item) {
 
                 $subtotal += $item->product_options->mrp * $item->quantity;
-                $discount += ($item->product_options->discount_amount ?? 0) * $item->quantity;
+
+                $preDiscount +=
+                    ($item->product_options->discount_amount ?? 0)
+                    * $item->quantity;
+
                 $quantity += $item->quantity;
             }
 
-            $cart->update([
-                'total_price' => $subtotal,
-                'pre_discount' => $discount,
-                'total_price_after_discount' =>
-                    max(0, $subtotal - $discount - ($cart->discount_amount ?? 0))
-            ]);
+            // remove coupon if cart empty
+            if ($quantity == 0) {
+                $cart->update([
+                    'coupon_id' => null,
+                    'discount_amount' => 0
+                ]);
+            }
 
+            $totalAfterDiscount = max(
+                0,
+                $subtotal - $preDiscount - ($cart->discount_amount ?? 0)
+            );
+
+            // update only if changed (avoid unnecessary queries)
+            if (
+                $cart->total_price != $subtotal ||
+                $cart->pre_discount != $preDiscount ||
+                $cart->total_price_after_discount != $totalAfterDiscount
+            ) {
+                $cart->update([
+                    'total_price' => $subtotal,
+                    'pre_discount' => $preDiscount,
+                    'total_price_after_discount' => $totalAfterDiscount
+                ]);
+            }
+
+            // set runtime values
             $cart->quantity = $quantity;
             $cart->items_count = $cartItems->count();
+
+            /*
+            |--------------------------------------------------------------------------
+            | SHIPPING CALCULATION
+            |--------------------------------------------------------------------------
+            */
 
             $shippingData = ShippingHelper::calculate(
                 $user->shipping_pincode ?? '226026',
@@ -112,12 +165,12 @@ class CartController extends Controller
                 $cart->quantity,
                 $cart->total_price_after_discount
             );
+
             return view('front.cart', compact('cart', 'cartItems', 'shippingData'));
 
         } catch (\Exception $e) {
 
             return back()->with('error', 'Unable to load cart.');
-
         }
     }
     /**

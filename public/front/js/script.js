@@ -465,59 +465,7 @@
       showSuggestions();
     });
     // Custom Search Dropdown Script Start
-
-    // Custom Shop item add Option increase decrease home 3
-    $(function() {
-      (function quantityProducts() {
-        var $quantityArrowMinus = $(".quantity-arrow-minus");
-        var $quantityArrowPlus = $(".quantity-arrow-plus");
-        var $quantityNum = $(".quantity-num");
-        $quantityArrowMinus.click(quantityMinus);
-        $quantityArrowPlus.click(quantityPlus);
-        function quantityMinus() {
-          if ($quantityNum.val() > 1) {
-            $quantityNum.val(+$quantityNum.val() - 1);
-          }
-        }
-        function quantityPlus() {
-          $quantityNum.val(+$quantityNum.val() + 1);
-        }
-      })();
-    });
-    $(function() {
-      (function quantityProducts() {
-        var $quantityArrowMinus = $(".quantity-arrow-minus2");
-        var $quantityArrowPlus = $(".quantity-arrow-plus2");
-        var $quantityNum = $(".quantity-num2");
-        $quantityArrowMinus.click(quantityMinus);
-        $quantityArrowPlus.click(quantityPlus);
-        function quantityMinus() {
-          if ($quantityNum.val() > 1) {
-            $quantityNum.val(+$quantityNum.val() - 1);
-          }
-        }
-        function quantityPlus() {
-          $quantityNum.val(+$quantityNum.val() + 1);
-        }
-      })();
-    });
-    $(function() {
-      (function quantityProducts() {
-        var $quantityArrowMinus = $(".quantity-arrow-minus3");
-        var $quantityArrowPlus = $(".quantity-arrow-plus3");
-        var $quantityNum = $(".quantity-num3");
-        $quantityArrowMinus.click(quantityMinus);
-        $quantityArrowPlus.click(quantityPlus);
-        function quantityMinus() {
-          if ($quantityNum.val() > 1) {
-            $quantityNum.val(+$quantityNum.val() - 1);
-          }
-        }
-        function quantityPlus() {
-          $quantityNum.val(+$quantityNum.val() + 1);
-        }
-      })();
-    });
+ 
 
     /*  Team-Slider-Owl-carousel  */
     if($('.instagram_slider').length){

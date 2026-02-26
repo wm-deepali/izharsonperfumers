@@ -56,6 +56,25 @@
         ->with('direct_childs')
         ->orderBy('name')
         ->get();
+
+    // temporary user (replace with auth later)
+    $user = \App\Models\Customer::find(284);
+    $miniCart = null;
+    $miniCartItems = collect();
+    $cartCount = 0;
+    $cartTotal = 0;
+    if ($user) {
+        $miniCart = \App\Models\Cart::with('cart_details.product_options', 'cart_details.products')
+            ->where('customer_id', $user->id)
+            ->first();
+
+        if ($miniCart) {
+            $miniCartItems = $miniCart->cart_details;
+            $cartCount = $miniCart->items_count ?? 0;
+            $cartTotal = $miniCart->total_price_after_discount ?? 0;
+        }
+    }
+
 @endphp
 
 <body data-spy="scroll">
@@ -83,7 +102,7 @@
                                                 <option value="">All Categories</option>
 
                                                 @foreach($menuCategories as $category)
-                                                    <option value="{{ $category->id }}">
+                                                    <option value="{{ $category->slug }}">
                                                         {{ $category->name }}
                                                     </option>
                                                 @endforeach
@@ -139,18 +158,32 @@
                                                 </div>
                                             </div>
                                         </a> </li>
-                                    <li class="list-inline-item"><a class="header_top_iconbox cart-filter-btn" href="#">
+
+                                    <li class="list-inline-item">
+                                        <a class="header_top_iconbox cart-filter-btn" href="{{ route('cart.index') }}">
                                             <div class="d-block d-md-flex">
-                                                <div class="icon"><span><img
-                                                            src="{{ asset('front/images/shopping-cart.png') }}"
-                                                            style="width: 20px;" alt=""></span><span
-                                                        class="badge">2</span></div>
+
+                                                <div class="icon position-relative">
+                                                    <span>
+                                                        <img src="{{ asset('front/images/shopping-cart.png') }}"
+                                                            style="width:20px;" alt="">
+                                                    </span>
+
+                                                    <span class="badge">
+                                                        {{ $cartCount }}
+                                                    </span>
+                                                </div>
+
                                                 <div class="details">
-                                                    <p class="subtitle">₹200.99</p>
+                                                    <p class="subtitle">
+                                                        ₹{{ number_format($cartTotal, 2) }}
+                                                    </p>
                                                     <h5 class="title">Total</h5>
                                                 </div>
+
                                             </div>
-                                        </a> </li>
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -349,6 +382,7 @@
         </div>
         <!--End Sign In Hiddn SideBar -->
         <!-- Your Cart Hiddn SideBar -->
+
         <div class="cart-hidden-sbar">
             <div class="hsidebar-header">
                 <div class="sidebar-close-icon"><span class="flaticon-close"></span></div>
@@ -359,49 +393,74 @@
                     <div class="wrapper">
                         <ul class="cart">
                             <li class="list-inline-item">
-                                <ul class="dropdown_content">
-                                    <li class="list_content">
-                                        <div> <img class="float-start mt10"
-                                                src="{{ asset('front/images/shop/s1.png') }}" alt="75x75">
-                                            <p>Apple MacBook Pro with Apple M1 Chip</p>
-                                            <div class="cart_btn home_page_sidebar mt10">
-                                                <div class="quantity-block home_page_sidebar">
-                                                    <button class="quantity-arrow-minus home_page_sidebar"><img
-                                                            src="{{ asset('front/images/icons/minus.svg') }}"
-                                                            alt=""></button>
-                                                    <input class="quantity-num home_page_sidebar" type="number"
-                                                        value="3">
-                                                    <button class="quantity-arrow-plus home_page_sidebar"> <span
-                                                            class="flaticon-close"></span>
-                                                    </button>
-                                                </div>
-                                                <span class="home_page_sidebar price">₹3.399</span>
-                                            </div>
-                                            <span class="close_icon"><i class="flaticon-close"></i></span>
-                                        </div>
-                                    </li>
-                                    <li class="list_content">
-                                        <div> <img class="float-start mt10"
-                                                src="{{ asset('front/images/shop/s2.png') }}" alt="75x75">
-                                            <p>Apple MacBook Pro with Apple M1 Chip</p>
-                                            <div class="cart_btn home_page_sidebar mt10">
-                                                <div class="quantity-block home_page_sidebar">
-                                                    <button class="quantity-arrow-minus2 home_page_sidebar"><img
-                                                            src="{{ asset('front/images/icons/minus.svg') }}"
-                                                            alt=""></button>
-                                                    <input class="quantity-num2 home_page_sidebar" type="number"
-                                                        value="3">
-                                                    <button class="quantity-arrow-plus2 home_page_sidebar"> <span
-                                                            class="flaticon-close"></span>
-                                                    </button>
-                                                </div>
-                                                <span class="home_page_sidebar price">₹3.399</span>
-                                            </div>
-                                            <span class="close_icon"><i class="flaticon-close"></i></span>
-                                        </div>
-                                    </li>
-                                    <li class="list_content_total_price">
-                                        <h5>Total: <span class="total_price float-end">₹6.225.98</span></h5>
+                                <ul class="cart">
+                                    <li class="list-inline-item">
+                                        <ul class="dropdown_content">
+
+                                            @if($miniCartItems->count())
+
+                                                @foreach($miniCartItems as $item)
+                                                    <li class="list_content">
+                                                        <div>
+                                                            <img class="float-start mt10"
+                                                                src="{{ asset('storage/' . ($item->product_options->image ?? $item->products->image)) }}"
+                                                                width="60">
+
+                                                            <p>{{ $item->products->name }}</p>
+
+                                                            <div class="cart_btn home_page_sidebar mt10">
+
+                                                                <div class="quantity-block home_page_sidebar">
+
+                                                                    <button
+                                                                        class="quantity-arrow-minus mini-minus home_page_sidebar"
+                                                                        data-id="{{ $item->id }}">
+                                                                        <img src="{{ asset('front/images/icons/minus.svg') }}">
+                                                                    </button>
+
+                                                                    <input class="quantity-num home_page_sidebar qty-input"
+                                                                        type="number" value="{{ $item->quantity }}"
+                                                                        data-id="{{ $item->id }}" min="1">
+
+                                                                    <button
+                                                                        class="quantity-arrow-plus mini-plus home_page_sidebar"
+                                                                        data-id="{{ $item->id }}">
+                                                                       <span
+                                                                            class="flaticon-close"></span>
+                                                                    </button>
+                                                                </div>
+                                                                <span class="home_page_sidebar price">
+                                                                    ₹{{ number_format($item->product_options->price * $item->quantity, 2) }}
+                                                                </span>
+
+                                                            </div>
+
+                                                            <span class="close_icon remove-mini-item" data-id="{{ $item->id }}">
+                                                                <i class="flaticon-close"></i>
+                                                            </span>
+
+                                                        </div>
+                                                    </li>
+                                                @endforeach
+
+                                                <li class="list_content_total_price">
+                                                    <h5>
+                                                        Total:
+                                                        <span class="total_price float-end">
+                                                            ₹{{ number_format($miniCart->total_price_after_discount ?? 0, 2) }}
+                                                        </span>
+                                                    </h5>
+                                                </li>
+
+                                            @else
+
+                                                <li class="list_content text-center py-4">
+                                                    Your cart is empty
+                                                </li>
+
+                                            @endif
+
+                                        </ul>
                                     </li>
                                 </ul>
                             </li>
@@ -418,8 +477,13 @@
                                 <input class="range-example-km" value="80" type="text">
                             </div>
                         </div>
-                        <a href="#" class="cart_btns btn btn-white">View Cart</a> <a href="#"
-                            class="checkout_btns btn btn-thm">Checkout</a>
+                        <a href="{{ route('cart.index') }}" class="cart_btns btn btn-white">
+                            View Cart
+                        </a>
+
+                        <a href="{{ route('checkout') }}" class="checkout_btns btn btn-thm">
+                            Checkout
+                        </a>
                     </div>
                 </div>
             </div>
@@ -545,7 +609,7 @@
 
                     {{-- SHOP --}}
                     <li>
-                        <a href="{{ route('shop') }}">Shop</a>
+                        <a href="{{ route('shop.category') }}">Shop</a>
                     </li>
                     <li class="title my-3 bb1 pl20 fz20 fw500 pb-3">Categories</li>
                     @foreach ($menuCategories as $category)
@@ -809,6 +873,13 @@
     <script src="{{ asset('front/js/slider.js') }}"></script>
     <!-- Custom script for all pages -->
     <script src="{{ asset('front/js/script.js') }}"></script>
+    <script src="{{ asset('front/js/isotop.js') }}"></script>
+    <script src="{{ asset('front/js/parallax.js') }}"></script>
+    <script src="{{ asset('front/js/wow.min.js') }}"></script>
+    <script src="{{ asset('front/js/jquery.ez-plus.js') }}"></script>
+    <script src="{{ asset('front/js/scrollbalance.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Custom script for all pages -->
     <script>
         $(document).ready(function () {
             var scroll_childs = $('.scroll-to-fixed-child');
@@ -829,7 +900,7 @@
             }
         });
 
-        const shopURL = "{{ route('shop') }}"; // main listing page
+        const shopURL = "{{ route('shop.category') }}"; // main listing page
 
         // search suggestions for desktop
         document.getElementById('searchInput').addEventListener('keyup', function () {
@@ -872,14 +943,23 @@
         // perform search on submit
         function performSearch() {
             let query = document.getElementById("searchInput").value.trim();
-            let category = document.getElementById("selectbox_alCategory").value;
+            let categorySlug = document.getElementById("selectbox_alCategory").value;
 
             let params = new URLSearchParams();
 
             if (query) params.append("q", query);
-            if (category) params.append("category", category);
 
-            window.location.href = shopURL + "?" + params.toString();
+            let url = shopURL;
+
+            if (categorySlug) {
+                url += "/" + categorySlug;   // add slug to URL
+            }
+
+            if (params.toString()) {
+                url += "?" + params.toString();
+            }
+
+            window.location.href = url;
         }
 
         /* ================= MOBILE SEARCH SUGGESTIONS ================= */
@@ -972,6 +1052,24 @@
                     msgBox.innerHTML = "<span style='color:red'>Something went wrong</span>";
                 });
         });
+
+        document.addEventListener("click", function (e) {
+
+            if (e.target.closest(".remove-mini-item")) {
+
+                const id = e.target.closest(".remove-mini-item").dataset.id;
+
+                fetch("/cart/remove/" + id, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                    }
+                }).then(() => location.reload());
+
+            }
+
+        });
+    
 
     </script>
 </body>
