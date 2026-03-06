@@ -23,7 +23,6 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\FleetServiceController;
 use App\Http\Controllers\Admin\PageController;
-
 use App\Http\Controllers\Admin\ServiceCategoryController;
 use App\Http\Controllers\Admin\ServicesController;
 use App\Http\Controllers\Admin\PackagesController;
@@ -40,20 +39,15 @@ use App\Http\Controllers\Admin\ReasonController;
 use App\Http\Controllers\Admin\CompanyAddressController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\HomeFeatureController;
-
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ContentController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\FrontController;
-use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Models\Order;
-use App\Models\User;
-use App\Models\Customer;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\OrderMail;
-use App\Mail\AdminOrderMail;
+use App\Http\Controllers\Auth\CustomerAuthController;
+use App\Http\Controllers\Auth\CustomerForgotPasswordController;
+use App\Http\Controllers\Auth\GoogleController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -67,55 +61,13 @@ use App\Mail\AdminOrderMail;
 // Password Reset links 
 Route::get('/clear', function () {
   Artisan::call('optimize:clear');
-
-  dd("Cache Clear All");
 });
-Route::get('/send-email', function () {
-  $admin = User::first();
-  $orders = Order::where('sendmailstatus', 0)->get();
-  foreach ($orders as $order) {
-    $customer = Customer::where('id', $order->customer_id)->first();
-    $datas = array(
-      'email' => $customer->email,
-      'mobile_number' => $customer->mobile_number,
-      'name' => $customer->name,
-      'order_id' => $order->order_number,
-      'pdf_url' => url('storage') . $order->invoice_url,
-      'order' => $order,
 
-    );
-
-    Mail::to($customer->email)->send(new OrderMail($datas));
-    Mail::to($admin->alert_email)->send(new AdminOrderMail($datas));
-    Order::where('id', $order->id)->update(['sendmailstatus' => 1]);
-    // dispatch(new \App\Jobs\SendEmailJob($customer->email,$datas,$admin->alert_email));
-
-  }
-
-});
 // Frontend Route List 
-
-Auth::routes(['register' => false]);
-Route::get('forget-password', [ForgotPasswordController::class, 'showForgetPasswordForm'])->name('forget.password.get');
-Route::post('forget-password', [ForgotPasswordController::class, 'submitForgetPasswordForm'])->name('forget.password.post');
-Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetPasswordForm'])->name('reset.password.get');
-Route::post('reset-password', [ForgotPasswordController::class, 'submitResetPasswordForm'])->name('reset.password.post');
-
-
 Route::get('/', [FrontController::class, 'index']);
 Route::get('/search-suggestions', [FrontController::class, 'suggestions']);
 Route::post('/subscribe', [FrontController::class, 'subscribers'])->name('subscribe');
 Route::get('/shop/{categorySlug?}/{subSlug?}', [FrontController::class, 'productList'])->name('shop.category');
-Route::post('/cart/store', [CartController::class, 'storeCart'])->name('cart.store');
-Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/update/{id}', [CartController::class,'updateQty']);
-Route::post('/cart/remove/{id}', [CartController::class,'removeItem']);
-Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])
-    ->name('cart.applyCoupon');
-
-Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])
-    ->name('cart.removeCoupon');
-    
 Route::get('/about-us', [FrontController::class, 'aboutUs'])->name('about');
 Route::get('/product-details/{slug}', [FrontController::class, 'productDetails'])->name('product-details');
 Route::view('/faq', 'front.faqs')->name('faq');
@@ -127,87 +79,65 @@ Route::view('/privacy-policy', 'front.privacy-policy')->name('privacy-policy');
 Route::view('/terms-conditions', 'front.terms-conditions')->name('terms-conditions');
 Route::view('/sitemap', 'front.sitemap')->name('sitemap');
 
-Route::get('/home', [HomeController::class, 'index'])->name('home');
-Route::post('/postFeedback', [ContentController::class, 'postFeedback'])->name('postFeedback');
-Route::get('/blog/{slug}', [ContentController::class, 'getBlogDetails'])->name('getBlogDetails');
-Route::post('/postContactData', [ContentController::class, 'postContactData'])->name('postContactData');
-Route::get('/refund-cancellation', [ContentController::class, 'getRefundCancellation'])->name('getRefundCancellation');
-Route::get('/cookies-policy', [ContentController::class, 'getCookiePolicy'])->name('getCookiePolicy');
-Route::get('/view-all/{id}', [HomeController::class, 'getCatgoryData'])->name('getCatgoryData');
-Route::get('/best-selling', [HomeController::class, 'getBestSales'])->name('getBestSales');
-Route::get('/listing', [HomeController::class, 'listing'])->name('listing');
-Route::post('fetch-product-option-by-color', [HomeController::class, 'fetchProductOptionByColor'])->name('fetch-product-option-by-color');
-Route::post('fetch-product-option-by-attribute', [HomeController::class, 'fetchProductOptionByAttribute'])->name('fetch-product-option-by-attribute');
+Route::post('/store-device', function (\Illuminate\Http\Request $request) {
+  session(['device_id' => $request->device_id]);
+  return response()->json(['ok']);
+})->name('device.store');
 
-// start cart and orders routes 
 
-Route::post('add-to-cart', [CartController::class, 'addToCart'])->name('add-to-cart');
-Route::get('/cart-details', [CartController::class, 'cart'])->name('cart');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/store', [CartController::class, 'storeCart'])->name('cart.store');
+Route::post('/cart/update/{id}', [CartController::class, 'updateQty']);
+Route::post('/cart/remove/{id}', [CartController::class, 'removeItem']);
+Route::get('checkout', [CheckoutController::class, 'checkout'])->name('checkout');
+Route::get('/states/{country}', [CheckoutController::class, 'states']);
+Route::get('/cities/{state}', [CheckoutController::class, 'cities']);
 
-Route::delete('remove-from-cart/{cart_id}', [CartController::class, 'removeFromCart'])->name('remove-from-cart');
-Route::post('decrease-cart-item-quantity/{cart_id}/{quantity}', [CartController::class, 'decreaseCartItemQuantity'])->name('decrease-cart-item-quantity');
-Route::post('increase-cart-item-quantity/{cart_id}/{quantity}', [CartController::class, 'increaseCartItemQuantity'])->name('increase-cart-item-quantity');
-Route::get('/register', [CartController::class, 'registrationForm'])->name('registrationForm');
-Route::get('/sign-in', [CartController::class, 'signInForm'])->name('signInForm');
+// Customer Routes list
+Route::prefix('customer')->name('customer.')->group(function () {
 
-Route::get('/user-signin/{slug}', [CartController::class, 'signInCustomer'])->name('signInCustomer');
-Route::post('user-signin', [CartController::class, 'signInBuyNow'])->name('user-signin');
+  Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('login');
+  Route::post('/login', [CustomerAuthController::class, 'login']);
 
-Route::post('register', [CartController::class, 'register'])->name('register');
-Route::post('sign-in', [CartController::class, 'signIn'])->name('sign-in');
-Route::post('log-out', [CartController::class, 'logOut'])->name('log-out');
-Route::post('check-pincode-delivery', [CartController::class, 'CheckPincodeDelivery'])->name('check-pincode-delivery');
-// end cart routes and order routes
+  Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('register');
+  Route::post('/register', [CustomerAuthController::class, 'register']);
 
-// Routes for customer after login 
-Route::middleware('auth:customer')->group(function () {
-  Route::post('buy-now-process', [CartController::class, 'buyNowProcess'])->name('buy-now-process');
+  Route::get('forgot-password', [CustomerForgotPasswordController::class, 'showForm'])->name('password.request');
+  Route::post('forgot-password', [CustomerForgotPasswordController::class, 'sendResetLink'])->name('password.email');
 
-  Route::get('checkout', [CartController::class, 'checkout'])->name('checkout');
-  Route::post('apply-coupon', [CartController::class, 'applyCoupon'])->name('apply-coupon');
-  Route::post('customer-address', [CartController::class, 'submitCustomerAddress'])->name('customer-address');
-  Route::post('customer-billing-address', [CartController::class, 'submitBillingAddress'])->name('customer-billing-address');
-  Route::post('calculate-cart-total', [CartController::class, 'calculateCartTotal'])->name('calculate-cart-total');
+  Route::get('reset-password/{token}', [CustomerForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+  Route::post('reset-password', [CustomerForgotPasswordController::class, 'resetPassword'])->name('password.update');
 
-  Route::delete('customer-address/{id}', [CartController::class, 'deleteCustomerAddress'])->name('delete-customer-address');
-  Route::delete('customer-billing-address/{id}', [CartController::class, 'deleteCustomerBillingAddress'])->name('delete-customer-billing-address');
-  Route::post('submit-order', [CartController::class, 'submitOrder'])->name('submit-order');
-  Route::get('thank-you', [CartController::class, 'ThankYou'])->name('thank-you');
+  Route::get('google', action: [GoogleController::class, 'redirect'])->name('google.login');
+  Route::get('google/callback', [GoogleController::class, 'callback']);
 
-  Route::get('dashboard', [CartController::class, 'dashboard'])->name('dashboard');
-  Route::get('my-orders', [CartController::class, 'myOrders'])->name('my-orders');
-  Route::get('order-details/{order_id}', [CartController::class, 'orderDetails'])->name('orderDetails');
-  Route::get('invoice/{order_number}', [CartController::class, 'invoice'])->name('invoice');
-  Route::get('track-order', [CartController::class, 'trackOrder'])->name('track-order');
-  Route::get('order-reviews', [CartController::class, 'orderReviews'])->name('order-reviews');
-  Route::get('change-password', [CartController::class, 'changePassword'])->name('change-password');
-  Route::post('change-password', [CartController::class, 'updatePassword'])->name('update-password');
-  Route::post('order-review/{order_id}/{order_detail_id}', [CartController::class, 'submitOrderReview'])->name('order-review');
+  Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
 
-  Route::get('my-activities', [CartController::class, 'myActivities'])->name('my-activities');
-  Route::get('my-enquiries', [CartController::class, 'myEnquiries'])->name('my-enquiries');
-  Route::get('my-wishlist', [CartController::class, 'myWishlist'])->name('my-wishlist');
+  Route::middleware('auth:customer')->group(function () {
 
-  Route::post('update-wishlist/{id}', [CartController::class, 'updateWishlist'])->name('update-wishlist');
-  Route::get('my-address-book', [CartController::class, 'myAddressBook'])->name('my-address-book');
+    Route::get('/dashboard', function () {
+      return view('customer.dashboard');
+    })->name('dashboard');
 
-  Route::get('customer-address/{id}', [CartController::class, 'editCustomerAddress'])->name('customer-address');
-  Route::post('customer-address/{id}', [CartController::class, 'updateCustomerAddress'])->name('customer-address');
-  Route::get('my-account', [CartController::class, 'myAccount'])->name('my-account');
-  Route::post('my-account', [CartController::class, 'updateMyAccount'])->name('my-account');
-  Route::get('invite-friends', [CartController::class, 'inviteFriends'])->name('invite-friends');
+    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.applyCoupon');
+    Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.removeCoupon');
+    Route::post('/billing-address/save', [CheckoutController::class, 'saveBilling']);
+    Route::post('/shipping-address/save', [CheckoutController::class, 'saveShipping']);
+    Route::post('/place-order', [CheckoutController::class, 'placeOrder']);
+    Route::get('/payment/request/{order}', [CheckoutController::class, 'request'])->name('payment.request');
+    Route::post('/payment/response', [CheckoutController::class, 'response'])->name('payment.response');
+    Route::get('/order-success/{id}', [CheckoutController::class, 'success'])->name('order.success');
 
-  //  Route::get('razorpay', [PaymentController::class, 'create'])->name('pay.with.razorpay'); // create payment
-
-  Route::post('/proceed-to-pay', [PaymentController::class, 'ProceedToPay'])->name('proceed-to-pay');
-
-  Route::post('/place-order', [PaymentController::class, 'PlaceOrder'])->name('place-order');
+  });
 });
-// end routes for customer 
-
-// ----------
 
 // Admin Routes list
+Auth::routes(['register' => false]);
+Route::get('forget-password', [ForgotPasswordController::class, 'showForgetPasswordForm'])->name('forget.password.get');
+Route::post('forget-password', [ForgotPasswordController::class, 'submitForgetPasswordForm'])->name('forget.password.post');
+Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetPasswordForm'])->name('reset.password.get');
+Route::post('reset-password', [ForgotPasswordController::class, 'submitResetPasswordForm'])->name('reset.password.post');
+
 
 Route::prefix('admin')->name('admin.')->group(function () {
   Route::middleware(['auth', 'isAdmin'])->group(function () {

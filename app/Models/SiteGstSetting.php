@@ -40,7 +40,7 @@ class SiteGstSetting extends Model
      public function states(){
         return $this->belongsTo(State::class,'state_id','id');
     }
-     public function citys(){
+     public function cities(){
         return $this->belongsTo(City::class,'city_id','id');
     }
 }

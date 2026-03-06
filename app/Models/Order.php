@@ -75,15 +75,15 @@ class Order extends Model
      public function states(){
         return $this->belongsTo(State::class,'state','id');
     }
-     public function citys(){
+     public function cities(){
         return $this->belongsTo(City::class,'city','id');
     }
     
     public function billingaddress(){
-         return $this->belongsTo(CustomerBillingAddress::class,'customer_billing_address_id','id')->with('countries','states','citys');
+         return $this->belongsTo(CustomerBillingAddress::class,'customer_billing_address_id','id')->with('countries','states','cities');
     }
     public function shippingaddress(){
-         return $this->belongsTo(CustomerAddress::class,'customer_address_id','id')->with('countries','states','citys');
+         return $this->belongsTo(CustomerAddress::class,'customer_address_id','id')->with('countries','states','cities');
     }
     public function customer() {
         return $this->belongsTo(Customer::class);

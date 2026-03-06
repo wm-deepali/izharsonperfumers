@@ -38,7 +38,8 @@
 
         "files": [
             "app/helpers.php",
-            "app/Helpers/ShippingHelper.php"
+            "app/Helpers/ShippingHelper.php",
+             "app/Helpers/CcAvenueHelper.php"
         ]
 
     },

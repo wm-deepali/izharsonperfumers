@@ -35,12 +35,12 @@ return [
     |
     */
 
-   'guards' => [
+    'guards' => [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
         ],
-         'customer' => [
+        'customer' => [
             'driver' => 'session',
             'provider' => 'customers',
         ],
@@ -69,7 +69,7 @@ return [
     |
     */
 
-     'providers' => [
+    'providers' => [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
@@ -107,6 +107,11 @@ return [
             'table' => 'password_resets',
             'expire' => 60,
             'throttle' => 60,
+        ],
+        'customers' => [
+            'provider' => 'customers',
+            'table' => 'password_resets',
+            'expire' => 60,
         ],
     ],
 

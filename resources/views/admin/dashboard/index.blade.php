@@ -183,7 +183,7 @@
                                             <td>{{$data->mobile_number}}</td>
                                             <td>@if(isset($data->countries)){{$data->countries->name}} @endif</td>
                                             <td>@if(isset($data->states)){{$data->states->name}} @endif</td>
-                                            <td>@if(isset($data->citys)){{$data->citys->name}} @endif</td>
+                                            <td>@if(isset($data->cities)){{$data->cities->name}} @endif</td>
                                             <td>{{$data->pincode}}</td>
                                         </tr>
                                         @endforeach

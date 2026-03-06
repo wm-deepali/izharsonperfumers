@@ -9,6 +9,7 @@
         content="auto parts, baby store, ecommerce, electronics, fashion, food, marketplace, modern, multi vendor, multipurpose, organic, responsive, shop, shopping, store">
     <meta name="description" content="Izharson Perfumers">
     <meta name="CreativeLayers" content="ATFN">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- css file -->
     <link rel="stylesheet" href="{{ asset('front/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('front/css/ace-responsive-menu.css') }}">
@@ -57,22 +58,36 @@
         ->orderBy('name')
         ->get();
 
-    // temporary user (replace with auth later)
-    $user = \App\Models\Customer::find(284);
+    use Illuminate\Support\Facades\Auth;
+
     $miniCart = null;
     $miniCartItems = collect();
     $cartCount = 0;
     $cartTotal = 0;
-    if ($user) {
+
+    if (Auth::guard('customer')->check()) {
+
+        // ✅ Logged user cart
         $miniCart = \App\Models\Cart::with('cart_details.product_options', 'cart_details.products')
-            ->where('customer_id', $user->id)
+            ->where('customer_id', Auth::guard('customer')->id())
             ->first();
 
-        if ($miniCart) {
-            $miniCartItems = $miniCart->cart_details;
-            $cartCount = $miniCart->items_count ?? 0;
-            $cartTotal = $miniCart->total_price_after_discount ?? 0;
+    } else {
+
+        // ✅ Guest cart using device_id
+        $deviceId = session('device_id');
+
+        if ($deviceId) {
+            $miniCart = \App\Models\UnAuthCart::with('cart_details.product_options', 'cart_details.products')
+                ->where('device_id', $deviceId)
+                ->first();
         }
+    }
+
+    if ($miniCart) {
+        $miniCartItems = $miniCart->cart_details;
+        $cartCount = $miniCartItems->sum('quantity');
+        $cartTotal = $miniCart->total_price_after_discount ?? 0;
     }
 
 @endphp
@@ -147,18 +162,35 @@
                                                     <h5 class="title">My Items</h5>
                                                 </div>
                                             </div>
-                                        </a> </li>
-                                    <li class="list-inline-item"><a class="header_top_iconbox signin-filter-btn"
-                                            href="#">
-                                            <div class="d-block d-md-flex">
-                                                <div class="icon"><span class="flaticon-profile"></span></div>
-                                                <div class="details">
-                                                    <p class="subtitle">Sign In</p>
-                                                    <h5 class="title">Account</h5>
-                                                </div>
-                                            </div>
-                                        </a> </li>
+                                        </a>
+                                    </li>
 
+                                    <li class="list-inline-item">
+
+                                        @auth('customer')
+                                            {{-- Logged in → go to dashboard --}}
+                                            <a class="header_top_iconbox" href="{{ route('customer.dashboard') }}">
+                                        @else
+                                                {{-- Guest → open sidebar login --}}
+                                                <a class="header_top_iconbox signin-filter-btn" href="#">
+                                            @endauth
+
+                                                <div class="d-block d-md-flex">
+                                                    <div class="icon">
+                                                        <span class="flaticon-profile"></span>
+                                                    </div>
+                                                    <div class="details">
+                                                        @auth('customer')
+                                                            <p class="subtitle">Welcome</p>
+                                                            <h5 class="title">{{ auth('customer')->user()->name }}</h5>
+                                                        @else
+                                                            <p class="subtitle">Sign In</p>
+                                                            <h5 class="title">Account</h5>
+                                                        @endauth
+                                                    </div>
+                                                </div>
+                                            </a>
+                                    </li>
                                     <li class="list-inline-item">
                                         <a class="header_top_iconbox cart-filter-btn" href="{{ route('cart.index') }}">
                                             <div class="d-block d-md-flex">
@@ -425,8 +457,7 @@
                                                                     <button
                                                                         class="quantity-arrow-plus mini-plus home_page_sidebar"
                                                                         data-id="{{ $item->id }}">
-                                                                       <span
-                                                                            class="flaticon-close"></span>
+                                                                        <span class="flaticon-close"></span>
                                                                     </button>
                                                                 </div>
                                                                 <span class="home_page_sidebar price">
@@ -481,9 +512,15 @@
                             View Cart
                         </a>
 
-                        <a href="{{ route('checkout') }}" class="checkout_btns btn btn-thm">
-                            Checkout
-                        </a>
+                        @if(Auth::guard('customer')->check())
+                            <a href="{{ route('checkout') }}" class="checkout_btns btn btn-thm">
+                                Checkout
+                            </a>
+                        @else
+                            <a href="{{ route('customer.login') }}" class="checkout_btns btn btn-thm">
+                                Login to Checkout
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -1069,8 +1106,25 @@
             }
 
         });
-    
 
+
+    </script>
+    <script>
+        if (!localStorage.getItem("device_id")) {
+            localStorage.setItem("device_id", "dev-" + Date.now() + "-" + Math.random());
+        }
+
+        // send device id to session once
+        fetch("{{ route('device.store') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                device_id: localStorage.getItem("device_id")
+            })
+        });
     </script>
 </body>
 

@@ -88,7 +88,7 @@ a:hover {
                 <p><b>Delivery Type:-</b>{{$data['order']['address_type']}}</p>
                 <p><b>Payment:-</b>{{$data['order']['payment_status']}}</p>
                 <p><b>Transaction Id:-</b>#{{$data['order']['transaction_number']}}</p>
-                <p><b>Shipping Address:-</b>{{ $data['order']['address'] }}, {{ $data['order']['citys']['name'] }}, {{ $data['order']['states']['name'] }}, {{ $data['order']['countries']['name'] }}, {{ $data['order']['pincode'] }}</p>
+                <p><b>Shipping Address:-</b>{{ $data['order']['address'] }}, {{ $data['order']['cities']['name'] }}, {{ $data['order']['states']['name'] }}, {{ $data['order']['countries']['name'] }}, {{ $data['order']['pincode'] }}</p>
             </div>
             <div>
                 <p>Hello <b>{{$data['name']}}</b>,

@@ -558,7 +558,7 @@ class FrontendController extends Controller
 
                 $customer = Customer::where('id', $objs->customer_id)->first();
                 $objs->customer_name = $customer->name;
-                $objs->address = $objs->order->shippingaddress->citys->name;
+                $objs->address = $objs->order->shippingaddress->cities->name;
                 //  $objs['customer_name']=$customer->name;
             }
             if (isset($obj->fragrance)) {
@@ -4025,11 +4025,11 @@ class FrontendController extends Controller
             if (!empty($ar)) {
                 $city1 = $ar[7];
                 $pincode = $ar[4];
-                $citys = City::where('name', $city1)->first();
-                if ($citys) {
+                $cities = City::where('name', $city1)->first();
+                if ($cities) {
                     $data = [
-                        'state_id' => $citys->state_id,
-                        'city_id' => $citys->id,
+                        'state_id' => $cities->state_id,
+                        'city_id' => $cities->id,
                         'pincode' => $pincode,
                     ];
                     $newdata[] = $data;

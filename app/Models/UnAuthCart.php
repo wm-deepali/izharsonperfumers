@@ -16,4 +16,9 @@ class UnAuthCart extends Model
         'discount_amount',
         'total_price_after_discount',
     ];
+
+      public function cart_details()
+    {
+        return $this->hasMany(UnAuthCartDetail::class, 'cart_id');
+    }
 }

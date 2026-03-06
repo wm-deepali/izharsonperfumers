@@ -73,7 +73,7 @@ return	 $production_url='https://secure.ccavenue.com/transaction/transaction.do?
 	
   }
   public function responsehandler(Request $request){
-      $workingKey="D4C85E6AED4CC282930B980AEB97C9D7";		//Working Key should be provided here.
+      $workingKey="";		//Working Key should be provided here.
 	$encResponse=$request->encResp;			//This is the response sent by the CCAvenue Server
 	
 	$rcvdString=$this->decrypt($encResponse,$workingKey);		//Crypto Decryption used as per the specified working key.

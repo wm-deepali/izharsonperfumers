@@ -15,7 +15,10 @@
             </div>
 
             <div class="shop_item_cart_btn d-grid">
-                <a href="#" class="btn btn-thm">Add to Cart</a>
+                <a href="#" class="btn btn-thm add-to-cart-btn" data-product="{{ $product->id }}"
+                    data-option="{{ $product->product_options->first()->id ?? '' }}">
+                    Add to cart
+                </a>
             </div>
         </div>
 

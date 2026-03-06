@@ -32,16 +32,16 @@ class PincodeSeeder extends Seeder
     ->each(function (LazyCollection $chunk) {
              $records = $chunk->map(function ($row) {
           if(!empty($row)){
-              $citys = City::where('name',$row[7])->first();
-              if($citys){
+              $cities = City::where('name',$row[7])->first();
+              if($cities){
                   DB::table('pincodes')->insert([
-        'state_id'=>$citys->state_id,
-        'city_id'=>$citys->id,
+        'state_id'=>$cities->state_id,
+        'city_id'=>$cities->id,
         'pincode'=>$row[4],
         ]);
                   return [
-        'state_id'=>$citys->state_id,
-        'city_id'=>$citys->id,
+        'state_id'=>$cities->state_id,
+        'city_id'=>$cities->id,
         'pincode'=>$row[4],
         ]; 
               }

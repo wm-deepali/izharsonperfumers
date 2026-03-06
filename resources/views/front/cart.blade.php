@@ -237,16 +237,21 @@
               </li>
             </ul>
             <div class="ui_kit_button payment_widget_btn">
-              <button type="button" class="btn btn-thm btn-block"><a href="page-shop-checkout.html"> Proceed to
-                  checkout</a></button>
+              <button type="button" class="btn btn-thm btn-block">
+                @if(Auth::guard('customer')->check())
+                  <a href="{{ route('checkout') }}">Proceed to checkout</a>
+                @else
+                  <a href="{{ route('customer.login') }}">Login to Checkout</a>
+                @endif
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
   </section>
-
   <script>
+
     document.addEventListener("click", function (e) {
 
       // ➕ increase qty
@@ -287,16 +292,17 @@
       })
         .then(res => res.json())
         .then(() => {
-
-          // small bounce animation before reload
-          row.style.transition = "0.3s";
-          row.style.transform = "scale(1.02)";
-
-          setTimeout(() => {
-            location.reload();
-          }, 250);
-
+          location.reload();
+        })
+        .catch(() => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Update failed',
+            text: 'Unable to update quantity'
+          });
+          row.style.opacity = "1";
         });
+
     }
 
     function removeItem(id) {
@@ -325,7 +331,15 @@
               headers: {
                 "X-CSRF-TOKEN": "{{ csrf_token() }}"
               }
-            }).then(() => location.reload());
+            }).then(() => {
+              Swal.fire({
+                icon: 'success',
+                title: 'Removed!',
+                text: 'Item removed from cart',
+                timer: 1200,
+                showConfirmButton: false
+              }).then(() => location.reload());
+            });
           }, 300);
 
         }
@@ -355,7 +369,18 @@
         });
         return;
       }
-      fetch("{{ route('cart.applyCoupon') }}", {
+      @if(!Auth::guard('customer')->check())
+        Swal.fire({
+          icon: 'info',
+          title: 'Login Required',
+          text: 'Please login to apply coupon'
+        }).then(() => {
+          window.location.href = "{{ route('customer.login') }}";
+        });
+        return;
+      @endif
+
+      fetch("{{ route('customer.cart.applyCoupon') }}", {
         method: "POST",
         headers: {
           "X-CSRF-TOKEN": "{{ csrf_token() }}",
@@ -393,7 +418,7 @@
       }).then((result) => {
 
         if (result.isConfirmed) {
-          fetch("{{ route('cart.removeCoupon') }}", {
+          fetch("{{ route('customer.cart.removeCoupon') }}", {
             method: "POST",
             headers: {
               "X-CSRF-TOKEN": "{{ csrf_token() }}"

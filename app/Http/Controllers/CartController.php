@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Coupon;
-use App\Models\Customer;
+use App\Models\UnAuthCart;
+use App\Models\UnAuthCartDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
@@ -16,160 +17,109 @@ use Illuminate\Support\Facades\Validator;
 class CartController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         try {
 
-            // 👉 replace with auth later
-            $user = Customer::find(284);
-
-            // create cart if not exists
-            $cart = Cart::firstOrCreate(['customer_id' => $user->id]);
-
-            // load coupon relation
-            $cart->load('coupon:id,coupon_code,end_date,status,products,categories');
-
-            // cart items
-            $cartItems = CartDetail::where('cart_id', $cart->id)
-                ->with('products', 'product_options')
-                ->get();
-
             /*
             |--------------------------------------------------------------------------
-            | VALIDATE COUPON
+            | ✅ CHECK LOGIN
             |--------------------------------------------------------------------------
             */
+            if (Auth::guard('customer')->check()) {
 
-            if ($cart->coupon) {
+                $user = Auth::guard('customer')->user();
 
-                // ❌ expired OR inactive
-                if (
-                    \Carbon\Carbon::parse($cart->coupon->end_date)->isPast() ||
-                    strtolower($cart->coupon->status) !== 'active'
-                ) {
-                    $cart->update([
-                        'discount_amount' => 0,
-                        'coupon_id' => null
+                $cart = Cart::firstOrCreate(['customer_id' => $user->id]);
+
+                $cart->load('coupon:id,coupon_code,end_date,status,products,categories');
+
+                $cartItems = CartDetail::where('cart_id', $cart->id)
+                    ->with('products', 'product_options')
+                    ->get();
+
+            } else {
+
+                /*
+                |--------------------------------------------------------------------------
+                | ✅ GUEST CART
+                |--------------------------------------------------------------------------
+                */
+                $deviceId = $request->device_id ?? session('device_id');
+
+                if (!$deviceId) {
+                    return view('front.cart', [
+                        'cart' => null,
+                        'cartItems' => collect(),
+                        'shippingData' => null
                     ]);
-                } else {
-
-                    $cartProductIds = $cartItems->pluck('product_id')->toArray();
-
-                    // collect category & subcategory ids
-                    $cartCategories = Product::whereIn('id', $cartProductIds)
-                        ->select('category_id', 'subcategory_id')
-                        ->get();
-
-                    $categoryIds = [];
-
-                    foreach ($cartCategories as $product) {
-                        if ($product->category_id)
-                            $categoryIds[] = $product->category_id;
-                        if ($product->subcategory_id)
-                            $categoryIds[] = $product->subcategory_id;
-                    }
-
-                    $categoryIds = array_unique($categoryIds);
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | FIND COUPON
-                    |--------------------------------------------------------------------------
-                    */
-                    $coupon = Coupon::where('coupon_code', $cart->coupon->coupon_code)
-                        ->whereDate('start_date', '<=', now())
-                        ->whereDate('end_date', '>=', now())
-                        ->where('status', 'active')
-                        ->where(function ($query) use ($cartProductIds, $categoryIds) {
-
-                            foreach ($categoryIds as $cat) {
-                                $query->orWhereRaw("find_in_set(?, categories)", [$cat]);
-                            }
-
-                            foreach ($cartProductIds as $pid) {
-                                $query->orWhereRaw("find_in_set(?, products)", [$pid]);
-                            }
-
-                        })
-                        ->first();
-
-                    if (!$coupon) {
-                        $cart->update([
-                            'discount_amount' => 0,
-                            'coupon_id' => null
-                        ]);
-                    }
                 }
+
+                $cart = UnAuthCart::where('device_id', $deviceId)->first();
+
+                if (!$cart) {
+                    return view('front.cart', [
+                        'cart' => null,
+                        'cartItems' => collect(),
+                        'shippingData' => null
+                    ]);
+                }
+
+                $cartItems = UnAuthCartDetail::where('cart_id', $cart->id)
+                    ->with('products', 'product_options')
+                    ->get();
             }
 
             /*
             |--------------------------------------------------------------------------
-            | CALCULATE TOTALS
+            | ✅ CALCULATE TOTALS (WORKS FOR BOTH)
             |--------------------------------------------------------------------------
             */
-
             $subtotal = 0;
             $preDiscount = 0;
             $quantity = 0;
 
             foreach ($cartItems as $item) {
-
                 $subtotal += $item->product_options->mrp * $item->quantity;
-
-                $preDiscount +=
-                    ($item->product_options->discount_amount ?? 0)
-                    * $item->quantity;
-
+                $preDiscount += ($item->product_options->discount_amount ?? 0) * $item->quantity;
                 $quantity += $item->quantity;
             }
 
-            // remove coupon if cart empty
-            if ($quantity == 0) {
-                $cart->update([
-                    'coupon_id' => null,
-                    'discount_amount' => 0
-                ]);
-            }
+            if ($cart) {
+                $totalAfterDiscount = max(
+                    0,
+                    $subtotal - $preDiscount - ($cart->discount_amount ?? 0)
+                );
 
-            $totalAfterDiscount = max(
-                0,
-                $subtotal - $preDiscount - ($cart->discount_amount ?? 0)
-            );
-
-            // update only if changed (avoid unnecessary queries)
-            if (
-                $cart->total_price != $subtotal ||
-                $cart->pre_discount != $preDiscount ||
-                $cart->total_price_after_discount != $totalAfterDiscount
-            ) {
                 $cart->update([
                     'total_price' => $subtotal,
                     'pre_discount' => $preDiscount,
                     'total_price_after_discount' => $totalAfterDiscount
                 ]);
-            }
 
-            // set runtime values
-            $cart->quantity = $quantity;
-            $cart->items_count = $cartItems->count();
+                $cart->quantity = $quantity;
+                $cart->items_count = $cartItems->count();
+            }
 
             /*
             |--------------------------------------------------------------------------
-            | SHIPPING CALCULATION
+            | ✅ SHIPPING (ONLY FOR LOGGED USERS)
             |--------------------------------------------------------------------------
             */
+            $shippingData = null;
 
-            $shippingData = ShippingHelper::calculate(
-                $user->shipping_pincode ?? '226026',
-                $user->billing_pincode ?? '226026',
-                $cart->quantity,
-                $cart->total_price_after_discount
-            );
+            if (Auth::guard('customer')->check()) {
+                $shippingData = ShippingHelper::calculate(
+                    $user->shipping_pincode ?? '226026',
+                    $user->billing_pincode ?? '226026',
+                    $quantity,
+                    $cart->total_price_after_discount ?? 0
+                );
+            }
 
             return view('front.cart', compact('cart', 'cartItems', 'shippingData'));
 
         } catch (\Exception $e) {
-
             return back()->with('error', 'Unable to load cart.');
         }
     }
@@ -180,79 +130,116 @@ class CartController extends Controller
     {
         try {
 
-            // ✅ ensure logged in
-            // if (!Auth::check()) {
-            //     return response()->json([
-            //         'success' => false,
-            //         'message' => 'Please login first'
-            //     ], 401);
-            // }
-
-            // $user = Auth::user();
-
-            $user = Customer::find(284);
-
-            // validate request
             $request->validate([
                 'product_id' => 'required|exists:products,id',
                 'product_option_id' => 'required|exists:product_options,id',
-                'quantity' => 'nullable|integer|min:1'
+                'quantity' => 'nullable|integer|min:1',
+                'device_id' => 'nullable|string'
             ]);
 
             $quantity = $request->quantity ?? 1;
 
-            // get product & option
             $product = Product::findOrFail($request->product_id);
 
             $productOption = ProductOption::where('id', $request->product_option_id)
                 ->where('product_id', $product->id)
                 ->firstOrFail();
 
-            // create or get cart
-            $cart = Cart::firstOrCreate(
-                ['customer_id' => $user->id],
-                [
-                    'total_price' => 0,
-                    'pre_discount' => 0,
-                    'discount_amount' => 0,
-                    'total_price_after_discount' => 0
-                ]
-            );
+            /*
+            |--------------------------------------------------------------------------
+            | ✅ IF USER LOGGED IN → NORMAL CART
+            |--------------------------------------------------------------------------
+            */
+            if (Auth::guard('customer')->check()) {
 
-            // check existing cart item
-            $cartDetail = CartDetail::where([
-                'cart_id' => $cart->id,
-                'customer_id' => $user->id,
-                'product_id' => $product->id,
-                'product_option_id' => $productOption->id
-            ])->first();
+                $user = Auth::guard('customer')->user();
 
-            if ($cartDetail) {
+                $cart = Cart::firstOrCreate(
+                    ['customer_id' => $user->id],
+                    [
+                        'total_price' => 0,
+                        'pre_discount' => 0,
+                        'discount_amount' => 0,
+                        'total_price_after_discount' => 0
+                    ]
+                );
 
-                // 🔥 increase quantity instead of duplicate
-                $cartDetail->quantity += $quantity;
-                $cartDetail->save();
-
-                $message = "Quantity updated in cart";
-
-            } else {
-
-                CartDetail::create([
+                $cartDetail = CartDetail::where([
+                    'cart_id' => $cart->id,
                     'customer_id' => $user->id,
                     'product_id' => $product->id,
-                    'product_option_id' => $productOption->id,
-                    'cart_id' => $cart->id,
-                    'quantity' => $quantity,
+                    'product_option_id' => $productOption->id
+                ])->first();
+
+                if ($cartDetail) {
+                    $cartDetail->quantity += $quantity;
+                    $cartDetail->save();
+                    $message = "Quantity updated in cart";
+                } else {
+                    CartDetail::create([
+                        'customer_id' => $user->id,
+                        'product_id' => $product->id,
+                        'product_option_id' => $productOption->id,
+                        'cart_id' => $cart->id,
+                        'quantity' => $quantity,
+                    ]);
+                    $message = "Added to cart successfully";
+                }
+
+                $cartItems = CartDetail::where('cart_id', $cart->id)
+                    ->with('product_options')
+                    ->get();
+
+            }
+            /*
+            |--------------------------------------------------------------------------
+            | ✅ GUEST USER → UNAUTH CART
+            |--------------------------------------------------------------------------
+            */ else {
+
+                if (!$request->device_id) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Device ID missing'
+                    ], 422);
+                }
+
+                $cart = UnAuthCart::firstOrCreate([
+                    'device_id' => $request->device_id
                 ]);
 
-                $message = "Added to cart successfully";
+                $cartDetail = UnAuthCartDetail::where([
+                    'cart_id' => $cart->id,
+                    'device_id' => $request->device_id,
+                    'product_id' => $product->id,
+                    'product_option_id' => $productOption->id
+                ])->first();
+
+                if ($cartDetail) {
+                    $cartDetail->quantity += $quantity;
+                    $cartDetail->save();
+                    $message = "Quantity updated in cart";
+                } else {
+                    UnAuthCartDetail::create([
+                        'device_id' => $request->device_id,
+                        'product_id' => $product->id,
+                        'product_option_id' => $productOption->id,
+                        'cart_id' => $cart->id,
+                        'quantity' => $quantity,
+                    ]);
+                    $message = "Added to cart successfully";
+                }
+
+                $cartItems = UnAuthCartDetail::where('cart_id', $cart->id)
+                    ->with('product_options')
+                    ->get();
             }
 
-            // 🔥 recalculate totals safely
-            $cartItems = CartDetail::where('cart_id', $cart->id)
-                ->with('product_options')
-                ->get();
-
+            /*
+            |--------------------------------------------------------------------------
+            | ✅ RECALCULATE TOTALS (WORKS FOR BOTH)
+            |--------------------------------------------------------------------------
+            */
             $totalPrice = 0;
             $preDiscount = 0;
 
@@ -264,14 +251,14 @@ class CartController extends Controller
             $cart->update([
                 'total_price' => $totalPrice,
                 'pre_discount' => $preDiscount,
-                'total_price_after_discount' => $totalPrice - $cart->discount_amount
+                'total_price_after_discount' => $totalPrice - ($cart->discount_amount ?? 0)
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => $message,
-                'cart_count' => $cartItems->count(),
-                'total_price' => $cart->total_price
+                'cart_count' => count($cartItems),
+                'total_price' => $totalPrice
             ]);
 
         } catch (\Exception $ex) {
@@ -286,7 +273,12 @@ class CartController extends Controller
 
     public function updateQty(Request $request, $id)
     {
-        $item = CartDetail::findOrFail($id);
+        if (Auth::guard('customer')->check()) {
+            $item = CartDetail::findOrFail($id);
+        } else {
+            $item = UnAuthCartDetail::findOrFail($id);
+        }
+
         $item->quantity += $request->change;
 
         if ($item->quantity < 1) {
@@ -300,7 +292,12 @@ class CartController extends Controller
 
     public function removeItem($id)
     {
-        CartDetail::findOrFail($id)->delete();
+        if (Auth::guard('customer')->check()) {
+            CartDetail::findOrFail($id)->delete();
+        } else {
+            UnAuthCartDetail::findOrFail($id)->delete();
+        }
+
         return response()->json(['success' => true]);
     }
 
@@ -320,7 +317,7 @@ class CartController extends Controller
         try {
 
             // $user = auth()->user();
-            $user = Customer::find(284);
+            $user = Auth::guard('customer')->user();
 
             if (!$user) {
                 return response()->json([
@@ -439,7 +436,7 @@ class CartController extends Controller
         try {
 
             // $user = auth()->user();
-            $user = Customer::find(284);
+            $user = Auth::guard('customer')->user();
 
             $cart = Cart::where('customer_id', $user->id)->firstOrFail();
 
@@ -462,4 +459,5 @@ class CartController extends Controller
             ], 400);
         }
     }
+
 }

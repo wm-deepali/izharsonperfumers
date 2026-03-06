@@ -80,7 +80,7 @@ class CustomerController extends Controller
     }
     
     public function editcustomerbilling($id){
-        $customer = CustomerBillingAddress::where('id',$id)->with('countries','states','citys')->first();
+        $customer = CustomerBillingAddress::where('id',$id)->with('countries','states','cities')->first();
         return response()->json($customer);
     }
     public function updatecustomerbilling(Request $request){
@@ -175,7 +175,7 @@ class CustomerController extends Controller
     }
     
      public function editcustomershipping($id){
-        $customer = CustomerAddress::where('id',$id)->with('countries','states','citys')->first();
+        $customer = CustomerAddress::where('id',$id)->with('countries','states','cities')->first();
         return response()->json($customer);
     }
     

@@ -522,7 +522,7 @@
                                                 <div class="form-group row">
                                                     <div class="col-sm-12">
                                                         <label class="label-control">Address</label>
-                                                        <h3 class="h3-control"> {{ $order->shippingaddress->address }} {{ $order->shippingaddress->citys->name }} {{ $order->shippingaddress->states->name }} {{ $order->shippingaddress->countries->name }} {{ $order->shippingaddress->pincode }} </h3>
+                                                        <h3 class="h3-control"> {{ $order->shippingaddress->address }} {{ $order->shippingaddress->cities->name }} {{ $order->shippingaddress->states->name }} {{ $order->shippingaddress->countries->name }} {{ $order->shippingaddress->pincode }} </h3>
                                                     </div>
                                                 </div>
                                             </div>
@@ -551,7 +551,7 @@
                                                 <div class="form-group row">
                                                     <div class="col-sm-12">
                                                         <label class="label-control">Address</label>
-                                                        <h3 class="h3-control"> {{ $order->billingaddress->address }} {{ $order->billingaddress->citys->name }} {{ $order->billingaddress->states->name }} {{ $order->billingaddress->countries->name }} {{ $order->billingaddress->pincode }} </h3>
+                                                        <h3 class="h3-control"> {{ $order->billingaddress->address }} {{ $order->billingaddress->cities->name }} {{ $order->billingaddress->states->name }} {{ $order->billingaddress->countries->name }} {{ $order->billingaddress->pincode }} </h3>
                                                     </div>
                                                 </div>
                                             </div>

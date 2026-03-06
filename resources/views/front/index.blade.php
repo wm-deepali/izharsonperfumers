@@ -133,7 +133,10 @@
                                             </ul>
                                         </div>
                                         <div class="shop_item_cart_btn d-grid">
-                                            <a href="#" class="btn btn-thm">Add to Cart</a>
+                                            <a href="#" class="btn btn-thm add-to-cart-btn" data-product="{{ $product->id }}"
+                                                data-option="{{ $product->product_options->first()->id ?? '' }}">
+                                                Add to cart
+                                            </a>
                                         </div>
                                     </div>
                                     <div class="details">
@@ -632,33 +635,86 @@
         </div>
     </section>
     <!-- Hot New Arrival Product End -->
-<script>
-    const dealEndTime = "{{ $maxDealEnd->toIso8601String() }}";
+    <script>
+        const dealEndTime = "{{ optional($maxDealEnd)->toIso8601String() }}";
 
-function makeTimer() {
+        if (!dealEndTime) {
+            document.getElementById("timer").innerHTML = "No active deals";
+        }
 
-    const endTime = new Date(dealEndTime).getTime();
-    const now = new Date().getTime();
-    const timeLeft = endTime - now;
+        function makeTimer() {
 
-    if (timeLeft <= 0) {
-        document.getElementById("timer").innerHTML = "Deal Expired";
-        return;
-    }
+            const endTime = new Date(dealEndTime).getTime();
+            const now = new Date().getTime();
+            const timeLeft = endTime - now;
 
-    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            if (timeLeft <= 0) {
+                document.getElementById("timer").innerHTML = "Deal Expired";
+                return;
+            }
 
-    document.querySelector(".days").innerHTML = days;
-    document.querySelector(".hours").innerHTML = hours.toString().padStart(2,'0');
-    document.querySelector(".minutes").innerHTML = minutes.toString().padStart(2,'0');
-    document.querySelector(".seconds").innerHTML = seconds.toString().padStart(2,'0');
-}
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-setInterval(makeTimer, 1000);
-makeTimer();
-</script>
+            document.querySelector(".days").innerHTML = days;
+            document.querySelector(".hours").innerHTML = hours.toString().padStart(2, '0');
+            document.querySelector(".minutes").innerHTML = minutes.toString().padStart(2, '0');
+            document.querySelector(".seconds").innerHTML = seconds.toString().padStart(2, '0');
+        }
+
+        setInterval(makeTimer, 1000);
+        makeTimer();
+    </script>
+
+    <script>
+
+        // add to cart
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const productId = this.dataset.product;
+                const optionId = this.dataset.option; // ✅ get default option
+                const quantity = 1;
+
+                fetch("{{ route('cart.store') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        product_option_id: optionId,
+                        quantity: quantity,
+                        device_id: localStorage.getItem("device_id") // ⭐ REQUIRED
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Added!',
+                            text: 'Product added to cart',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Error adding to cart'
+                        });
+                    });
+
+            });
+
+        });
+
+    </script>
 
 @endsection

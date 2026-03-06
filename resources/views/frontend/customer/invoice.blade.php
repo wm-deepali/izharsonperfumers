@@ -41,14 +41,14 @@
                     <td colspan="4">
                         <div style="max-width:290px;">
                             <div style="max-width:290px;">
-                                 <img src="{{ URL::asset('storage/' . $headerdata->header_logo) }}" style="height: 50px;">
+                                 <!-- <img src="{{ URL::asset('storage/' . $headerdata->header_logo) }}" style="height: 50px;"> -->
                             </div>
                         </div>
                     </td>
                     <td colspan="3" style="text-align: right;">
                         <h6 style="margin-bottom: 5px; font-size: 15px; font-weight: bold;text-transform:uppercase">Invoice</h6>
                         <p style="margin-bottom: 0px; font-size: 12px; font-weight: bold; ">Company Name - <span style="font-weight: normal;">{{ $gstsetting->company_name }} </span></p>
-                        <p style="margin-bottom: 0; font-size: 12px; font-weight: bold; ">Address - <span style="font-weight: normal;"> {{ $gstsetting->invoice_address }}, {{ $gstsetting->citys->name }}, {{ $gstsetting->states->name }}, {{ $gstsetting->countries->name }}, {{ $gstsetting->pincode }}</span></p>
+                        <p style="margin-bottom: 0; font-size: 12px; font-weight: bold; ">Address - <span style="font-weight: normal;"> {{ $gstsetting->invoice_address }}, {{ $gstsetting->cities->name }}, {{ $gstsetting->states->name }}, {{ $gstsetting->countries->name }}, {{ $gstsetting->pincode }}</span></p>
                         <p style="margin-bottom: 0px; font-size: 12px; font-weight: bold; ">Tax Number - <span style="font-weight: normal;"> {{ $gstsetting->gst_number }}</span></p>
                     </td>
                 </tr>
@@ -58,7 +58,7 @@
                         <div style="max-width:290px;margin-bottom:15px">
                             <h6 style="margin-bottom: 10px; font-size: 12px; font-weight: bold;">Invoice To </h6>
                                 <p style="font-size: 12px;margin-bottom: 0px;"> <strong>Name </strong> : <span>{{ $order->name ?? 'None' }} </span></p>
-                                <p style="font-size: 12px;"><strong>Address </strong> : {{ $order->address }}, {{ $order->citys->name }}, {{ $order->states->name }}, {{ $order->countries->name }}, {{ $order->pincode }}</p>
+                                <p style="font-size: 12px;"><strong>Address </strong> : {{ $order->address }}, {{ $order->cities->name }}, {{ $order->states->name }}, {{ $order->countries->name }}, {{ $order->pincode }}</p>
                                 <p style="font-size: 12px;margin-bottom: 0px;"> <strong>Phone Number </strong> : <span>{{ $order->mobile_number }} </span></p>
                                 <p style="font-size: 12px;margin-bottom: 0px;"> <strong>Email Id </strong> : <span>{{ $order->email }}</span></p>
                                 
@@ -70,7 +70,7 @@
                         <p style="font-size: 12px;margin-bottom: 0px;"> <strong>Order Date </strong> : <span>{{ $order->created_at }}</span></p>
                         <p style="font-size: 12px;margin-bottom: 0px;"> <strong>Payment Status </strong> : <span>{{ $order->payment_status }}</span></p>
                         <!--<h6 style="margin-bottom: 5px; margin-right: 20px; font-size: 12px; font-weight: bold; ">Company Name - <span style="font-weight: normal;">{{ $gstsetting->company_name }} </span></h6>-->
-                        <!--<h6 style="margin-bottom: 5px; margin-right: 20px; font-size: 12px; font-weight: bold; ">Address - <span style="font-weight: normal;"> {{ $gstsetting->invoice_address }}, {{ $gstsetting->citys->name }}, {{ $gstsetting->states->name }}, {{ $gstsetting->countries->name }}, {{ $gstsetting->pincode }}</span></h6>-->
+                        <!--<h6 style="margin-bottom: 5px; margin-right: 20px; font-size: 12px; font-weight: bold; ">Address - <span style="font-weight: normal;"> {{ $gstsetting->invoice_address }}, {{ $gstsetting->cities->name }}, {{ $gstsetting->states->name }}, {{ $gstsetting->countries->name }}, {{ $gstsetting->pincode }}</span></h6>-->
                         <!--<h6 style="margin-bottom: 5px; margin-right: 20px; font-size: 12px; font-weight: bold; ">Tax Number - <span style="font-weight: normal;"> {{ $gstsetting->gst_number }}</span></h6>-->
                     </td>
                 </tr>

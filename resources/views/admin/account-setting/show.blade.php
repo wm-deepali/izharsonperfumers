@@ -24,7 +24,7 @@
                         <b class="label-control label">State Name:-</b><span>{{$companyaddress->states->name}}</span>
                     </div>
                     <div class="col-sm-4">
-                        <b class="label-control label">City Name:-</b><span>{{$companyaddress->citys->name}}</span>
+                        <b class="label-control label">City Name:-</b><span>{{$companyaddress->cities->name}}</span>
                     </div>
                     <div class="col-sm-4">
                         <b class="label-control label">Zip Code:-</b><span>{{$companyaddress->zip_code}}</span>

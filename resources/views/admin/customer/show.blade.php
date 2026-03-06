@@ -71,7 +71,7 @@
                                         <li>
                                             <ul class="list-style-o">
                                                 <li>
-                                                    <strong>City</strong> : @if(isset($customer->city)) {{$customer->citys->name}} @endif
+                                                    <strong>City</strong> : @if(isset($customer->city)) {{$customer->cities->name}} @endif
                                                 </li>
                                                 <li>
                                                      <strong>Zip Code</strong> : <span class="ref-n">{{$customer->pin_code}}</span>
@@ -154,7 +154,7 @@
                                              <h5><strong>{{$customer->billing[$key]->name}}</strong></h5>
                                              <p>{{$customer->billing[$key]->address}}</p>
                                              <p><strong>Country:</strong> {{$customer->billing[$key]->countries->name}}</p> 
-                                             <p><strong>City:</strong>{{$customer->billing[$key]->citys->name}} </p>
+                                             <p><strong>City:</strong>{{$customer->billing[$key]->cities->name}} </p>
                                              <p><strong>Contact No:</strong>{{$customer->billing[$key]->mobile_number}} </p>
                                              <p><strong>Email Id:</strong>{{$customer->billing[$key]->email}} </p>
                                              <p><strong>State:</strong>{{$customer->billing[$key]->states->name}} </p>
@@ -175,7 +175,7 @@
                                              <h5><strong>{{$shiiping->name}}</strong></h5>
                                              <p>{{$shiiping->address}}</p>
                                              <p><strong>Country:</strong> {{$shiiping->countries->name}}</p>
-                                             <p><strong>City:</strong>{{$shiiping->citys->name}} </p>
+                                             <p><strong>City:</strong>{{$shiiping->cities->name}} </p>
                                              <p><strong>Contact No:</strong>{{$shiiping->name}} </p>
                                              <p><strong>Email Id:</strong>{{$shiiping->email}} </p>
                                              <p><strong>State:</strong>{{$shiiping->states->name}} </p>
@@ -546,7 +546,7 @@
                      <div class="col-sm-6 form-group">
                         <label class="label-control label">City<span class="required">*</span></label>
                         <select id="city-dropdown" class="form-control" name="city">
-                            <option value="{{$customer->city}}"> @if(isset($customer->city)) {{$customer->citys->name}} @endif </option>
+                            <option value="{{$customer->city}}"> @if(isset($customer->city)) {{$customer->cities->name}} @endif </option>
                         </select>
                         <div class="text-danger" id="city-err"></div>
                     </div>
@@ -995,7 +995,7 @@ $(document).on("submit", "#submitpassword", function(event) {
         $('.billing #id').val(result.id);
         $('.billing #country-dropdown').val(result.country);
         $('.billing #state-dropdown').html('<option value="' + result.states.id + '">' + result.states.name + '</option>');
-        $('.billing #city-dropdown').html('<option value="' + result.citys.id + '">' + result.citys.name + '</option>');
+        $('.billing #city-dropdown').html('<option value="' + result.cities.id + '">' + result.cities.name + '</option>');
          $('.billing #email').val(result.email);
          $('.billing #mobile_number').val(result.mobile_number);
          $('.billing #pincode').val(result.pincode);
@@ -1016,7 +1016,7 @@ $('body').on('click', '.shippingmodal', function () {
             $('.shipping #id').val(result.id);
             $('.shipping #country-dropdown').val(result.country);
             $('.shipping #state-dropdown').html('<option value="' + result.states.id + '">' + result.states.name + '</option>');
-            $('.shipping #city-dropdown').html('<option value="' + result.citys.id + '">' + result.citys.name + '</option>');
+            $('.shipping #city-dropdown').html('<option value="' + result.cities.id + '">' + result.cities.name + '</option>');
          $('.shipping #email').val(result.email);
          $('.shipping #mobile_number').val(result.mobile_number);
          $('.shipping #pincode').val(result.pincode);

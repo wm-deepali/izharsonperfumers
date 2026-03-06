@@ -259,20 +259,20 @@
               <div class="main-banner-wrapper shoplist_style_v1 bdrs6 ovh">
                 <div class="banner-style-one dots_none owl-theme owl-carousel">
                   @foreach($shopBanners as $banner)
-                  <div class="slide slide-one slide_one bg-img-none-sm"
-                    style="background-image: url('{{ asset('storage/' . $banner->image) }}')!important;height: 450px;">
-                    <div class="container">
-                      <div class="row home-content">
-                        <div class="col-lg-12 p0">
-                          <h2 class="banner-title heading-color mb20">{{ $banner->heading }}</h2>
-                          <p class="heading-color">{!! $banner->content !!}</p>
-                          <a href="{{ $banner->url }}" class="btn p0">
-                            <button class="banner-btn btn-thm">{{ $banner->url_txt ?? 'Shop Deals' }}</button>
-                          </a>
+                    <div class="slide slide-one slide_one bg-img-none-sm"
+                      style="background-image: url('{{ asset('storage/' . $banner->image) }}')!important;height: 450px;">
+                      <div class="container">
+                        <div class="row home-content">
+                          <div class="col-lg-12 p0">
+                            <h2 class="banner-title heading-color mb20">{{ $banner->heading }}</h2>
+                            <p class="heading-color">{!! $banner->content !!}</p>
+                            <a href="{{ $banner->url }}" class="btn p0">
+                              <button class="banner-btn btn-thm">{{ $banner->url_txt ?? 'Shop Deals' }}</button>
+                            </a>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
                   @endforeach
                   <div class="slide slide-one slide_two bg-img-none-sm"
                     style="background-image: url(images/background/shop-listing-v7.jpg);height: 450px;">
@@ -333,7 +333,10 @@
                           </ul>
                         </div>
                         <div class="shop_item_cart_btn d-grid">
-                          <a href="#" class="btn btn-thm">Add to Cart</a>
+                          <a href="#" class="btn btn-thm add-to-cart-btn" data-product="{{ $product->id }}"
+                            data-option="{{ $product->product_options->first()->id ?? '' }}">
+                            Add to cart
+                          </a>
                         </div>
                       </div>
                       <div class="details">
@@ -467,7 +470,10 @@
                         </ul>
                       </div>
                       <div class="shop_item_cart_btn d-grid">
-                        <a href="#" class="btn btn-thm">Add to Cart</a>
+                        <a href="#" class="btn btn-thm add-to-cart-btn" data-product="{{ $product->id }}"
+                          data-option="{{ $product->product_options->first()->id ?? '' }}">
+                          Add to cart
+                        </a>
                       </div>
                     </div>
                     <div class="details">
@@ -571,4 +577,53 @@
     });
   </script>
 
+
+  <script>
+
+    // add to cart
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const productId = this.dataset.product;
+        const optionId = this.dataset.option; // ✅ get default option
+        const quantity = 1;
+
+        fetch("{{ route('cart.store') }}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+          },
+          body: JSON.stringify({
+            product_id: productId,
+            product_option_id: optionId,
+            quantity: quantity,
+            device_id: localStorage.getItem("device_id") // ⭐ REQUIRED
+          })
+        })
+          .then(res => res.json())
+          .then(data => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Added!',
+              text: 'Product added to cart',
+              showConfirmButton: false,
+              timer: 1500
+            });
+          })
+          .catch(() => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: 'Error adding to cart'
+            });
+          });
+
+      });
+
+    });
+
+  </script>
 @endsection

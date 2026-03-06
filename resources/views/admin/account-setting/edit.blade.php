@@ -48,8 +48,8 @@
                  <div class="col-xl-4 col-lg-4 col-md-4 col-12">
                <div class="wdinput form-group">
                    <label>City</label>
-                   <select id="citys" class="form-control" name="city">
-                            <option selected value="{{$companyaddress->city}}">{{$companyaddress->citys->name}}</option>
+                   <select id="cities" class="form-control" name="city">
+                            <option selected value="{{$companyaddress->city}}">{{$companyaddress->cities->name}}</option>
                     </select>
                     <div class="text-danger validation-err" id="city-err">
                                                         </div>
@@ -147,13 +147,13 @@
                             $("#states").append('<option value="' + value
                                 .id + '">' + value.name + '</option>');
                         });
-                        $('#citys').html('<option value="">-- Select City --</option>');
+                        $('#cities').html('<option value="">-- Select City --</option>');
                     }
                 });
             });
             $('#states').on('change', function () {
                 var idState = this.value;
-                $("#citys").html('');
+                $("#cities").html('');
                 $.ajax({
                     url: "{{url('admin/fetch-cities')}}",
                     type: "POST",
@@ -164,9 +164,9 @@
                     dataType: 'json',
                     success: function (res) {
                         console.log(res)
-                        $('#citys').html('<option value="">-- Select City --</option>');
+                        $('#cities').html('<option value="">-- Select City --</option>');
                         $.each(res.cities, function (key, value) {
-                            $("#citys").append('<option value="' + value
+                            $("#cities").append('<option value="' + value
                                 .id + '">' + value.name + '</option>');
                         });
                     }

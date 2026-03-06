@@ -651,9 +651,9 @@
                                     </div>
                                 </li>
                                 <li class="list-inline-item me-3 mb-3">
-                                    <a href="#" class="btn btn-thm bdrs60 add-to-cart-btn"
-   data-product="{{ $product->id }}">
-   Add to cart</a>
+                                    <a href="#" class="btn btn-thm bdrs60 add-to-cart-btn" data-product="{{ $product->id }}">
+                                        Add to cart
+                                    </a>
                                     </li>
                             </ul>
                             <div class="cart_btns d-grid mb-3">
@@ -698,7 +698,9 @@
                                         </div>
 
                                         <div class="shop_item_cart_btn d-grid">
-                                            <a href="#" class="btn btn-thm">Add to Cart</a>
+                                            <a href="#" class="btn btn-thm add-to-cart-btn" data-product="{{ $item->id }}">
+                                        Add to cart
+                                    </a>
                                         </div>
                                     </div>
                                     <div class="details">
@@ -760,7 +762,7 @@
                                             <ul class="mb0">
                                                 <li><a href="page-dashboard-wish-list.html"><span
                                                             class="flaticon-heart"></span></a></li>
-                                                <li><a href="{{ url('product-details/' . $product->slug) }}"><span
+                                                <li><a href="{{ url('product-details/' . $item->slug) }}"><span
                                                             class="flaticon-show"></span></a>
                                                 </li>
                                                 <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a>
@@ -769,7 +771,9 @@
                                         </div>
 
                                         <div class="shop_item_cart_btn d-grid">
-                                            <a href="#" class="btn btn-thm">Add to Cart</a>
+                                              <a href="#" class="btn btn-thm add-to-cart-btn" data-product="{{ $item->id }}">
+                                        Add to cart
+                                    </a>
                                         </div>
                                     </div>
                                     {{-- DETAILS --}}
@@ -961,16 +965,27 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn=>{
             body: JSON.stringify({
                 product_id: productId,
                 product_option_id: selectedOption,
-                quantity: quantity
+                quantity: quantity,
+                 device_id: localStorage.getItem("device_id") // ⭐ REQUIRED
             })
         })
         .then(res => res.json())
-        .then(data => {
-            alert("✅ Added to cart");
-        })
-        .catch(err => {
-            alert("Error adding to cart");
-        });
+.then(data => {
+  Swal.fire({
+    icon: 'success',
+    title: 'Added!',
+    text: 'Product added to cart',
+    showConfirmButton: false,
+    timer: 1500
+  });
+})
+.catch(err => {
+  Swal.fire({
+    icon: 'error',
+    title: 'Oops...',
+    text: 'Error adding to cart'
+  });
+});
     });
 });
 </script>

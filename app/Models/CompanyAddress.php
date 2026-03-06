@@ -20,7 +20,7 @@ class CompanyAddress extends Model
      public function states(){
         return $this->belongsTo(State::class,'state','id');
     }
-     public function citys(){
+     public function cities(){
         return $this->belongsTo(City::class,'city','id');
     }
 }
