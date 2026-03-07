@@ -5,7 +5,7 @@
 @section('content')
 
     <!-- Slider Section Start -->
-    <section class="home-one">
+    <section class="home-one pt30">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
@@ -223,7 +223,7 @@
             <div class="row ovh">
                 @foreach($categories as $category)
                     <div class="col-6 col-md-3 col-xl wow fadeInUp">
-                        <a href="{{ url($category->slug) }}">
+                        <a href="{{ route('shop.category', ['category' => $category->slug]) }}" class="category_item">
                             <div class="iconbox">
                                 <div class="icon">
                                     <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}">

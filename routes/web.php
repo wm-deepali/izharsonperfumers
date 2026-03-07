@@ -79,7 +79,7 @@ Route::get('/contact-us', [FrontController::class, 'contactUs'])->name('contact'
 Route::post('/contact-submit', [FrontController::class, 'contactStore'])->name('contact.store');
 
 Route::get('/feedback', [FrontController::class, 'feedback'])->name('feedback');
-Route::post('/feedback', [FrontController::class,'feedbackStore'])->name('feedback.store');
+Route::post('/feedback', [FrontController::class, 'feedbackStore'])->name('feedback.store');
 
 Route::post('/wishlist/toggle', [FrontController::class, 'addToWishlist'])->name('wishlist.toggle');
 Route::get('/privacy-policy', [FrontController::class, 'privacyPolicy'])->name('privacy-policy');
@@ -125,9 +125,21 @@ Route::prefix('customer')->name('customer.')->group(function () {
 
   Route::middleware('auth:customer')->group(function () {
 
-    Route::get('/dashboard', function () {
-      return view('customer.dashboard');
-    })->name('dashboard');
+    Route::get('/orders', [App\Http\Controllers\DashboardController::class, 'myOrders'])->name('orders');
+    Route::get('/orders/{id}', [App\Http\Controllers\DashboardController::class, 'orderDetails'])->name('order.details');
+    Route::post('/order-review-submit', [App\Http\Controllers\DashboardController::class, 'submitReview'])->name('review.submit');
+    Route::post('/order-cancel', [App\Http\Controllers\DashboardController::class, 'cancelOrder'])->name('order.cancel');
+    
+    Route::get('/wishlist', [FrontController::class, 'wishlist'])->name('wishlist');
+    Route::post('/wishlist/remove', [FrontController::class, 'removeFromWishlist'])->name('wishlist.remove');
+
+    Route::get('invoices', [App\Http\Controllers\DashboardController::class, 'invoices'])->name('invoices');
+
+    Route::get('/account-details', [App\Http\Controllers\DashboardController::class, 'accountDetails'])->name('account-details');
+    Route::post('/profile-update', [App\Http\Controllers\DashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/update-password',[App\Http\Controllers\DashboardController::class,'updatePassword'])->name('password.update');
+
+    Route::get('/account-address', [App\Http\Controllers\DashboardController::class, 'accountAddress'])->name('account-address');
 
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.applyCoupon');
     Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.removeCoupon');
@@ -137,8 +149,6 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/payment/request/{order}', [CheckoutController::class, 'request'])->name('payment.request');
     Route::post('/payment/response', [CheckoutController::class, 'response'])->name('payment.response');
     Route::get('/order-success/{id}', [CheckoutController::class, 'success'])->name('order.success');
-    Route::get('/wishlist', [FrontController::class, 'wishlist'])->name('wishlist');
-    Route::post('/wishlist/remove', [FrontController::class, 'removeFromWishlist'])->name('wishlist.remove');
 
   });
 });

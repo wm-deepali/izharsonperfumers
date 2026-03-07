@@ -2,11 +2,6 @@
 
 @section('title', 'Page Vendor List')
 
-<style>
-  .radio input[type="radio"] {
-    opacity: 1 !important;
-  }
-</style>
 @section('content')
 
 

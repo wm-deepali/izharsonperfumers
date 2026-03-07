@@ -1,6 +1,6 @@
 @extends('front.app')
 
-@section('title', 'Page Vendor List')
+@section('title', '404 Error Page')
 
 @section('content')
 
@@ -20,7 +20,7 @@
               <div class="erro_code">40<span class="text-thm">4</span></div>
               <div class="error_title">Oops! It looks like you're lost.</div>
               <p>The page you're looking for isn't available. Try to search again or use the go to.</p>
-              <a class="btn-thm btn_error" href="index1.html">Go Back To Homepages</a>
+              <a class="btn-thm btn_error" href="{{ url('/') }}">Go Back To Homepages</a>
             </div>
           </div>
   			</div>

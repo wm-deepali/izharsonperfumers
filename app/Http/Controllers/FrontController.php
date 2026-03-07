@@ -538,8 +538,11 @@ class FrontController extends Controller
         $about = AboutUs::first();
         $team = Team::get();
         $feedbacks = Feedback::get();
+        $features = \App\Models\HomeFeature::where('status', 1)
+            ->orderBy('position')
+            ->get();
         // dd($feedback->toArray());
-        return view('front.about-us', compact('about', 'team', 'feedbacks'));
+        return view('front.about-us', compact('about', 'team', 'feedbacks', 'features'));
     }
 
 
@@ -623,7 +626,7 @@ class FrontController extends Controller
             ->with('product.product_options')
             ->get();
 
-        return view('front.wishlist', compact('wishlistItems'));
+        return view('customer.wishlist', compact('wishlistItems'));
     }
 
     public function removeFromWishlist(Request $request)

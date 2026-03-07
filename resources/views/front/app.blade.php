@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="{{ asset('front/css/animate.css') }}">
     <link rel="stylesheet" href="{{ asset('front/css/slider.css') }}">
     <link rel="stylesheet" href="{{ asset('front/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('front/css/dashbord_navitaion.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -169,7 +170,7 @@
 
                                         @auth('customer')
                                             {{-- Logged in → go to dashboard --}}
-                                            <a class="header_top_iconbox" href="{{ route('customer.dashboard') }}">
+                                            <a class="header_top_iconbox" href="{{ route('customer.account-details') }}">
                                         @else
                                                 {{-- Guest → open sidebar login --}}
                                                 <a class="header_top_iconbox signin-filter-btn" href="#">
@@ -235,7 +236,7 @@
                                 class="icon-bar"></span> <span class="icon-bar"></span> </button>
                     </div>
                     <div class="posr logo1 home1_style">
-                        <div id="mega-menu"> <a class="btn-mega" href="#"> <img class="me-2"
+                        <div id="mega-menu"> <a class="btn-mega" href="{{ url('/') }}"> <img class="me-2"
                                     src="{{ asset('front/images/desktop-nav-menu-white.svg') }}"
                                     alt="Desktop Menu Icon"> <span class="fw500 fz16 color-white vam">Browse
                                     Categories</span> </a>
@@ -260,7 +261,8 @@
                                                     <ul class="mb0">
                                                         @foreach($category->direct_childs as $sub)
                                                             <li>
-                                                                <a href="{{ url($sub->slug) }}">
+                                                                <a
+                                                                    href="{{ route('shop.category', [$category->slug, $sub->slug])  }}">
                                                                     {{ $sub->name }}
                                                                 </a>
                                                             </li>
@@ -277,7 +279,7 @@
 
                                     <li>
                                         <a class="{{ $category->direct_childs->count() ? 'dropdown' : '' }}"
-                                            href="{{ url($category->slug) }}">
+                                            href="{{ route('shop.category', $category->slug)  }}">
                                             <span class="menu-icn flaticon-diamond"></span>
                                             <span class="menu-title">{{ $category->name }}</span>
                                         </a>
@@ -292,7 +294,8 @@
                                                         <ul class="mb0">
                                                             @foreach($chunk as $sub)
                                                                 <li>
-                                                                    <a href="{{ url($sub->slug) }}">
+                                                                    <a
+                                                                        href="{{ route('shop.category', [$category->slug, $sub->slug])  }}">
                                                                         {{ $sub->name }}
                                                                     </a>
                                                                 </li>
@@ -318,7 +321,7 @@
                         @foreach($premiumMenuCategories as $category)
 
                             <li class="visible_list">
-                                <a href="{{ url($category->slug) }}">
+                                <a href="{{ route('shop.category', $category->slug)  }}">
                                     <span class="title">{{ $category->name }}</span>
                                 </a>
 
@@ -327,7 +330,7 @@
                                     <ul>
                                         @foreach ($category->direct_childs as $child)
                                             <li>
-                                                <a href="{{ url($child->slug) }}">
+                                                <a href="{{ route('shop.category', [$category->slug, $child->slug]) }}">
                                                     {{ $child->name }}
                                                 </a>
                                             </li>
@@ -376,38 +379,76 @@
                 <div class="sidebar-close-icon"><span class="flaticon-close"></span></div>
                 <h4 class="title">Sign-In</h4>
             </div>
+
             <div class="hsidebar-content">
                 <div class="log_reg_form sidebar_area">
+
+                    {{-- Success --}}
+                    @if(session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
+
+                    {{-- Errors --}}
+                    @if($errors->any())
+                        <div class="alert alert-danger">{{ $errors->first() }}</div>
+                    @endif
+
                     <div class="login_form">
-                        <form action="#">
+
+                        <form method="POST" action="{{ route('customer.login') }}">
+                            @csrf
+
                             <div class="mb-2 mr-sm-2">
                                 <label class="form-label">Username or email address</label>
-                                <input type="text" class="form-control" placeholder="Ali Tufan">
+                                <input type="text" name="email" class="form-control" placeholder="Enter email"
+                                    value="{{ old('email') }}" required>
                             </div>
+
                             <div class="form-group mb5">
                                 <label class="form-label">Password</label>
-                                <input type="password" class="form-control" placeholder="Password">
+                                <input type="password" name="password" class="form-control" placeholder="Password"
+                                    required>
                             </div>
+
                             <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="exampleCheck3">
-                                <label class="custom-control-label" for="exampleCheck3">Remember me</label>
-                                <a class="btn-fpswd float-end" href="#">Lost your password?</a>
+                                <input type="checkbox" name="remember" class="custom-control-input"
+                                    id="sidebarRemember">
+                                <label class="custom-control-label" for="sidebarRemember">
+                                    Remember me
+                                </label>
+
+                                <a class="btn-fpswd float-end" href="{{ route('customer.password.request') }}">
+                                    Lost your password?
+                                </a>
                             </div>
-                            <button type="submit" class="btn btn-log btn-thm mt20">Login</button>
-                            <p class="text-center mb25 mt10">Don't have an account? <a class="signup-filter-btn"
-                                    href="#">Create
-                                    account</a></p>
+
+                            <button type="submit" class="btn btn-log btn-thm mt20">
+                                Login
+                            </button>
+
+                            <p class="text-center mb25 mt10">
+                                Don't have an account?
+                                <a class="signup-filter-btn" href="#">Create account</a>
+                            </p>
+
                             <div class="hr_content">
                                 <hr>
                                 <span class="hr_top_text">or</span>
                             </div>
+
                             <ul class="login_with_social text-center mt30 mb0">
                                 <li class="list-inline-item"><a href="#"><i class="fab fa-facebook"></i></a></li>
-                                <li class="list-inline-item"><a href="#"><i class="fab fa-google"></i></a></li>
+                                <li class="list-inline-item">
+                                    <a href="{{ route('customer.google.login') }}">
+                                        <i class="fab fa-google"></i>
+                                    </a>
+                                </li>
                                 <li class="list-inline-item"><a href="#"><i class="fab fa-x-twitter"></i></a></li>
                                 <li class="list-inline-item"><a href="#"><i class="fab fa-apple"></i></a></li>
                             </ul>
+
                         </form>
+
                     </div>
                 </div>
             </div>
@@ -532,40 +573,82 @@
                 <div class="sidebar-close-icon"><span class="flaticon-close"></span></div>
                 <h4 class="title">Create Your Account</h4>
             </div>
+
             <div class="hsidebar-content">
                 <div class="log_reg_form sidebar_area">
+
+                    {{-- Success --}}
+                    @if(session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
+
+                    {{-- Errors --}}
+                    @if($errors->any())
+                        <div class="alert alert-danger">{{ $errors->first() }}</div>
+                    @endif
+
                     <div class="sign_up_form">
-                        <form action="#">
+
+                        <form method="POST" action="{{ route('customer.register') }}">
+                            @csrf
+
                             <div class="form-group">
                                 <label class="form-label">Your Name</label>
-                                <input type="text" class="form-control" placeholder="Ali Tufan">
+                                <input type="text" name="name" class="form-control" value="{{ old('name') }}"
+                                    placeholder="Enter name" required>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Username</label>
-                                <input type="text" class="form-control" placeholder="alitfn">
-                            </div>
+
                             <div class="form-group">
                                 <label class="form-label">Your Email</label>
-                                <input type="email" class="form-control" placeholder="creativelayers088@gmail.com">
+                                <input type="email" name="email" class="form-control" value="{{ old('email') }}"
+                                    placeholder="example@email.com" required>
                             </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Contact Number</label>
+                                <input type="text" name="mobile_number" class="form-control"
+                                    value="{{ old('mobile_number') }}" placeholder="Enter mobile number" required>
+                            </div>
+
                             <div class="form-group mb20">
                                 <label class="form-label">Password</label>
-                                <input type="password" class="form-control" placeholder="******************">
+                                <input type="password" name="password" class="form-control" placeholder="********"
+                                    required>
                             </div>
-                            <button type="submit" class="btn btn-signup btn-thm">Create Account</button>
-                            <p class="text-center mb25 mt10">Already have an account? <a href="page-login.html">Sign
-                                    in</a></p>
+
+                            <div class="form-group mb20">
+                                <label class="form-label">Confirm Password</label>
+                                <input type="password" name="password_confirmation" class="form-control"
+                                    placeholder="********" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-signup btn-thm">
+                                Create Account
+                            </button>
+
+                            <p class="text-center mb25 mt10">
+                                Already have an account?
+                                <a class="signin-filter-btn" href="#">Sign in</a>
+                            </p>
+
                             <div class="hr_content">
                                 <hr>
                                 <span class="hr_top_text">or</span>
                             </div>
+
                             <ul class="login_with_social text-center mt30 mb0">
                                 <li class="list-inline-item"><a href="#"><i class="fab fa-facebook"></i></a></li>
-                                <li class="list-inline-item"><a href="#"><i class="fab fa-google"></i></a></li>
+                                <li class="list-inline-item">
+                                    <a href="{{ route('customer.google.login') }}">
+                                        <i class="fab fa-google"></i>
+                                    </a>
+                                </li>
                                 <li class="list-inline-item"><a href="#"><i class="fab fa-x-twitter"></i></a></li>
                                 <li class="list-inline-item"><a href="#"><i class="fab fa-apple"></i></a></li>
                             </ul>
+
                         </form>
+
                     </div>
                 </div>
             </div>
@@ -652,12 +735,12 @@
                     @foreach ($menuCategories as $category)
                         <li>
                             <span><i class="flaticon-cooking mr20"></i><a
-                                    href="{{ url($category->slug) }}">{{ $category->name }}</a></span>
+                                    href="{{ route('shop.category', $category->slug)  }}">{{ $category->name }}</a></span>
                             @if ($category->direct_childs->count() > 0)
                                 <ul>
                                     @foreach($category->direct_childs as $sub)
                                         <li>
-                                            <a href="{{ url($sub->slug) }}">
+                                            <a href="{{ route('shop.category', [$category->slug, $sub->slug])  }}">
                                                 {{ $sub->name }}
                                             </a>
                                         </li>
@@ -694,7 +777,7 @@
         </div>
 
 
-        <div class="body_content_wrapper position-relative pt30">
+        <div class="body_content_wrapper position-relative">
 
 
             @yield('content')
@@ -755,37 +838,37 @@
                         </div>
                         <div class="col-sm-6 col-md-3 col-lg-2 col-xl-2">
                             <div class="footer_qlink_widget">
-                                <h4>About Zenmart</h4>
+                                <h4>Popular Categories</h4>
                                 <ul class="list-unstyled">
-                                    <li><a href="#">Track Your Order</a></li>
-                                    <li><a href="#">Product Guides</a></li>
-                                    <li><a href="{{ route('customer.wishlist') }}">Wishlists</a></li>
-                                    <li><a href="{{ route('privacy-policy') }}">Privacy Policy</a></li>
-                                    <li><a href="#">Store Locator</a></li>
+                                    @foreach ($premiumMenuCategories as $category)
+                                        <li><a
+                                                href="{{ route('shop.category', $category->slug) }}">{{ $category->name }}</a>
+                                        </li>
+                                    @endforeach
                                 </ul>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3 col-lg-2 col-xl-2">
                             <div class="footer_qlink_widget">
-                                <h4>Customer Support</h4>
+                                <h4>About Izharson</h4>
                                 <ul class="list-unstyled">
                                     <li><a href="{{ route(name: 'contact') }}">Contact Us</a></li>
-                                    <li><a href="#">Help Centre</a></li>
-                                    <li><a href="#">Returns & Exchanges</a></li>
-                                    <li><a href="#">Best Buy Financing</a></li>
-                                    <li><a href="#">Best Buy Gift Card</a></li>
+                                    <li><a href="{{ route('about') }}">About Us</a></li>
+                                    <li><a href="{{ route('faq') }}">FAQ</a></li>
+                                    <li><a href="{{ route('blogs') }}">Blog & Articles</a></li>
+                                    <li><a href="{{ route('feedback') }}">Feedback</a></li>
                                 </ul>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3 col-lg-2 col-xl-2">
                             <div class="footer_qlink_widget">
-                                <h4>Services</h4>
+                                <h4>Policies</h4>
                                 <ul class="list-unstyled">
-                                    <li><a href="#">Geek Squad</a></li>
-                                    <li><a href="#">In-Home Advisor</a></li>
-                                    <li><a href="#">Trade-In Program</a></li>
-                                    <li><a href="#">Electronics Recycling</a></li>
-                                    <li><a href="#">Best Buy Health</a></li>
+                                    <li><a href="{{ route('terms-conditions') }}">Terms & Conditions</a></li>
+                                    <li><a href="{{ route('privacy-policy') }}">Privacy Policy</a></li>
+                                    <li><a href="{{ route('refund-policy') }}">Refund & Cancellation</a></li>
+                                    <li><a href="{{ route('cookie-policy') }}">Cookie Policy</a></li>
+                                    <li><a href="{{ route('shipping-policy') }}">Shipping Policy</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -816,15 +899,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="footer_mobile_app_widget mb25">
-                                <h4 class="title mb10">Mobile Apps</h4>
-                                <div class="mobile_app_list">
-                                    <ul class="mb0">
-                                        <li><a href="#"><span class="flaticon-apple"></span>iOS App</a></li>
-                                        <li><a href="#"><span class="flaticon-android"></span>Android App</a></li>
-                                    </ul>
-                                </div>
-                            </div>
+
                             <div class="footer_acceped_card_widget">
                                 <h4 class="title mb20">We accept</h4>
                                 <div class="acceped_card_list">
@@ -859,31 +934,6 @@
                         <div class="col-lg-6">
                             <div class="copyright-widget text-center text-lg-start d-block d-lg-flex mb15-md">
                                 <p class="me-4">© 2025 Izharson Perfumers. All Rights Reserved</p>
-                                <p><a href="{{ route('privacy-policy') }}">Privacy</a>·<a
-                                        href="{{ route('terms-conditions') }}">Terms</a>·<a
-                                        href="#">Sitemap</a></p>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="footer_bottom_right_widgets text-center text-lg-end">
-                                <ul class="mb0">
-                                    <li class="list-inline-item mb20-340">
-                                        <select class="selectpicker show-tick">
-                                            <option>Currency : USD</option>
-                                            <option>Euro</option>
-                                            <option>Pound</option>
-                                        </select>
-                                    </li>
-                                    <li class="list-inline-item">
-                                        <select class="selectpicker show-tick">
-                                            <option>Language: English</option>
-                                            <option>Frenc</option>
-                                            <option>Italian</option>
-                                            <option>Spanish</option>
-                                            <option>Turkey</option>
-                                        </select>
-                                    </li>
-                                </ul>
                             </div>
                         </div>
                     </div>
@@ -917,8 +967,9 @@
     <script src="{{ asset('front/js/jquery.ez-plus.js') }}"></script>
     <script src="{{ asset('front/js/scrollbalance.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAz77U5XQuEME6TpftaMdX0bBelQxXRlM&callback=initMap"></script>
-<script src="{{ asset('front/js/googlemaps1.js') }}"></script>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAz77U5XQuEME6TpftaMdX0bBelQxXRlM&callback=initMap"></script>
+    <script src="{{ asset('front/js/googlemaps1.js') }}"></script>
     <!-- Custom script for all pages -->
     <script>
         $(document).ready(function () {
@@ -1128,6 +1179,26 @@
                 device_id: localStorage.getItem("device_id")
             })
         });
+
+        function myFunction() {
+            document.getElementById("myDropdown").classList.toggle("show");
+        }
+
+        // close dropdown if user clicks outside
+        window.onclick = function (event) {
+            if (!event.target.matches('.dropbtn')) {
+
+                const dropdowns = document.getElementsByClassName("dropdown-content");
+
+                for (let i = 0; i < dropdowns.length; i++) {
+                    let openDropdown = dropdowns[i];
+
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
     </script>
 </body>
 

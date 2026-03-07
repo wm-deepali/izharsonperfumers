@@ -17,7 +17,7 @@ class CustomerAuthController extends Controller
     public function showLogin()
     {
         if (Auth::guard('customer')->check()) {
-            return redirect()->route('customer.dashboard');
+            return redirect()->route('customer.account-details');
         }
 
         return view('customer.auth.login');
@@ -29,7 +29,7 @@ class CustomerAuthController extends Controller
     public function showRegister()
     {
         if (Auth::guard('customer')->check()) {
-            return redirect()->route('customer.dashboard');
+            return redirect()->route('customer.account-details');
         }
 
         return view('customer.auth.register');
@@ -62,7 +62,7 @@ class CustomerAuthController extends Controller
 
         CartController::mergeGuestCart($customer->id, $deviceId);
 
-        return redirect()->route('customer.dashboard')
+        return redirect()->route('customer.account-details')
             ->with('success', 'Registration successful!');
     }
     /**
@@ -83,7 +83,7 @@ class CustomerAuthController extends Controller
 
             CartController::mergeGuestCart($customer->id, $deviceId);
 
-            return redirect()->route('customer.dashboard')
+            return redirect()->route('customer.account-details')
                 ->with('success', 'Login successful');
         }
 
