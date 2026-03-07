@@ -70,14 +70,23 @@ Route::post('/subscribe', [FrontController::class, 'subscribers'])->name('subscr
 Route::get('/shop/{categorySlug?}/{subSlug?}', [FrontController::class, 'productList'])->name('shop.category');
 Route::get('/about-us', [FrontController::class, 'aboutUs'])->name('about');
 Route::get('/product-details/{slug}', [FrontController::class, 'productDetails'])->name('product-details');
-Route::view('/faq', 'front.faqs')->name('faq');
-Route::view('/blogs', 'front.blogs')->name('blogs');
-Route::view('/contact-us', 'front.contact-us')->name('contact');
-Route::view('/feedback', 'front.feedback')->name('feedback');
-Route::view('/wishlist', 'front.wishlist')->name('wishlist');
-Route::view('/privacy-policy', 'front.privacy-policy')->name('privacy-policy');
-Route::view('/terms-conditions', 'front.terms-conditions')->name('terms-conditions');
-Route::view('/sitemap', 'front.sitemap')->name('sitemap');
+Route::get('/faq', [FrontController::class, 'faqs'])->name('faq');
+
+Route::get('/blogs', [FrontController::class, 'blogs'])->name('blogs');
+Route::get('/blog/{slug}', [FrontController::class, 'blogDetail'])->name('blog.details');
+
+Route::get('/contact-us', [FrontController::class, 'contactUs'])->name('contact');
+Route::post('/contact-submit', [FrontController::class, 'contactStore'])->name('contact.store');
+
+Route::get('/feedback', [FrontController::class, 'feedback'])->name('feedback');
+Route::post('/feedback', [FrontController::class,'feedbackStore'])->name('feedback.store');
+
+Route::post('/wishlist/toggle', [FrontController::class, 'addToWishlist'])->name('wishlist.toggle');
+Route::get('/privacy-policy', [FrontController::class, 'privacyPolicy'])->name('privacy-policy');
+Route::get('/terms-conditions', [FrontController::class, 'termsConditions'])->name('terms-conditions');
+Route::get('/refund-policy', [FrontController::class, 'refundPolicy'])->name('refund-policy');
+Route::get('/cookie-policy', [FrontController::class, 'cookiePolicy'])->name('cookie-policy');
+Route::get('/shipping-policy', [FrontController::class, 'shippingPolicy'])->name('shipping-policy');
 
 Route::post('/store-device', function (\Illuminate\Http\Request $request) {
   session(['device_id' => $request->device_id]);
@@ -89,6 +98,7 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/store', [CartController::class, 'storeCart'])->name('cart.store');
 Route::post('/cart/update/{id}', [CartController::class, 'updateQty']);
 Route::post('/cart/remove/{id}', [CartController::class, 'removeItem']);
+Route::post('/cart/set-quantity/{id}', [CartController::class, 'setQuantity']);
 Route::get('checkout', [CheckoutController::class, 'checkout'])->name('checkout');
 Route::get('/states/{country}', [CheckoutController::class, 'states']);
 Route::get('/cities/{state}', [CheckoutController::class, 'cities']);
@@ -127,6 +137,8 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/payment/request/{order}', [CheckoutController::class, 'request'])->name('payment.request');
     Route::post('/payment/response', [CheckoutController::class, 'response'])->name('payment.response');
     Route::get('/order-success/{id}', [CheckoutController::class, 'success'])->name('order.success');
+    Route::get('/wishlist', [FrontController::class, 'wishlist'])->name('wishlist');
+    Route::post('/wishlist/remove', [FrontController::class, 'removeFromWishlist'])->name('wishlist.remove');
 
   });
 });

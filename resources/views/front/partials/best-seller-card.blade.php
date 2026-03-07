@@ -7,7 +7,13 @@
 
             <div class="thumb_info">
                 <ul class="mb0">
-                    <li><a href="page-dashboard-wish-list.html"><span class="flaticon-heart"></span></a></li>
+                    <li>
+                        <a href="#" class="add-to-wishlist-btn" data-product="{{ $product->id }}">
+                            <span class="flaticon-heart"
+                                style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}">
+                            </span>
+                        </a>
+                    </li>
                     <li><a href="{{ url('product-details/' . $product->slug) }}"><span class="flaticon-show"></span></a>
                     </li>
                     <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a></li>
@@ -16,7 +22,7 @@
 
             <div class="shop_item_cart_btn d-grid">
                 <a href="#" class="btn btn-thm add-to-cart-btn" data-product="{{ $product->id }}"
-                    data-option="{{ $product->product_options->first()->id ?? '' }}">
+                    data-option="{{ optional($product->product_options->first())->id }}">
                     Add to cart
                 </a>
             </div>

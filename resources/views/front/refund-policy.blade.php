@@ -11,10 +11,10 @@
         <div class="col-xl-6">
           <div class="breadcrumb_content">
             <ol class="breadcrumb">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item"><a href="#">Electronics</a></li>
-              <li class="breadcrumb-item"><a href="#">Computers</a></li>
-              <li class="breadcrumb-item active" aria-current="page"><a href="#">Desktop Computers</a></li>
+              <li class="breadcrumb-item">
+                <a href="{{ url('/') }}">Home</a>
+              </li>
+              <li class="breadcrumb-item active" aria-current="page"><a href="#">Shipping Return and Refund Policy</a></li>
             </ol>
           </div>
         </div>
@@ -28,7 +28,7 @@
       <div class="row">
         <div class="col-lg-6 offset-lg-3">
           <div class="main-title text-center">
-            <h2>Terms and Conditions</h2>
+            <h2>Shipping Return and Refund Policy</h2>
           </div>
         </div>
       </div>

@@ -699,7 +699,6 @@ class CheckoutController extends Controller
 
         $order = Order::with('order_detailss')
             ->findOrFail($orderId);
-
         return view('front.order_success', compact('order'));
     }
 

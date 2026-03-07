@@ -107,14 +107,16 @@ class ShippingHelper
 
                 return [
                     'success' => true,
-                    'shippingCost' => [[
-                        'TotalShipCost' => 0,
-                        'totalCartAmount' => $totalCart,
-                        'total_gst_amount' => round($gstAmount, 2),
-                        'gst_type' => $gstType,
-                        'shipping_type' => 'free',
-                        'delivery_days_range' => $free->day_range_inter_state
-                    ]]
+                    'shippingCost' => [
+                        [
+                            'TotalShipCost' => 0,
+                            'totalCartAmount' => $totalCart,
+                            'total_gst_amount' => round($gstAmount, 2),
+                            'gst_type' => $gstType,
+                            'shipping_type' => 'free',
+                            'delivery_days_range' => $free->day_range_inter_state
+                        ]
+                    ]
                 ];
             }
 

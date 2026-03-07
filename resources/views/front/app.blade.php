@@ -154,7 +154,7 @@
                             <div class="wrapper">
                                 <ul class="mb0">
                                     <li class="list-inline-item"><a class="header_top_iconbox"
-                                            href="{{ route('wishlist') }}">
+                                            href="{{ route('customer.wishlist') }}">
                                             <div class="d-block d-md-flex">
                                                 <div class="icon"><span class="flaticon-heart"></span></div>
                                                 <div class="details">
@@ -759,7 +759,7 @@
                                 <ul class="list-unstyled">
                                     <li><a href="#">Track Your Order</a></li>
                                     <li><a href="#">Product Guides</a></li>
-                                    <li><a href="{{ route('wishlist') }}">Wishlists</a></li>
+                                    <li><a href="{{ route('customer.wishlist') }}">Wishlists</a></li>
                                     <li><a href="{{ route('privacy-policy') }}">Privacy Policy</a></li>
                                     <li><a href="#">Store Locator</a></li>
                                 </ul>
@@ -861,7 +861,7 @@
                                 <p class="me-4">© 2025 Izharson Perfumers. All Rights Reserved</p>
                                 <p><a href="{{ route('privacy-policy') }}">Privacy</a>·<a
                                         href="{{ route('terms-conditions') }}">Terms</a>·<a
-                                        href="{{ route('sitemap') }}">Sitemap</a></p>
+                                        href="#">Sitemap</a></p>
                             </div>
                         </div>
                         <div class="col-lg-6">
@@ -908,6 +908,7 @@
     <script src="{{ asset('front/js/jquery-scrolltofixed-min.js') }}"></script>
     <script src="{{ asset('front/js/wow.min.js') }}"></script>
     <script src="{{ asset('front/js/slider.js') }}"></script>
+    <script src="{{ asset('front/js/swiper-slider.js') }}"></script>
     <!-- Custom script for all pages -->
     <script src="{{ asset('front/js/script.js') }}"></script>
     <script src="{{ asset('front/js/isotop.js') }}"></script>
@@ -916,6 +917,8 @@
     <script src="{{ asset('front/js/jquery.ez-plus.js') }}"></script>
     <script src="{{ asset('front/js/scrollbalance.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAz77U5XQuEME6TpftaMdX0bBelQxXRlM&callback=initMap"></script>
+<script src="{{ asset('front/js/googlemaps1.js') }}"></script>
     <!-- Custom script for all pages -->
     <script>
         $(document).ready(function () {

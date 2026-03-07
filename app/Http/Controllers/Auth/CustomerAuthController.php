@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\CartController;
 
 class CustomerAuthController extends Controller
 {
@@ -45,6 +46,7 @@ class CustomerAuthController extends Controller
             'mobile_number' => 'required|digits:10|unique:customers,mobile_number',
             'password' => 'required|min:6|confirmed',
         ]);
+
         $customer = Customer::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -55,10 +57,14 @@ class CustomerAuthController extends Controller
         // auto login after register
         Auth::guard('customer')->login($customer);
 
+        // ⭐ merge guest cart
+        $deviceId = $request->device_id ?? session('device_id');
+
+        CartController::mergeGuestCart($customer->id, $deviceId);
+
         return redirect()->route('customer.dashboard')
             ->with('success', 'Registration successful!');
     }
-
     /**
      * Customer Login
      */
@@ -70,6 +76,13 @@ class CustomerAuthController extends Controller
         ]);
 
         if (Auth::guard('customer')->attempt($request->only('email', 'password'), $request->remember)) {
+
+            $customer = Auth::guard('customer')->user();
+
+            $deviceId = $request->device_id ?? session('device_id');
+
+            CartController::mergeGuestCart($customer->id, $deviceId);
+
             return redirect()->route('customer.dashboard')
                 ->with('success', 'Login successful');
         }
@@ -78,7 +91,6 @@ class CustomerAuthController extends Controller
             'email' => 'Invalid email or password'
         ])->withInput();
     }
-
     /**
      * Logout Customer
      */
@@ -89,4 +101,5 @@ class CustomerAuthController extends Controller
         return redirect()->route('customer.login')
             ->with('success', 'Logged out successfully');
     }
+
 }

@@ -325,7 +325,14 @@
                         <img class="w100" src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
                         <div class="thumb_info">
                           <ul class="mb0">
-                            <li><a href="page-dashboard-wish-list.html"><span class="flaticon-heart"></span></a></li>
+                              <li>
+    <a href="#" class="add-to-wishlist-btn"
+        data-product="{{ $product->id }}">
+        <span class="flaticon-heart"
+                                                            style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}">
+                                                        </span>
+    </a>
+</li>
                             <li><a href="{{ url('product-details/' . $product->slug) }}"><span
                                   class="flaticon-show"></span></a>
                             </li>
@@ -334,7 +341,7 @@
                         </div>
                         <div class="shop_item_cart_btn d-grid">
                           <a href="#" class="btn btn-thm add-to-cart-btn" data-product="{{ $product->id }}"
-                            data-option="{{ $product->product_options->first()->id ?? '' }}">
+                            data-option="{{ optional($product->product_options->first())->id }}">
                             Add to cart
                           </a>
                         </div>
@@ -462,7 +469,14 @@
                       <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
                       <div class="thumb_info">
                         <ul class="mb0">
-                          <li><a href="page-dashboard-wish-list.html"><span class="flaticon-heart"></span></a></li>
+                          <li>
+    <a href="#" class="add-to-wishlist-btn"
+        data-product="{{ $product->id }}">
+        <span class="flaticon-heart"
+                                                            style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}">
+                                                        </span>
+    </a>
+</li>
                           <li><a href="{{ url('product-details/' . $product->slug) }}"><span
                                 class="flaticon-show"></span></a>
                           </li>
@@ -471,7 +485,7 @@
                       </div>
                       <div class="shop_item_cart_btn d-grid">
                         <a href="#" class="btn btn-thm add-to-cart-btn" data-product="{{ $product->id }}"
-                          data-option="{{ $product->product_options->first()->id ?? '' }}">
+                          data-option="{{ optional($product->product_options->first())->id }}">
                           Add to cart
                         </a>
                       </div>
@@ -580,50 +594,129 @@
 
   <script>
 
-    // add to cart
     document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
 
       btn.addEventListener('click', function (e) {
+
         e.preventDefault();
 
         const productId = this.dataset.product;
-        const optionId = this.dataset.option; // ✅ get default option
+        const optionId = this.dataset.option || null;
         const quantity = 1;
 
+        Swal.fire({
+          title: 'Adding to cart...',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
         fetch("{{ route('cart.store') }}", {
+
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
             "X-CSRF-TOKEN": "{{ csrf_token() }}"
           },
+
           body: JSON.stringify({
             product_id: productId,
             product_option_id: optionId,
             quantity: quantity,
-            device_id: localStorage.getItem("device_id") // ⭐ REQUIRED
+            device_id: localStorage.getItem("device_id")
           })
+
         })
           .then(res => res.json())
           .then(data => {
             Swal.fire({
               icon: 'success',
               title: 'Added!',
-              text: 'Product added to cart',
-              showConfirmButton: false,
-              timer: 1500
+              text: data.message,
+              timer: 1200,
+              showConfirmButton: false
             });
+
           })
           .catch(() => {
+
             Swal.fire({
               icon: 'error',
-              title: 'Oops...',
-              text: 'Error adding to cart'
+              title: 'Error',
+              text: 'Unable to add product'
             });
+
           });
 
       });
 
     });
+
+     document.querySelectorAll('.add-to-wishlist-btn').forEach(btn => {
+
+    btn.addEventListener('click', function (e) {
+
+        e.preventDefault();
+
+        const button = this;
+        const productId = button.dataset.product;
+
+        // 🔵 show loading
+        Swal.fire({
+            title: 'Updating Wishlist...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        fetch("/wishlist/toggle", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                product_id: productId
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            const heartIcon = button.querySelector('span');
+
+            if (data.status === "added") {
+                heartIcon.style.color = "red";
+            }
+
+            if (data.status === "removed") {
+                heartIcon.style.color = "";
+            }
+
+            if (data.status === "login_required") {
+                window.location.href = "/customer/login";
+                return;
+            }
+
+            // ✅ close loading
+            Swal.close();
+
+        })
+        .catch(error => {
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Unable to update wishlist'
+            });
+
+            console.error("Wishlist error:", error);
+
+        });
+
+    });
+
+});
 
   </script>
 @endsection

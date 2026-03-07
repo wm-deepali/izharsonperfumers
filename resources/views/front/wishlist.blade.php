@@ -1,6 +1,8 @@
 @extends('front.app')
 
-@section('title', 'Page Vendor List')
+@section('title', 'Wishlist')
+
+<link rel="stylesheet" href="{{ asset('front/css/dashbord_navitaion.css') }}">
 
 @section('content')
     <!-- Our Dashbord -->
@@ -10,11 +12,12 @@
                 <div class="col-lg-3 col-xl-2 dn-md">
                     <div class="users_account_details extra-dashboard-menu">
                         <div class="account_details_user d-flex pb10 bb1 mb10">
-                            <img class="me-3" src="{{ asset('front/images/team/ad-thumb.png')}}"
+                            @php $customer = auth()->guard('customer')->user(); @endphp
+                            <img class="me-3" src="{{ $customer->image ? asset('storage/' . $customer->image) : asset('front/images/team/ad-thumb.png') }}"
                                 alt="Generic placeholder image">
                             <div class="content_details text-start">
-                                <h5 class="title">Ali Tufan</h5>
-                                <a class="stitle" href="mailto:alitfn58@gmail.com">alitfn58@gmail.com</a>
+<h5 class="title">{{ $customer->name ?? 'Customer' }}</h5>
+<a class="stitle" href="mailto:{{ $customer->email }}">{{ $customer->email }}</a>
                             </div>
                         </div>
                         <div class="ed_menu_list">
@@ -25,11 +28,11 @@
                                 </li>
                                 <li><a href="page-account-address.html"><span class="flaticon-location"></span>Address</a>
                                 </li>
-                                <li><a class="active" href="page-account-wishlist.html"><span
+                                <li><a class="active" href="{{ route('customer.wishlist') }}"><span
                                             class="flaticon-badge"></span>Wishlist</a></li>
                                 <li><a href="page-account-invoice.html"><span class="flaticon-invoice"></span>Invoices</a>
                                 </li>
-                                <li><a href="page-login.html"><span class="flaticon-exit"></span>Logout</a></li>
+                                <li><a href="{{ route('customer.logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><span class="flaticon-exit"></span>Logout</a></li>
                             </ul>
                         </div>
                     </div>
@@ -48,11 +51,15 @@
                                                     class="flaticon-checked-box"></span>Order</a></li>
                                         <li><a href="page-account-address.html"><span
                                                     class="flaticon-location"></span>Address</a></li>
-                                        <li><a class="active" href="page-account-wishlist.html"><span
+                                        <li><a class="active" href="{{ route('customer.wishlist') }}"><span
                                                     class="flaticon-badge"></span>Wishlist</a></li>
                                         <li><a href="page-account-invoice.html"><span
                                                     class="flaticon-invoice"></span>Invoices</a></li>
-                                        <li><a href="page-login.html"><span class="flaticon-exit"></span>Logout</a></li>
+                                        <li><a href="{{ route('customer.logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><span class="flaticon-exit"></span>Logout</a></li>
+                                          <form id="logout-form" action="{{ route('customer.logout') }}" method="POST"
+                                style="display: none;">
+                                @csrf
+                            </form>
                                     </ul>
                                 </div>
                             </div>
@@ -63,135 +70,64 @@
                             <div class="account_user_deails pl40 pl0-lg">
                                 <h2 class="title mb30">Wishlist</h2>
                                 <div class="row">
-                                    <div class="col-sm-6 col-lg-6 col-xl p0">
-                                        <div class="shop_item bdr1 wishlist_style">
-                                            <div class="close_list"><span class="flaticon-close"></span></div>
-                                            <div class="thumb pb30">
-                                                <img src="{{ asset('front/images/shop-items/shop-item1.png')}}"
-                                                    alt="Shop Item1">
-                                            </div>
-                                            <div class="details">
-                                                <div class="sub_title">Lenovo</div>
-                                                <div class="title"><a href="#">Lenovo IdeaPad 3 15.6" Laptop - Sand (Intel
-                                                        Core i7-1165G7/512GB SSD/12GB RAM/Windows 11)</a></div>
-                                                <div class="review d-flex">
-                                                    <ul class="mb0 me-2">
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                    </ul>
-                                                    <div class="review_count"><a href="#">3,014 reviews</a></div>
+                                   @forelse($wishlistItems as $wishlistItem)
+                                        <div class="col-sm-6 col-lg-6 col-xl-3 p0">
+                                            <div class="shop_item bdr1 wishlist_style">
+                                                <div class="close_list">
+    <a href="#" class="remove-wishlist-btn" data-product="{{ $wishlistItem->product->id }}">
+        <span class="flaticon-close"></span>
+    </a>
+</div>
+                                                <div class="thumb pb30">
+                                                    <img src="{{ asset('storage/' . $wishlistItem->product->image) }}"
+                                                        alt="{{ $wishlistItem->product->name }}">
                                                 </div>
-                                                <div class="si_footer">
-                                                    <div class="price">$899.99 <small><del>$45</del></small></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-6 col-lg-6 col-xl p0">
-                                        <div class="shop_item bdr1 wishlist_style">
-                                            <div class="close_list"><span class="flaticon-close"></span></div>
-                                            <div class="thumb pb30">
-                                                <img src="{{ asset('front/images/shop-items/shop-item2.png')}}"
-                                                    alt="Shop Item2">
-                                            </div>
-                                            <div class="details">
-                                                <div class="sub_title">Asus</div>
-                                                <div class="title"><a href="#">ASUS TUF Dash 15 15.6" Gaming Laptop - Grey
-                                                        (Intel Core i7-11370H/512GB SSD/16GB RAM/RTX 3060/Win11)</a></div>
-                                                <div class="review d-flex">
-                                                    <ul class="mb0 me-2">
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                    </ul>
-                                                    <div class="review_count"><a href="#">3,014 reviews</a></div>
-                                                </div>
-                                                <div class="si_footer">
-                                                    <div class="price">$399.00 <small><del>$45</del></small></div>
-                                                </div>
+                                                <div class="details">
+                                                    <div class="sub_title">
+                                                        {{ $wishlistItem->product->subcategories->name ?? ($wishlistItem->product->categories->name ?? '')}}
+                                                    </div>
+                                                    <div class="title">
+                                                        <a href="{{ url('product-details/' . $wishlistItem->product->slug) }}">
+                                                            {{ Str::limit($wishlistItem->product->name, 40) }}
+                                                        </a>
+                                                    </div>
+                                                    {{-- RATING --}}
+                                                    <div class="review d-flex">
+                                                        <ul class="mb0 me-2">
+                                                            @for($i = 1; $i <= 5; $i++)
+                                                                <li class="list-inline-item">
+                                                                    <a href="#">
+                                                                        <i
+                                                                            class="fas fa-star {{ $i <= $wishlistItem->product->avg_rating ? '' : 'text-muted' }}"></i>
+                                                                    </a>
+                                                                </li>
+                                                            @endfor
+                                                        </ul>
+
+                                                        <div class="review_count">
+                                                            <a href="#">{{ $wishlistItem->product->review_count }} reviews</a>
+                                                        </div>
+                                                    </div>
+                                                     {{-- PRICE --}}
+                      <div class="si_footer">
+                        <div class="price">
+                          ₹{{ $wishlistItem->product->product_options[0]->price ?? $wishlistItem->product->min_price }}
+
+                          @if(!empty($wishlistItem->product->product_options[0]->mrp))
+                            <small>
+                              <del>₹{{ $wishlistItem->product->product_options[0]->mrp }}</del>
+                            </small>
+                          @endif
+                        </div>
+                      </div> 
+                    </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-sm-6 col-lg-6 col-xl p0">
-                                        <div class="shop_item bdr1 wishlist_style">
-                                            <div class="close_list"><span class="flaticon-close"></span></div>
-                                            <div class="thumb pb30">
-                                                <img src="{{ asset('front/images/shop-items/shop-item3.png')}}"
-                                                    alt="Shop Item3">
-                                            </div>
-                                            <div class="details">
-                                                <div class="sub_title">Eastsport</div>
-                                                <div class="title"><a href="#">ASUS TUF Dash 15 15.6" Gaming Laptop - Grey
-                                                        (Intel Core i7-11370H/512GB SSD/16GB RAM/RTX 3060/Win11)</a></div>
-                                                <div class="review d-flex">
-                                                    <ul class="mb0 me-2">
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                    </ul>
-                                                    <div class="review_count"><a href="#">3,014 reviews</a></div>
-                                                </div>
-                                                <div class="si_footer">
-                                                    <div class="price">$32.50 <small><del>$45</del></small></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-6 col-lg-6 col-xl p0">
-                                        <div class="shop_item bdr1 wishlist_style">
-                                            <div class="close_list"><span class="flaticon-close"></span></div>
-                                            <div class="thumb pb30">
-                                                <img src="{{ asset('front/images/shop-items/shop-item4.png')}}"
-                                                    alt="Shop Item4">
-                                            </div>
-                                            <div class="details">
-                                                <div class="sub_title">Rolex</div>
-                                                <div class="title"><a href="#">Apple MacBook Air 13.3" w/ Touch ID (Fall
-                                                        2020) - Space Grey (Apple M1 Chip / 256GB SSD / 8GB RAM) - En</a>
-                                                </div>
-                                                <div class="review d-flex">
-                                                    <ul class="mb0 me-2">
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                        <li class="list-inline-item"><a href="#"><i
-                                                                    class="fas fa-star"></i></a></li>
-                                                    </ul>
-                                                    <div class="review_count"><a href="#">3,014 reviews</a></div>
-                                                </div>
-                                                <div class="si_footer">
-                                                    <div class="price">$18.124 <small><del>$45</del></small></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                   @empty
+<div class="col-12 text-center">
+    <h4>Your wishlist is empty ❤️</h4>
+</div>
+@endforelse
                                 </div>
                             </div>
                         </div>
@@ -200,4 +136,77 @@
             </div>
         </div>
     </section>
+
+    <script>
+        document.addEventListener('click', function(e){
+
+    const btn = e.target.closest('.remove-wishlist-btn');
+    if(!btn) return;
+
+    e.preventDefault();
+
+    const productId = btn.dataset.product;
+    const card = btn.closest('.col-xl-3');
+
+    Swal.fire({
+        title: "Remove from wishlist?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes remove"
+    }).then((result)=>{
+
+        if(!result.isConfirmed) return;
+
+        fetch("{{ route('customer.wishlist.remove') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                product_id: productId
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            if(data.success){
+
+                card.remove();
+
+                Swal.fire({
+                    icon:"success",
+                    title:"Removed",
+                    timer:1200,
+                    showConfirmButton:false
+                });
+
+            }
+
+        });
+
+    });
+
+});
+
+function myFunction() {
+    document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// close dropdown if user clicks outside
+window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn')) {
+
+        const dropdowns = document.getElementsByClassName("dropdown-content");
+
+        for (let i = 0; i < dropdowns.length; i++) {
+            let openDropdown = dropdowns[i];
+
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
+}
+    </script>
 @endsection

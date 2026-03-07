@@ -51,10 +51,6 @@
         <div class="col-lg-8 col-xl-9">
           <div class="checkout_form style2">
 
-            <div class="main-title mb50">
-              <p>Returning customer? <a class="signin-filter-btn" href="#">Click here to login</a></p>
-            </div>
-
             <!-- ================= BILLING ADDRESS ================= -->
 
             <h4 class="title mb20">Billing Address</h4>

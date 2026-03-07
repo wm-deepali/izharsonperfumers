@@ -4,7 +4,6 @@
 
 @section('content')
 
-
     <!-- Inner Page Breadcrumb -->
     <section class="inner_page_breadcrumb">
         <div class="container">
@@ -172,7 +171,7 @@
                                         @foreach($product->product_options as $index => $option)
                                             @php $pack = $option->packaging;
                                                 $variantImg = $option->product_variant_images->first()->image ?? $product->image;
-                                            @endphp
+                                            @endphp 
                                             <button class="nav-link me-2 {{ $index == 0 ? 'active' : '' }}"
                                                 data-bs-toggle="pill" data-bs-target="#pack{{ $index }}" type="button"
                                                 role="tab" data-price="{{ $option->price }}" data-mrp="{{ $option->mrp }}"
@@ -209,12 +208,21 @@
    Add to cart
 </a>
                                     </li>
-                                    <li class="me-0 me-sm-3 mb-3"><a href="page-shop-cart.html"
-                                            class="btn btn-white bdr_thm bdrs60">Buy Now</a></li>
+                                    <li class="me-0 me-sm-3 mb-3"><a href="#"class="btn btn-white bdr_thm bdrs60 buy-now-btn"
+   data-product="{{ $product->id }}">
+   Buy Now
+</a></li>
                                 </ul>
                                 <ul class="shop_single_wishlist_area db-400 d-flex align-items-center mb-3">
-                                    <li class="pe-2 ms-2 ms-sm-0"><a href="#"><span
-                                                class="flaticon-heart me-2"></span>Wishlist</a></li>
+                                    <li class="pe-2 ms-2 ms-sm-0">
+                                        <a href="#" class="add-to-wishlist-btn" data-product="{{ $product->id }}">
+    <span class="flaticon-heart me-2"
+        style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}">
+    </span>
+    Wishlist
+</a>
+                                </li>
+                                                
                                     <li class="pe-2 ms-2"><a href="#"><span class="flaticon-graph me-2"></span>Compare</a>
                                     </li>
                                     <li class="pe-2 ms-2"><a href="#"><span class="flaticon-question me-2"></span>Ask a
@@ -657,11 +665,20 @@
                                     </li>
                             </ul>
                             <div class="cart_btns d-grid mb-3">
-                                <a href="page-shop-cart.html" class="btn btn-white bdr_thm ss_cart_btn">Buy Now</a>
+                                <a href="#" class="btn btn-white bdr_thm ss_cart_btn buy-now-btn"
+   data-product="{{ $product->id }}">
+   Buy Now
+</a>
                             </div>
                             <ul class="shop_single_wishlist_area d-block d-sm-flex align-items-center mb-0">
-                                <li class="pe-2 ms-2 ms-sm-0"><a href="#"><span
-                                            class="flaticon-heart me-2"></span>Wishlist</a></li>
+                                <li class="pe-2 ms-2 ms-sm-0">
+                                  <a href="#" class="add-to-wishlist-btn" data-product="{{ $product->id }}">
+    <span class="flaticon-heart me-2"
+        style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}">
+    </span>
+    Wishlist
+</a>
+</li>
                                 <li class="pe-2 ms-2"><a href="#"><span class="flaticon-graph me-2"></span>Compare</a></li>
                                 <li class="pe-2 ms-2"><a href="#"><span class="flaticon-question me-2"></span>Ask a
                                         Question</a></li>
@@ -687,9 +704,15 @@
                                         <img class="w100" src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
                                         <div class="thumb_info">
                                             <ul class="mb0">
-                                                <li><a href="page-dashboard-wish-list.html"><span
-                                                            class="flaticon-heart"></span></a></li>
-                                                <li><a href="{{ url('product-details/' . $product->slug) }}"><span
+                                                            <li>
+    <a href="#" class="add-to-wishlist-btn"
+        data-product="{{ $item->id }}">
+        <span class="flaticon-heart"
+                                                            style="{{ collect($wishlistIds)->contains($item->id) ? 'color:red;' : '' }}">
+                                                        </span>
+    </a>
+</li>
+                                                <li><a href="{{ url('product-details/' . $item->slug) }}"><span
                                                             class="flaticon-show"></span></a>
                                                 </li>
                                                 <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a>
@@ -718,23 +741,23 @@
                                                     <li class="list-inline-item">
                                                         <a href="#">
                                                             <i
-                                                                class="fas fa-star {{ $i <= $product->avg_rating ? '' : 'text-muted' }}"></i>
+                                                                class="fas fa-star {{ $i <= $item->avg_rating ? '' : 'text-muted' }}"></i>
                                                         </a>
                                                     </li>
                                                 @endfor
                                             </ul>
 
                                             <div class="review_count">
-                                                <a href="#">{{ $product->review_count }} reviews</a>
+                                                <a href="#">{{ $item->review_count }} reviews</a>
                                             </div>
                                         </div>
                                         <div class="si_footer">
                                             <div class="price">
-                                                ₹{{ $product->product_options[0]->price ?? $product->min_price }}
+                                                ₹{{ $item->product_options[0]->price ?? $item->min_price }}
 
-                                                @if(!empty($product->product_options[0]->mrp))
+                                                @if(!empty($item->product_options[0]->mrp))
                                                     <small>
-                                                        <del>₹{{ $product->product_options[0]->mrp }}</del>
+                                                        <del>₹{{ $item->product_options[0]->mrp }}</del>
                                                     </small>
                                                 @endif
                                             </div>
@@ -760,8 +783,14 @@
                                         <img class="w100" src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
                                         <div class="thumb_info">
                                             <ul class="mb0">
-                                                <li><a href="page-dashboard-wish-list.html"><span
-                                                            class="flaticon-heart"></span></a></li>
+                                               <li>
+    <a href="#" class="add-to-wishlist-btn"
+        data-product="{{ $item->id }}">
+       <span class="flaticon-heart"
+                                                            style="{{ collect($wishlistIds)->contains($item->id) ? 'color:red;' : '' }}">
+                                                        </span>
+    </a>
+</li>
                                                 <li><a href="{{ url('product-details/' . $item->slug) }}"><span
                                                             class="flaticon-show"></span></a>
                                                 </li>
@@ -781,13 +810,13 @@
 
                                         {{-- BRAND / CATEGORY --}}
                                         <div class="sub_title">
-                                            {{ $product->subcategories->name ?? ($product->categories->name ?? '')}}
+                                            {{ $item->subcategories->name ?? ($item->categories->name ?? '')}}
                                         </div>
 
                                         {{-- NAME --}}
                                         <div class="title">
-                                            <a href="{{ url('product-details/' . $product->slug) }}">
-                                                {{ Str::limit($product->name, 40) }}
+                                            <a href="{{ url('product-details/' . $item->slug) }}">
+                                                {{ Str::limit($item->name, 40) }}
                                             </a>
                                         </div>
 
@@ -798,24 +827,24 @@
                                                     <li class="list-inline-item">
                                                         <a href="#">
                                                             <i
-                                                                class="fas fa-star {{ $i <= $product->avg_rating ? '' : 'text-muted' }}"></i>
+                                                                class="fas fa-star {{ $i <= $item->avg_rating ? '' : 'text-muted' }}"></i>
                                                         </a>
                                                     </li>
                                                 @endfor
                                             </ul>
 
                                             <div class="review_count">
-                                                <a href="#">{{ $product->review_count }} reviews</a>
+                                                <a href="#">{{ $item->review_count }} reviews</a>
                                             </div>
                                         </div>
                                         {{-- PRICE --}}
                                         <div class="si_footer">
                                             <div class="price">
-                                                ₹{{ $product->product_options[0]->price ?? $product->min_price }}
+                                                ₹{{ $item->product_options[0]->price ?? $item->min_price }}
 
-                                                @if(!empty($product->product_options[0]->mrp))
+                                                @if(!empty($item->product_options[0]->mrp))
                                                     <small>
-                                                        <del>₹{{ $product->product_options[0]->mrp }}</del>
+                                                        <del>₹{{ $item->product_options[0]->mrp }}</del>
                                                     </small>
                                                 @endif
                                             </div>
@@ -832,10 +861,14 @@
     </section>
 
     <script>
+
         document.addEventListener("DOMContentLoaded", function () {
 
-            let basePrice = parseFloat(document.getElementById("product-price").innerText);
-            let baseMrp = parseFloat(document.getElementById("product-mrp").innerText);
+            let priceEl = document.getElementById("product-price");
+let mrpEl = document.getElementById("product-mrp");
+
+let basePrice = priceEl ? parseFloat(priceEl.innerText) : 0;
+let baseMrp = mrpEl ? parseFloat(mrpEl.innerText) : 0;
 
             const qtyInputs = document.querySelectorAll(".quantity-input");
 
@@ -917,9 +950,7 @@ document.querySelectorAll('[data-price]').forEach(btn => {
     });
 });
         });
-    </script>
-
-    <script>
+  
 document.getElementById('shareProduct')?.addEventListener('click', function(e){
     e.preventDefault();
 
@@ -936,11 +967,12 @@ document.getElementById('shareProduct')?.addEventListener('click', function(e){
         alert("Link copied! Share anywhere 👍");
     }
 });
-</script>
 
-<script>
 let selectedOption = document.querySelector('[data-option].active')?.dataset.option;
 
+if(!selectedOption){
+    selectedOption = document.querySelector('[data-option]')?.dataset.option;
+}
 // track variant change
 document.querySelectorAll('[data-option]').forEach(btn=>{
     btn.addEventListener('click', function(){
@@ -956,6 +988,15 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn=>{
         const productId = this.dataset.product;
         const quantity = document.querySelector('.quantity-input').value || 1;
 
+        // 🔵 show loading
+        Swal.fire({
+            title: 'Adding to cart...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         fetch("{{ route('cart.store') }}", {
             method: "POST",
             headers: {
@@ -966,27 +1007,150 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn=>{
                 product_id: productId,
                 product_option_id: selectedOption,
                 quantity: quantity,
-                 device_id: localStorage.getItem("device_id") // ⭐ REQUIRED
+                device_id: localStorage.getItem("device_id")
             })
         })
         .then(res => res.json())
-.then(data => {
-  Swal.fire({
-    icon: 'success',
-    title: 'Added!',
-    text: 'Product added to cart',
-    showConfirmButton: false,
-    timer: 1500
-  });
-})
-.catch(err => {
-  Swal.fire({
-    icon: 'error',
-    title: 'Oops...',
-    text: 'Error adding to cart'
-  });
-});
+        .then(data => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Added to Cart!',
+                text: 'Your product has been added successfully.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        })
+        .catch(err => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Unable to add product'
+            });
+        });
     });
 });
+
+
+document.querySelectorAll('.buy-now-btn').forEach(btn=>{
+    btn.addEventListener('click', function(e){
+        e.preventDefault();
+
+        const productId = this.dataset.product;
+        const quantity = document.querySelector('.quantity-input').value || 1;
+
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Preparing checkout',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        fetch("{{ route('cart.store') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type":"application/json",
+                "X-CSRF-TOKEN":"{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                product_option_id: selectedOption,
+                quantity: quantity,
+                device_id: localStorage.getItem("device_id")
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Redirecting to checkout...',
+                timer: 1000,
+                showConfirmButton: false
+            });
+
+            setTimeout(()=>{
+                window.location.href = "{{ route('checkout') }}";
+            },1000);
+        })
+        .catch(err => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Unable to process Buy Now'
+            });
+        });
+    });
+});
+
+
+  document.querySelectorAll('.add-to-wishlist-btn').forEach(btn => {
+
+    btn.addEventListener('click', function (e) {
+
+        e.preventDefault();
+
+        const button = this;
+        const productId = button.dataset.product;
+
+        // 🔵 show loading
+        Swal.fire({
+            title: 'Updating Wishlist...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        fetch("/wishlist/toggle", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                product_id: productId
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            const heartIcon = button.querySelector('span');
+
+            if (data.status === "added") {
+                heartIcon.style.color = "red";
+            }
+
+            if (data.status === "removed") {
+                heartIcon.style.color = "";
+            }
+
+            if (data.status === "login_required") {
+                window.location.href = "/customer/login";
+                return;
+            }
+
+            // ✅ close loading
+            Swal.close();
+
+        })
+        .catch(error => {
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Unable to update wishlist'
+            });
+
+            console.error("Wishlist error:", error);
+
+        });
+
+    });
+
+});
+
+
 </script>
 @endsection

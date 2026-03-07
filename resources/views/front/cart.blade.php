@@ -273,9 +273,35 @@
       }
     });
 
+    document.addEventListener("change", function (e) {
+
+      if (e.target.classList.contains("qty-input")) {
+
+        let id = e.target.dataset.id;
+        let value = parseInt(e.target.value);
+
+        if (value < 1) {
+          e.target.value = 1;
+          value = 1;
+        }
+
+        fetch("/cart/set-quantity/" + id, {
+          method: "POST",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrf_token() }}",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ quantity: value })
+        })
+          .then(() => location.reload());
+
+      }
+
+    });
+
     function updateQty(id, change) {
 
-      const row = document.querySelector(`[data-id="${id}"]`).closest("tr");
+      const row = document.querySelector(`tr [data-id="${id}"]`).closest("tr");
       const qtyInput = row.querySelector(".qty-input");
       const totalCell = row.querySelector(".item-total");
 
@@ -318,8 +344,7 @@
       }).then((result) => {
 
         if (result.isConfirmed) {
-
-          const row = document.querySelector(`[data-id="${id}"]`).closest("tr");
+          const row = document.querySelector(`tr [data-id="${id}"]`).closest("tr");
 
           row.style.transition = "0.3s";
           row.style.opacity = "0";
@@ -346,15 +371,12 @@
 
       });
     }
-  </script>
 
-  <script>
     // click on anchor triggers form submit
     document.getElementById('applyCouponBtn')?.addEventListener('click', function (e) {
       e.preventDefault();
       document.getElementById('couponForm').dispatchEvent(new Event('submit'));
     });
-
 
     document.getElementById('couponForm')?.addEventListener('submit', function (e) {
       e.preventDefault();

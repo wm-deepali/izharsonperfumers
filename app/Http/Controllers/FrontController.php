@@ -2,15 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Admin\ContactUsController;
+use App\Models\AboutUs;
+use App\Models\Blog;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\CompanyAddress;
+use App\Models\ContactUs;
+use App\Models\Faq;
+use App\Models\Feedback;
 use App\Models\HomepageSetting;
 use App\Models\OilGrade;
 use App\Models\OrderDetail;
-use App\Models\Packages;
+use App\Models\Policy;
 use App\Models\Product;
 use App\Models\Slider;
 use App\Models\Subscriber;
+use App\Models\Wishlist;
+use App\Models\Team;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -159,6 +168,14 @@ class FrontController extends Controller
 
         $maxDealEnd = $dealProducts->max('deal_end');
 
+        $wishlistIds = [];
+
+        if (auth()->guard('customer')->check()) {
+            $wishlistIds = Wishlist::where('customer_id', auth()->guard('customer')->id())
+                ->pluck('product_id')
+                ->map(fn($id) => (int) $id)
+                ->toArray();
+        }
         return view('front.index', compact(
             'banner',
             'deliveryBanner1',
@@ -178,7 +195,8 @@ class FrontController extends Controller
             'topSellingArrivals',
             'attarArrivals',
             'dealProducts',
-            'maxDealEnd'
+            'maxDealEnd',
+            'wishlistIds'
         ));
     }
 
@@ -192,7 +210,6 @@ class FrontController extends Controller
 
         return response()->json($products);
     }
-
 
     public function productList(Request $request, $categorySlug = null, $subSlug = null)
     {
@@ -412,6 +429,15 @@ class FrontController extends Controller
         $packSizes = Brand::where('status', 'active')->get();
         $fragranceTypes = OilGrade::where('status', 'active')->get();
         $shopBanners = HomepageSetting::where('page', 'shop')->get();
+
+        $wishlistIds = [];
+
+        if (auth()->guard('customer')->check()) {
+            $wishlistIds = Wishlist::where('customer_id', auth()->guard('customer')->id())
+                ->pluck('product_id')
+                ->map(fn($id) => (int) $id)
+                ->toArray();
+        }
         // dd($shopBanners->toArray());
         /*
         |--------------------------------------------------------------------------
@@ -427,7 +453,8 @@ class FrontController extends Controller
             'products',
             'packSizes',
             'fragranceTypes',
-            'shopBanners'
+            'shopBanners',
+            'wishlistIds'
         ));
     }
 
@@ -454,14 +481,13 @@ class FrontController extends Controller
         ]);
     }
 
-
     public function productDetails($slug)
     {
         $product = Product::with(['product_options', 'categories', 'subcategories'])
             ->where('slug', $slug)
             ->firstOrFail();
 
-            // dd($product->toArray());
+        // dd($product->toArray());
 
         /*
         |--------------------------------------------------------------------------
@@ -490,16 +516,236 @@ class FrontController extends Controller
             ->take(12)
             ->get();
 
+        $wishlistIds = [];
+
+        if (auth()->guard('customer')->check()) {
+            $wishlistIds = Wishlist::where('customer_id', auth()->guard('customer')->id())
+                ->pluck('product_id')
+                ->map(fn($id) => (int) $id)
+                ->toArray();
+        }
+
         return view('front.product-details', compact(
             'product',
             'relatedProducts',
-            'recommendedProducts'
+            'recommendedProducts',
+            'wishlistIds'
         ));
     }
 
     public function aboutUs()
     {
-        return view('front.about-us');
+        $about = AboutUs::first();
+        $team = Team::get();
+        $feedbacks = Feedback::get();
+        // dd($feedback->toArray());
+        return view('front.about-us', compact('about', 'team', 'feedbacks'));
+    }
+
+
+    public function faqs()
+    {
+        $faqs = Faq::with('faq_category')
+            ->latest()
+            ->get()
+            ->groupBy(function ($faq) {
+                return $faq->faq_category->name ?? 'General';
+            });
+
+        return view('front.faqs', compact('faqs'));
+    }
+
+    public function blogs()
+    {
+        $blogs = Blog::latest()->where('status', 'active')->paginate(9);
+        return view('front.blogs', compact('blogs'));
+    }
+
+    public function blogDetail($url)
+    {
+        $blog = Blog::where('url', $url)->firstOrFail();
+
+        $recentBlogs = Blog::where('id', '!=', $blog->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('front.blog_detail', compact('blog', 'recentBlogs'));
+    }
+
+    public function addtoWishlist(Request $request)
+    {
+        $customerId = auth()->guard('customer')->id();
+
+        if (!$customerId) {
+            return response()->json([
+                'status' => 'login_required'
+            ]);
+        }
+
+        $productId = $request->product_id;
+
+        $wishlist = Wishlist::where([
+            'customer_id' => $customerId,
+            'product_id' => $productId
+        ])->first();
+
+        if ($wishlist) {
+
+            $wishlist->delete();
+
+            return response()->json([
+                'status' => 'removed'
+            ]);
+
+        } else {
+
+            Wishlist::create([
+                'customer_id' => $customerId,
+                'product_id' => $productId
+            ]);
+
+            return response()->json([
+                'status' => 'added'
+            ]);
+        }
+    }
+
+    public function wishlist()
+    {
+        $customerId = auth()->guard('customer')->id();
+
+        if (!$customerId) {
+            return redirect()->route('customer.login');
+        }
+
+        $wishlistItems = Wishlist::where('customer_id', $customerId)
+            ->with('product.product_options')
+            ->get();
+
+        return view('front.wishlist', compact('wishlistItems'));
+    }
+
+    public function removeFromWishlist(Request $request)
+    {
+        $wishlist = Wishlist::where('customer_id', auth()->guard('customer')->id())
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        if ($wishlist) {
+            $wishlist->delete();
+        }
+
+        return response()->json([
+            'success' => true
+        ]);
+    }
+
+    public function contactUs()
+    {
+        $branches = CompanyAddress::where('status', 'active')
+            ->with('countries:id,name', 'states:id,name', 'cities:id,name')
+            ->get();
+
+        $features = \App\Models\HomeFeature::where('status', 1)
+            ->orderBy('position')
+            ->get();
+
+        $faqs = Faq::latest()
+            ->get();
+
+        $settings = \App\Models\HeaderSetting::first();
+        $socialLinks = \App\Models\SocialLinkSetting::first();
+
+        // dd($branches->toArray());
+        return view('front.contact-us', compact('branches', 'features', 'faqs', 'settings', 'socialLinks'));
+    }
+
+    public function contactStore(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'email' => 'required|email',
+            'mobile_number' => 'required|digits:10',
+            'message' => 'required'
+        ]);
+
+        ContactUs::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'mobile_number' => $request->mobile_number,
+            'message' => $request->message,
+        ]);
+
+        return back()->with('success', 'Your message has been sent successfully!');
+    }
+
+    public function feedback()
+    {
+        return view('front.feedback');
+    }
+
+    public function feedbackStore(Request $request)
+    {
+        $request->validate([
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email',
+            'mobile_number' => 'required',
+            'rating' => 'required',
+            'message' => 'required'
+        ]);
+
+        $image = null;
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image')->store('feedback', 'public');
+        }
+
+        Feedback::create([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'mobile_number' => $request->mobile_number,
+            'rating' => $request->rating,
+            'image' => $image,
+            'message' => $request->message,
+            'status' => 'block'
+        ]);
+
+        return back()->with('success', 'Thank you for your feedback!');
+    }
+
+    public function privacyPolicy()
+    {
+        $policy = Policy::where('name', 'privacy_policy')->first();
+        return view('front.privacy-policy', compact('policy'));
+    }
+
+    public function termsConditions()
+    {
+        $policy = Policy::where('name', 'terms_and_condition')->first();
+        return view('front.terms', compact('policy'));
+    }
+
+    public function refundPolicy()
+    {
+        $policy = Policy::where('name', 'refund_policy')->first();
+        return view('front.refund-policy', compact('policy'));
+    }
+
+    public function cookiePolicy()
+    {
+        $policy = Policy::where('name', 'cookie_policy')->first();
+        return view('front.cookie-policy', compact('policy'));
+    }
+
+    public function shipppingPolicy()
+    {
+        $policy = Policy::where('name', 'shipping_policy')->first();
+        return view('front.shipping-policy', compact('policy'));
     }
 
 }
+
+

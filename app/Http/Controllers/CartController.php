@@ -290,6 +290,106 @@ class CartController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function setQuantity(Request $request, $id)
+    {
+        try {
+
+            $request->validate([
+                'quantity' => 'required|integer|min:1'
+            ]);
+
+            $qty = $request->quantity;
+
+            /*
+            |--------------------------------------------------------------------------
+            | GET ITEM
+            |--------------------------------------------------------------------------
+            */
+
+            if (Auth::guard('customer')->check()) {
+
+                $item = CartDetail::with('product_options')->findOrFail($id);
+                $cart = Cart::where('customer_id', Auth::guard('customer')->id())->first();
+
+            } else {
+
+                $item = UnAuthCartDetail::with('product_options')->findOrFail($id);
+                $cart = UnAuthCart::where('id', $item->cart_id)->first();
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | UPDATE QUANTITY
+            |--------------------------------------------------------------------------
+            */
+
+            $item->quantity = $qty;
+            $item->save();
+
+            /*
+            |--------------------------------------------------------------------------
+            | RECALCULATE TOTALS
+            |--------------------------------------------------------------------------
+            */
+
+            if (Auth::guard('customer')->check()) {
+
+                $items = CartDetail::where('cart_id', $cart->id)
+                    ->with('product_options')
+                    ->get();
+
+            } else {
+
+                $items = UnAuthCartDetail::where('cart_id', $cart->id)
+                    ->with('product_options')
+                    ->get();
+            }
+
+            $total = 0;
+            $discount = 0;
+            $cartQty = 0;
+
+            foreach ($items as $i) {
+
+                $total += $i->product_options->price * $i->quantity;
+
+                $discount += ($i->product_options->discount_amount ?? 0) * $i->quantity;
+
+                $cartQty += $i->quantity;
+            }
+
+            if ($cart) {
+
+                $cart->update([
+                    'total_price' => $total,
+                    'pre_discount' => $discount,
+                    'total_price_after_discount' => $total - ($cart->discount_amount ?? 0)
+                ]);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | RETURN RESPONSE
+            |--------------------------------------------------------------------------
+            */
+
+            return response()->json([
+                'success' => true,
+                'quantity' => $qty,
+                'row_total' => number_format($item->product_options->price * $qty, 2),
+                'cart_total' => number_format($cart->total_price_after_discount, 2),
+                'cart_count' => $cartQty
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function removeItem($id)
     {
         if (Auth::guard('customer')->check()) {
@@ -458,6 +558,88 @@ class CartController extends Controller
                 'message' => $e->getMessage()
             ], 400);
         }
+    }
+
+
+    public static function mergeGuestCart($customerId, $deviceId)
+    {
+        if (!$deviceId) {
+            return;
+        }
+
+        // Find guest cart
+        $guestCart = UnAuthCart::where('device_id', $deviceId)->first();
+
+        if (!$guestCart) {
+            return;
+        }
+
+        // Get or create user cart
+        $cart = Cart::firstOrCreate([
+            'customer_id' => $customerId
+        ]);
+
+        $guestItems = UnAuthCartDetail::where('cart_id', $guestCart->id)->get();
+
+        foreach ($guestItems as $item) {
+
+            $existing = CartDetail::where([
+                'cart_id' => $cart->id,
+                'product_id' => $item->product_id,
+                'product_option_id' => $item->product_option_id
+            ])->first();
+
+            if ($existing) {
+
+                // If item already exists in user cart → increase quantity
+                $existing->quantity += $item->quantity;
+                $existing->save();
+
+            } else {
+
+                // Otherwise create new cart item
+                CartDetail::create([
+                    'customer_id' => $customerId,
+                    'cart_id' => $cart->id,
+                    'product_id' => $item->product_id,
+                    'product_option_id' => $item->product_option_id,
+                    'quantity' => $item->quantity
+                ]);
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Recalculate Cart Totals
+        |--------------------------------------------------------------------------
+        */
+
+        $cartItems = CartDetail::where('cart_id', $cart->id)
+            ->with('product_options')
+            ->get();
+
+        $totalPrice = 0;
+        $preDiscount = 0;
+
+        foreach ($cartItems as $item) {
+            $totalPrice += $item->product_options->price * $item->quantity;
+            $preDiscount += ($item->product_options->discount_amount ?? 0) * $item->quantity;
+        }
+
+        $cart->update([
+            'total_price' => $totalPrice,
+            'pre_discount' => $preDiscount,
+            'total_price_after_discount' => $totalPrice - ($cart->discount_amount ?? 0)
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Guest Cart
+        |--------------------------------------------------------------------------
+        */
+
+        UnAuthCartDetail::where('cart_id', $guestCart->id)->delete();
+        $guestCart->delete();
     }
 
 }
