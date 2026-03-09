@@ -9,7 +9,7 @@
 
 <form method="post"
       name="redirect"
-      action="https://test.ccavenue.com/transaction/transaction.do?command=initiateTransaction">
+      action="https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction">
 
     <input type="hidden" name="encRequest" value="{{ $encrypted }}">
     <input type="hidden" name="access_code" value="{{ config('ccavenue.access_code') }}">

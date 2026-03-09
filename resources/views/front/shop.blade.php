@@ -325,14 +325,13 @@
                         <img class="w100" src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
                         <div class="thumb_info">
                           <ul class="mb0">
-                              <li>
-    <a href="#" class="add-to-wishlist-btn"
-        data-product="{{ $product->id }}">
-        <span class="flaticon-heart"
-                                                            style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}">
-                                                        </span>
-    </a>
-</li>
+                            <li>
+                              <a href="#" class="add-to-wishlist-btn" data-product="{{ $product->id }}">
+                                <span class="flaticon-heart"
+                                  style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}">
+                                </span>
+                              </a>
+                            </li>
                             <li><a href="{{ url('product-details/' . $product->slug) }}"><span
                                   class="flaticon-show"></span></a>
                             </li>
@@ -470,13 +469,12 @@
                       <div class="thumb_info">
                         <ul class="mb0">
                           <li>
-    <a href="#" class="add-to-wishlist-btn"
-        data-product="{{ $product->id }}">
-        <span class="flaticon-heart"
-                                                            style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}">
-                                                        </span>
-    </a>
-</li>
+                            <a href="#" class="add-to-wishlist-btn" data-product="{{ $product->id }}">
+                              <span class="flaticon-heart"
+                                style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}">
+                              </span>
+                            </a>
+                          </li>
                           <li><a href="{{ url('product-details/' . $product->slug) }}"><span
                                 class="flaticon-show"></span></a>
                           </li>
@@ -629,6 +627,13 @@
         })
           .then(res => res.json())
           .then(data => {
+
+            if (data.cart_count !== undefined) {
+              document.getElementById("cart-count").innerText = data.cart_count;
+              document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2);
+              refreshMiniCart();
+            }
+
             Swal.fire({
               icon: 'success',
               title: 'Added!',
@@ -652,9 +657,9 @@
 
     });
 
-     document.querySelectorAll('.add-to-wishlist-btn').forEach(btn => {
+    document.querySelectorAll('.add-to-wishlist-btn').forEach(btn => {
 
-    btn.addEventListener('click', function (e) {
+      btn.addEventListener('click', function (e) {
 
         e.preventDefault();
 
@@ -663,60 +668,60 @@
 
         // 🔵 show loading
         Swal.fire({
-            title: 'Updating Wishlist...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
+          title: 'Updating Wishlist...',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
         });
 
         fetch("/wishlist/toggle", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({
-                product_id: productId
-            })
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+          },
+          body: JSON.stringify({
+            product_id: productId
+          })
         })
-        .then(res => res.json())
-        .then(data => {
+          .then(res => res.json())
+          .then(data => {
 
             const heartIcon = button.querySelector('span');
 
             if (data.status === "added") {
-                heartIcon.style.color = "red";
+              heartIcon.style.color = "red";
             }
 
             if (data.status === "removed") {
-                heartIcon.style.color = "";
+              heartIcon.style.color = "";
             }
 
             if (data.status === "login_required") {
-                window.location.href = "/customer/login";
-                return;
+              window.location.href = "/customer/login";
+              return;
             }
 
             // ✅ close loading
             Swal.close();
 
-        })
-        .catch(error => {
+          })
+          .catch(error => {
 
             Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Unable to update wishlist'
+              icon: 'error',
+              title: 'Error',
+              text: 'Unable to update wishlist'
             });
 
             console.error("Wishlist error:", error);
 
-        });
+          });
+
+      });
 
     });
-
-});
 
   </script>
 @endsection

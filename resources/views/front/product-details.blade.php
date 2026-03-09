@@ -1012,6 +1012,13 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn=>{
         })
         .then(res => res.json())
         .then(data => {
+
+             if (data.cart_count !== undefined) {
+                            document.getElementById("cart-count").innerText = data.cart_count;
+                            document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2);
+                            refreshMiniCart();
+                        }
+
             Swal.fire({
                 icon: 'success',
                 title: 'Added to Cart!',
@@ -1063,6 +1070,13 @@ document.querySelectorAll('.buy-now-btn').forEach(btn=>{
         .then(res => res.json())
         .then(data => {
 
+         if (data.cart_count !== undefined) {
+                            document.getElementById("cart-count").innerText = data.cart_count;
+                            document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2);
+                            refreshMiniCart();
+                        }
+                        
+                        
             Swal.fire({
                 icon: 'success',
                 title: 'Redirecting to checkout...',

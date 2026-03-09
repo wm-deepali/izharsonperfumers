@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Coupon;
 use App\Models\UnAuthCart;
+use App\Models\FreeShiping;
 use App\Models\UnAuthCartDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -274,17 +275,58 @@ class CartController extends Controller
     public function updateQty(Request $request, $id)
     {
         if (Auth::guard('customer')->check()) {
-            $item = CartDetail::findOrFail($id);
+
+            $item = CartDetail::with('product_options')->findOrFail($id);
+            $cart = Cart::where('customer_id', Auth::guard('customer')->id())->first();
+
         } else {
-            $item = UnAuthCartDetail::findOrFail($id);
+
+            $item = UnAuthCartDetail::with('product_options')->findOrFail($id);
+            $cart = UnAuthCart::where('id', $item->cart_id)->first();
         }
 
+        // update quantity
         $item->quantity += $request->change;
 
         if ($item->quantity < 1) {
             $item->delete();
         } else {
             $item->save();
+        }
+
+        /*
+        |------------------------------------------
+        | Re-fetch items AFTER update
+        |------------------------------------------
+        */
+
+        if (Auth::guard('customer')->check()) {
+
+            $items = CartDetail::where('cart_id', $cart->id)
+                ->with('product_options')
+                ->get();
+
+        } else {
+
+            $items = UnAuthCartDetail::where('cart_id', $cart->id)
+                ->with('product_options')
+                ->get();
+        }
+
+        $total = 0;
+        $discount = 0;
+
+        foreach ($items as $i) {
+            $total += $i->product_options->price * $i->quantity;
+            $discount += ($i->product_options->discount_amount ?? 0) * $i->quantity;
+        }
+
+        if ($cart) {
+            $cart->update([
+                'total_price' => $total,
+                'pre_discount' => $discount,
+                'total_price_after_discount' => $total - ($cart->discount_amount ?? 0)
+            ]);
         }
 
         return response()->json(['success' => true]);
@@ -393,9 +435,33 @@ class CartController extends Controller
     public function removeItem($id)
     {
         if (Auth::guard('customer')->check()) {
-            CartDetail::findOrFail($id)->delete();
+
+            $item = CartDetail::findOrFail($id);
+            $cart = Cart::where('customer_id', Auth::guard('customer')->id())->first();
+            $item->delete();
+
+            $items = CartDetail::where('cart_id', $cart->id)->with('product_options')->get();
+
         } else {
-            UnAuthCartDetail::findOrFail($id)->delete();
+
+            $item = UnAuthCartDetail::findOrFail($id);
+            $cart = UnAuthCart::where('id', $item->cart_id)->first();
+            $item->delete();
+
+            $items = UnAuthCartDetail::where('cart_id', $cart->id)->with('product_options')->get();
+        }
+
+        $total = 0;
+
+        foreach ($items as $i) {
+            $total += $i->product_options->price * $i->quantity;
+        }
+
+        if ($cart) {
+            $cart->update([
+                'total_price' => $total,
+                'total_price_after_discount' => $total - ($cart->discount_amount ?? 0)
+            ]);
         }
 
         return response()->json(['success' => true]);
@@ -642,4 +708,46 @@ class CartController extends Controller
         $guestCart->delete();
     }
 
+
+    public function miniCart()
+    {
+        if (Auth::guard('customer')->check()) {
+
+            $cart = Cart::with('cart_details.product_options', 'cart_details.products')
+                ->where('customer_id', Auth::guard('customer')->id())
+                ->first();
+
+        } else {
+
+            $deviceId = session('device_id');
+
+            $cart = UnAuthCart::with('cart_details.product_options', 'cart_details.products')
+                ->where('device_id', $deviceId)
+                ->first();
+        }
+
+        $items = $cart ? $cart->cart_details : collect();
+
+        $total = $cart->total_price_after_discount ?? 0;
+
+        /*
+        |---------------------------------------
+        | FREE SHIPPING
+        |---------------------------------------
+        */
+
+        $freeShipping = FreeShiping::where('status', 'active')->first();
+
+        $freeLimit = $freeShipping->min_order_value_intrastate ?? 0;
+
+        $remaining = max(0, $freeLimit - $total);
+
+        return response()->json([
+            'items' => $items,
+            'total' => $total,
+            'count' => $items->sum('quantity'),
+            'free_shipping_limit' => $freeLimit,
+            'free_shipping_remaining' => $remaining
+        ]);
+    }
 }

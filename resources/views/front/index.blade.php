@@ -713,6 +713,13 @@
                     .then(data => {
 
                         button.disabled = false;
+
+                        if (data.cart_count !== undefined) {
+                            document.getElementById("cart-count").innerText = data.cart_count;
+                            document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2);
+                            refreshMiniCart();
+                        }
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Added!',

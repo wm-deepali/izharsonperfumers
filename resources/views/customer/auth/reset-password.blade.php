@@ -15,7 +15,7 @@
                         <div class="alert alert-danger">{{ $errors->first() }}</div>
                     @endif
 
-                    <form method="POST" action="{{ route('customer.password.update') }}">
+                    <form method="POST" action="{{ route('customer.password.reset.update') }}">
                         @csrf
 
                         <input type="hidden" name="token" value="{{ $token }}">

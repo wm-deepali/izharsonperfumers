@@ -93,7 +93,7 @@ Route::post('/store-device', function (\Illuminate\Http\Request $request) {
   return response()->json(['ok']);
 })->name('device.store');
 
-
+Route::get('/mini-cart', [CartController::class,'miniCart'])->name('mini.cart');
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/store', [CartController::class, 'storeCart'])->name('cart.store');
 Route::post('/cart/update/{id}', [CartController::class, 'updateQty']);
@@ -116,9 +116,9 @@ Route::prefix('customer')->name('customer.')->group(function () {
   Route::post('forgot-password', [CustomerForgotPasswordController::class, 'sendResetLink'])->name('password.email');
 
   Route::get('reset-password/{token}', [CustomerForgotPasswordController::class, 'showResetForm'])->name('password.reset');
-  Route::post('reset-password', [CustomerForgotPasswordController::class, 'resetPassword'])->name('password.update');
+  Route::post('reset-password', [CustomerForgotPasswordController::class, 'resetPassword'])->name('password.reset.update');
 
-  Route::get('google', action: [GoogleController::class, 'redirect'])->name('google.login');
+  Route::get('google', [GoogleController::class, 'redirect'])->name('google.login');
   Route::get('google/callback', [GoogleController::class, 'callback']);
 
   Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');

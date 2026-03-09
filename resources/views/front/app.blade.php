@@ -202,13 +202,13 @@
                                                             style="width:20px;" alt="">
                                                     </span>
 
-                                                    <span class="badge">
+                                                    <span class="badge" id="cart-count">
                                                         {{ $cartCount }}
                                                     </span>
                                                 </div>
 
                                                 <div class="details">
-                                                    <p class="subtitle">
+                                                    <p class="subtitle" id="cart-total">
                                                         ₹{{ number_format($cartTotal, 2) }}
                                                     </p>
                                                     <h5 class="title">Total</h5>
@@ -468,7 +468,7 @@
                             <li class="list-inline-item">
                                 <ul class="cart">
                                     <li class="list-inline-item">
-                                        <ul class="dropdown_content">
+                                        <ul class="dropdown_content" id="mini-cart-items">
 
                                             @if($miniCartItems->count())
 
@@ -518,7 +518,7 @@
                                                 <li class="list_content_total_price">
                                                     <h5>
                                                         Total:
-                                                        <span class="total_price float-end">
+                                                        <span class="total_price float-end" id="mini-cart-total">
                                                             ₹{{ number_format($miniCart->total_price_after_discount ?? 0, 2) }}
                                                         </span>
                                                     </h5>
@@ -1144,24 +1144,6 @@
                 });
         });
 
-        document.addEventListener("click", function (e) {
-
-            if (e.target.closest(".remove-mini-item")) {
-
-                const id = e.target.closest(".remove-mini-item").dataset.id;
-
-                fetch("/cart/remove/" + id, {
-                    method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-                    }
-                }).then(() => location.reload());
-
-            }
-
-        });
-
-
     </script>
     <script>
         if (!localStorage.getItem("device_id")) {
@@ -1198,6 +1180,163 @@
                     }
                 }
             }
+        }
+
+
+        document.addEventListener("click", function (e) {
+
+            if (e.target.closest(".remove-mini-item")) {
+
+                const btn = e.target.closest(".remove-mini-item");
+                const id = btn.dataset.id;
+
+                btn.style.opacity = "0.4";
+
+                fetch("/cart/remove/" + id, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                    .then(() => refreshMiniCart());
+            }
+
+        });
+        document.addEventListener("click", function (e) {
+
+            // ➕ increase quantity (mini cart)
+            if (e.target.closest(".mini-plus")) {
+
+                const button = e.target.closest("button");
+                const id = button.dataset.id;
+
+                button.style.opacity = "0.5";
+
+                fetch("/cart/update/" + id, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ change: 1 })
+                })
+                    .then(() => refreshMiniCart())
+                    .finally(() => button.style.opacity = "1");
+
+            }
+
+            // ➖ decrease quantity (mini cart)
+            if (e.target.closest(".mini-minus")) {
+
+                const button = e.target.closest("button");
+                const id = button.dataset.id;
+
+                button.style.opacity = "0.5";
+
+                fetch("/cart/update/" + id, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ change: -1 })
+                })
+                    .then(() => refreshMiniCart())
+                    .finally(() => button.style.opacity = "1");
+
+            }
+
+        });
+
+        function refreshMiniCart() {
+            fetch("{{ route('mini.cart') }}")
+                .then(res => res.json())
+                .then(data => {
+
+                    // update cart badge
+                    document.getElementById("cart-count").innerText = data.count;
+                    document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total).toFixed(2);
+
+                    let html = '';
+
+                    if (data.items.length === 0) {
+                        html = `<li class="list_content text-center py-4">Your cart is empty</li>`;
+                    }
+                    else {
+
+                        data.items.forEach(item => {
+
+                            const image = item.product_options?.image ?? item.products.image;
+                            const price = (item.product_options?.price ?? item.products.price ?? 0) * item.quantity;
+
+                            html += `
+<li class="list_content">
+<div>
+<img class="float-start mt10" src="/storage/${image}" width="60">
+
+<p>${item.products.name}</p>
+
+<div class="cart_btn home_page_sidebar mt10">
+
+<div class="quantity-block home_page_sidebar">
+
+<button class="quantity-arrow-minus mini-minus" data-id="${item.id}">
+<img src="/front/images/icons/minus.svg">
+</button>
+
+<input class="quantity-num home_page_sidebar qty-input"
+type="number"
+value="${item.quantity}"
+data-id="${item.id}"
+min="1">
+
+<button class="quantity-arrow-plus mini-plus" data-id="${item.id}">
+<span class="flaticon-close"></span>
+</button>
+
+</div>
+
+<span class="home_page_sidebar price">
+₹${price.toFixed(2)}
+</span>
+
+</div>
+
+<span class="close_icon remove-mini-item" data-id="${item.id}">
+<i class="flaticon-close"></i>
+</span>
+
+</div>
+</li>
+`;
+                        });
+
+                        html += `
+<li class="list_content_total_price">
+<h5>
+Total:
+<span id="mini-cart-total" class="float-end">
+₹${parseFloat(data.total).toFixed(2)}
+</span>
+</h5>
+</li>
+`;
+                    }
+
+                    const msg = document.querySelector(".hsidebar_footer_content .para");
+
+                    if (data.free_shipping_remaining > 0) {
+
+                        msg.innerText = `Buy ₹${data.free_shipping_remaining.toFixed(2)} more to enjoy FREE Shipping`;
+
+                    } else {
+
+                        msg.innerText = "🎉 Congratulations! You unlocked FREE Shipping";
+
+                    }
+                    document.getElementById("mini-cart-items").innerHTML = html;
+
+                });
         }
     </script>
 </body>
