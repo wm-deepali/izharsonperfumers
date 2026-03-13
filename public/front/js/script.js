@@ -493,11 +493,11 @@
                     center: false
                 },
                 375:{
-                    items:2,
+                    items:1,
                     center: false
                 },
                 520:{
-                    items:2,
+                    items:1,
                     center: false
                 },
                 600: {
@@ -758,11 +758,11 @@
             ],
             responsive: {
                 0: {
-                    items: 2,
+                    items: 1,
                     center: false
                 },
                 480:{
-                    items:2,
+                    items:1,
                     center: false
                 },
                 520:{
@@ -811,11 +811,11 @@
             ],
             responsive: {
                 0: {
-                    items: 2,
+                    items: 1,
                     center: false
                 },
                 480:{
-                    items:2,
+                    items:1,
                     center: false
                 },
                 630: {
@@ -860,11 +860,11 @@
             ],
             responsive: {
                 0: {
-                    items: 2,
+                    items: 1,
                     center: false
                 },
                 480:{
-                    items:2,
+                    items:1,
                     center: false
                 },
                 520: {
@@ -916,11 +916,11 @@
             ],
             responsive: {
                 0: {
-                    items: 2,
+                    items: 1,
                     center: false
                 },
                 480:{
-                    items:2,
+                    items:1,
                     center: false
                 },
                 520: {
@@ -972,11 +972,11 @@
             ],
             responsive: {
                 0: {
-                    items: 2,
+                    items: 1,
                     center: false
                 },
                 480:{
-                    items:2,
+                    items:1,
                     center: false
                 },
                 520: {

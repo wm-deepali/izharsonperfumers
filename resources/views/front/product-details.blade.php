@@ -412,56 +412,62 @@
                                                                     Product
                                                                 </h5>
 
-                                                                @forelse($product->product_review as $review)
+                                                              @forelse($product->product_review as $review)
 
-                                                                    <div class="mbp_first d-flex align-items-center mb20">
-                                                                        <div class="flex-shrink-0">
-                                                                            <img src="{{ asset('front/images/blog/reviewer2.png') }}"
-                                                                                class="mr-3" alt="reviewer">
-                                                                        </div>
+<div class="mbp_first d-flex align-items-center mb20">
 
-                                                                        <div class="flex-grow-1 ms-4">
-                                                                            <div class="d-block d-md-flex">
+    <div class="flex-shrink-0">
+        <img src="{{ optional($review->customer)->image 
+            ? asset('storage/' . $review->customer->image) 
+            : asset('front/images/blog/reviewer2.png') }}"
+        class="mr-3" alt="reviewer">
+    </div>
 
-                                                                                <div class="sspd_postdate me-2 mb10-sm">
-                                                                                    <div class="sspd_review">
-                                                                                        <ul class="mb0">
-                                                                                            @for($i = 1; $i <= 5; $i++)
-                                                                                                <li class="list-inline-item">
-                                                                                                    <a href="#">
-                                                                                                        <i
-                                                                                                            class="fas fa-star {{ $i <= $review->rating ? '' : 'text-muted' }}"></i>
-                                                                                                    </a>
-                                                                                                </li>
-                                                                                            @endfor
-                                                                                        </ul>
-                                                                                    </div>
-                                                                                </div>
+    <div class="flex-grow-1 ms-4">
 
-                                                                                <h5 class="sub_title">
-                                                                                    {{ $review->review ?? 'Customer Review' }}
-                                                                                </h5>
+        <div class="d-block d-md-flex">
 
-                                                                            </div>
+            <div class="sspd_postdate me-2 mb10-sm">
+                <div class="sspd_review">
+                    <ul class="mb0">
+                        @for($i = 1; $i <= 5; $i++)
+                            <li class="list-inline-item">
+                                <a href="#">
+                                    <i class="fas fa-star {{ $i <= $review->rating ? '' : 'text-muted' }}"></i>
+                                </a>
+                            </li>
+                        @endfor
+                    </ul>
+                </div>
+            </div>
 
-                                                                            <div class="review_post_meta">
-                                                                                Reviewed by
-                                                                                {{ $review->customer_name ?? 'Customer' }}
-                                                                                -
-                                                                                {{ \Carbon\Carbon::parse($review->created_at)->format('d M Y') }}
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
+            <h5 class="sub_title">
+                {{ $review->review ?? 'Customer Review' }}
+            </h5>
 
-                                                                    <div class="review_content_para mb30">
-                                                                        <p>{{ $review->review }}</p>
-                                                                    </div>
+        </div>
 
-                                                                    <hr>
+        <div class="review_post_meta">
+            Reviewed by
+            {{ optional($review->customer)->name ?? 'Customer' }}
+            -
+            {{ \Carbon\Carbon::parse($review->created_at)->format('d M Y') }}
+        </div>
 
-                                                                @empty
-                                                                    <p>No reviews yet.</p>
-                                                                @endforelse
+    </div>
+
+</div>
+
+<div class="review_content_para mb30">
+    <p>{{ $review->review }}</p>
+</div>
+
+<hr>
+
+@empty
+<p>No reviews yet.</p>
+@endforelse
+
                                                                 <div class="all_review_btn text-center">
                                                                     <a href="#" class="btn btn-lg btn-white bdr_thm">See All
                                                                         Review</a>
@@ -859,27 +865,31 @@
             </div>
         </div>
     </section>
-
+    <script src="{{ asset('front/js/jquery-3.6.0.js') }}"></script>
     <script>
 
-        document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function () {
+        
+        if($("#mainProductImage").length){
+            $("#mainProductImage").ezPlus();
+        }
+        
+        let priceEl = document.getElementById("product-price");
+        let mrpEl = document.getElementById("product-mrp");
 
-            let priceEl = document.getElementById("product-price");
-let mrpEl = document.getElementById("product-mrp");
+        let basePrice = priceEl ? parseFloat(priceEl.innerText) : 0;
+        let baseMrp = mrpEl ? parseFloat(mrpEl.innerText) : 0;
 
-let basePrice = priceEl ? parseFloat(priceEl.innerText) : 0;
-let baseMrp = mrpEl ? parseFloat(mrpEl.innerText) : 0;
+        const qtyInputs = document.querySelectorAll(".quantity-input");
 
-            const qtyInputs = document.querySelectorAll(".quantity-input");
+        function getQty() {
+            let qty = parseInt(qtyInputs[0].value) || 1;
+            return qty < 1 ? 1 : qty;
+        }
 
-            function getQty() {
-                let qty = parseInt(qtyInputs[0].value) || 1;
-                return qty < 1 ? 1 : qty;
-            }
-
-            function syncQty(value) {
-                qtyInputs.forEach(input => input.value = value);
-            }
+        function syncQty(value) {
+            qtyInputs.forEach(input => input.value = value);
+        }
 
             function updateTotal() {
                 let qty = getQty();
@@ -944,9 +954,16 @@ document.querySelectorAll('[data-price]').forEach(btn => {
         const mainImg = document.getElementById('mainProductImage');
 
         if(mainImg && newImage){
-            mainImg.src = newImage;
-            mainImg.setAttribute("data-zoom-image", newImage);
-        }
+
+    $('.zoomContainer').remove();
+    $('#mainProductImage').removeData('ezPlus');
+
+    mainImg.src = newImage;
+    mainImg.setAttribute("data-zoom-image", newImage);
+
+    $("#mainProductImage").ezPlus();
+
+}
     });
 });
         });

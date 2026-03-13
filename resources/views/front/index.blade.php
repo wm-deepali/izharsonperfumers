@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <!-- Slider Section Start -->
+   
     <section class="home-one pt30">
         <div class="container">
             <div class="row">

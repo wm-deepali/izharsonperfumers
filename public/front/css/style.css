@@ -7097,7 +7097,7 @@ form.listing_page_v9 {
 .shop_item_5grid_slider.owl-theme.owl-loaded .owl-prev,
 .shop_item_6grid_slider.owl-theme.owl-loaded .owl-prev {
     left: 0;
-    top: 40%;
+    top: 40% !important;
 }
 
 .shop_item_3grid_slider.owl-theme.owl-loaded .owl-prev,
@@ -7176,7 +7176,7 @@ form.listing_page_v9 {
 .single_product_slider.owl-theme.owl-loaded .owl-prev,
 .shop_item_5grid_slider.owl-theme.owl-loaded .owl-prev {
     left: -30px;
-    top: 190px;
+    top: 236px;
 }
 
 .shop_item_5grid_slider.owl-theme.owl-loaded .owl-prev:hover,
@@ -17561,5 +17561,15 @@ input.quantity-num[type="number"]::-webkit-outer-spin-button {
         flex-direction: column;
         align-items: flex-start;
     }
+    
 
+}
+
+@media(max-width:640px) {
+    .apple_widget_home1 .title {
+    font-size: 40px;
+    font-weight: 500;
+    line-height: 53px;
+    letter-spacing: 0em;
+}
 }

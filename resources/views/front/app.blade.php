@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="{{ asset('front/css/slider.css') }}">
     <link rel="stylesheet" href="{{ asset('front/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('front/css/dashbord_navitaion.css') }}">
+    <link rel="stylesheet" href="{{ asset('front/css/magnific-popup.css')}}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
