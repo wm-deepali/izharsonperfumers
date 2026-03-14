@@ -143,6 +143,53 @@ class CheckoutController extends Controller
     }
 
 
+    public function copyBillingToShipping(Request $request)
+    {
+        $customer = Auth::guard('customer')->user();
+
+        $billing = CustomerBillingAddress::where('id', $request->billing_id)
+            ->where('customer_id', $customer->id)
+            ->firstOrFail();
+
+        // check if same shipping address already exists
+        $existingShipping = CustomerAddress::where('customer_id', $customer->id)
+            ->where('name', $billing->name)
+            ->where('mobile_number', $billing->mobile_number)
+            ->where('country', $billing->country)
+            ->where('state', $billing->state)
+            ->where('city', $billing->city)
+            ->where('pincode', $billing->pincode)
+            ->where('address', $billing->address)
+            ->first();
+
+        if ($existingShipping) {
+            return response()->json([
+                'success' => true,
+                'shipping_id' => $existingShipping->id,
+                'exists' => true
+            ]);
+        }
+
+        // otherwise create new shipping
+        $shipping = CustomerAddress::create([
+            'customer_id' => $customer->id,
+            'name' => $billing->name,
+            'mobile_number' => $billing->mobile_number,
+            'country' => $billing->country,
+            'state' => $billing->state,
+            'city' => $billing->city,
+            'pincode' => $billing->pincode,
+            'address' => $billing->address,
+            'address_type' => 'shipping'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'shipping_id' => $shipping->id,
+            'exists' => false
+        ]);
+    }
+
     public function placeOrder(Request $request)
     {
         // dd($request->all());

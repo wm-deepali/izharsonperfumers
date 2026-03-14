@@ -424,15 +424,39 @@
       </div>
     </div>
   </section>
+
   <script>
 
     document.addEventListener('DOMContentLoaded', () => {
+
       const firstBilling = document.querySelector('input[name="billing_address_id"]');
       if (firstBilling) firstBilling.checked = true;
 
-      const firstShipping = document.querySelector('input[name="shipping_address_id"]');
-      if (firstShipping) firstShipping.checked = true;
+      const savedShipping = localStorage.getItem('selectedShipping');
+
+      if (savedShipping) {
+
+        const radio = document.querySelector(`input[name="shipping_address_id"][value="${savedShipping}"]`);
+
+        if (radio) {
+          radio.checked = true;
+        }
+
+        const sameAsBilling = document.getElementById('sameAsBilling');
+        if (sameAsBilling) {
+          sameAsBilling.checked = true;
+        }
+
+        localStorage.removeItem('selectedShipping');
+
+      } else {
+
+        const firstShipping = document.querySelector('input[name="shipping_address_id"]');
+        if (firstShipping) firstShipping.checked = true;
+
+      }
     });
+
 
     document.querySelectorAll('.shippingSelect').forEach(radio => {
       radio.addEventListener('change', function () {
@@ -440,19 +464,59 @@
       });
     });
 
-    document.getElementById('sameAsBilling').addEventListener('change', function () {
-      if (this.checked) {
-        const billing = document.querySelector('input[name="billing_address_id"]:checked');
-        if (!billing) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Billing Address Required',
-            text: 'Please select billing address first.'
-          });
-          this.checked = false;
-          return;
+    document.getElementById('sameAsBilling').addEventListener('change', async function () {
+
+      if (!this.checked) return;
+
+      const billing = document.querySelector('input[name="billing_address_id"]:checked');
+
+      if (!billing) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Billing Address Required',
+          text: 'Please select billing address first.'
+        });
+        this.checked = false;
+        return;
+      }
+
+      Swal.fire({
+        title: 'Applying Billing Address...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
         }
-        document.querySelector(`input[name="shipping_address_id"][value="${billing.value}"]`)?.click();
+      });
+
+      const formData = new FormData();
+      formData.append('billing_id', billing.value);
+
+      const res = await fetch('/customer/copy-billing-to-shipping', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+
+      Swal.close();
+
+      if (data.success) {
+
+        // save selected shipping to localStorage
+        localStorage.setItem('selectedShipping', data.shipping_id);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Shipping Updated',
+          text: 'Billing address applied as shipping.',
+          timer: 1200,
+          showConfirmButton: false
+        });
+
+        setTimeout(() => location.reload(), 800);
       }
     });
 
@@ -512,6 +576,18 @@
     document.getElementById('billingForm').onsubmit = function (e) {
       e.preventDefault();
 
+      const btn = this.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.innerText = "Saving...";
+
+      Swal.fire({
+        title: 'Saving Address...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       fetch('/customer/billing-address/save', {
         method: 'POST',
         headers: {
@@ -521,28 +597,62 @@
       })
         .then(r => r.json())
         .then(data => {
+
+          Swal.close();
+
           if (data.success) {
-            location.reload();
+
+            Swal.fire({
+              icon: 'success',
+              title: 'Saved',
+              text: 'Billing address saved successfully',
+              timer: 1500,
+              showConfirmButton: false
+            });
+
+            setTimeout(() => location.reload(), 1200);
+
           } else {
+
             Swal.fire({
               icon: 'error',
               title: 'Save Failed',
               text: data.message || 'Failed to save billing address'
             });
+
+            btn.disabled = false;
+            btn.innerText = "Save Address";
           }
+
         })
         .catch(() => {
+
           Swal.fire({
             icon: 'error',
             title: 'Error',
             text: 'Something went wrong. Please try again.'
           });
+
+          btn.disabled = false;
+          btn.innerText = "Save Address";
         });
     };
 
     // SAVE SHIPPING
     document.getElementById('shippingForm').onsubmit = function (e) {
       e.preventDefault();
+
+      const btn = this.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.innerText = "Saving...";
+
+      Swal.fire({
+        title: 'Saving Address...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
 
       fetch('/customer/shipping-address/save', {
         method: 'POST',
@@ -553,25 +663,46 @@
       })
         .then(r => r.json())
         .then(data => {
+
+          Swal.close();
+
           if (data.success) {
-            location.reload();
+
+            Swal.fire({
+              icon: 'success',
+              title: 'Saved',
+              text: 'Shipping address saved successfully',
+              timer: 1500,
+              showConfirmButton: false
+            });
+
+            setTimeout(() => location.reload(), 1200);
+
           } else {
+
             Swal.fire({
               icon: 'error',
               title: 'Save Failed',
               text: data.message || 'Failed to save shipping address'
             });
+
+            btn.disabled = false;
+            btn.innerText = "Save Address";
           }
+
         })
         .catch(() => {
+
           Swal.fire({
             icon: 'error',
             title: 'Error',
             text: 'Something went wrong. Please try again.'
           });
+
+          btn.disabled = false;
+          btn.innerText = "Save Address";
         });
     };
-
     // SHIPPING DROPDOWNS
     function loadShipStates(country, selected = null) {
       shipping_state.innerHTML = '<option>Loading...</option>';

@@ -145,6 +145,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.removeCoupon');
     Route::post('/billing-address/save', [CheckoutController::class, 'saveBilling']);
     Route::post('/shipping-address/save', [CheckoutController::class, 'saveShipping']);
+    Route::post('/copy-billing-to-shipping', [CheckoutController::class,'copyBillingToShipping']);
     Route::post('/place-order', [CheckoutController::class, 'placeOrder']);
     Route::get('/payment/request/{order}', [CheckoutController::class, 'request'])->name('payment.request');
     Route::post('/payment/response', [CheckoutController::class, 'response'])->name('payment.response');
