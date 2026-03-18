@@ -24,7 +24,7 @@ class CartDetail extends Model
     }
     public function products()
     {
-        return $this->hasOne(Product::class,'id','product_id')->select('id','name','image');
+        return $this->hasOne(Product::class,'id','product_id')->select('id','name','image', 'slug');
     }
     
      public function carmake(){

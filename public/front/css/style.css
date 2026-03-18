@@ -2933,8 +2933,12 @@ address {
     height: 50px;
     line-height: 55px;
     margin-right: 15px;
-    position: relative;
+    /*position: relative;*/
     text-align: center;
+        display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
     width: 50px;
     -webkit-transition: all 0.3s ease;
     -moz-transition: all 0.3s ease;
@@ -3235,6 +3239,14 @@ address {
 .header_middle_advnc_search {
     position: relative;
 }
+.search_form_wrapper{
+    height:54px;
+    display: flex;
+    align-items: center;
+}
+.top-search{
+    height:50px;
+}
 
 .header_middle_advnc_search .search_form_wrapper.home7_style {
     border: 1px solid #60c260;
@@ -3495,6 +3507,8 @@ header.header-nav.menu_style_home_one .ace-responsive-menu li ul.sub-menu.dropdo
     background-color: #f3f5f6;
     border-radius: 50%;
     height: 150px;
+    border: 5px solid white;
+    box-shadow:0 4px 10px rgba(0,0,0,.15);
     margin: 0 auto 20px;
     line-height: 150px;
     text-align: center;
@@ -3568,6 +3582,8 @@ header.header-nav.menu_style_home_one .ace-responsive-menu li ul.sub-menu.dropdo
 
 .iconbox .details .title {
     line-height: 28px;
+    font-size: 18px;
+    font-weight: 600;
     letter-spacing: 0em;
     margin-bottom: 0;
 }
@@ -4913,6 +4929,7 @@ form.listing_page_v9 {
     height: 50px;
     width: 50px;
     line-height: 50px;
+    display:flex;
     text-align: center;
     -webkit-transition: all 0.3s ease;
     -moz-transition: all 0.3s ease;
@@ -5202,9 +5219,9 @@ form.listing_page_v9 {
     color: #041e42;
     font-family: "Jost";
     font-style: normal;
-    font-weight: 500;
-    font-size: 50px;
-    line-height: 72px;
+    font-weight: 700;
+    font-size: 60px;
+    line-height: 71px;
     margin-top: 15px;
 }
 
@@ -6107,7 +6124,7 @@ form.listing_page_v9 {
 .contact_icon_box .contact_iconbox .icon span,
 .footer_contact_iconbox .icon span {
     color: #041e42;
-    font-size: 30px;
+    font-size: 18px;
 }
 
 .vendor_iconbox:hover .icon img,
@@ -6164,12 +6181,18 @@ form.listing_page_v9 {
 .footer_qlink_widget.home10 h4 {
     color: #041e42;
     font-style: normal;
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: 0em;
     line-height: 26px;
-    margin-bottom: 30px;
+    margin-bottom: 3px;
     margin-top: 0;
+    font-family:jost;
+    border-bottom: 1px solid #80808017;
     text-align: left;
+}
+.list-unstyled li{
+    height:28px;
+    font-size:14px;
 }
 
 .footer_qlink_widget.home2_style h4,
@@ -8589,7 +8612,7 @@ td.cp_btns {
     color: #626974;
     display: block;
     font-family: Jost;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 500;
     line-height: 28px;
     letter-spacing: 0em;
@@ -11763,7 +11786,7 @@ section {
 .main-title h2 {
     font-family: Jost;
     font-size: 28px;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 40px;
     letter-spacing: 0em;
 }
@@ -11795,8 +11818,8 @@ section {
 .title_more_btn {
     color: #041e42;
     font-family: Jost;
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 600;
     line-height: 22px;
     letter-spacing: 0em;
     position: relative;
@@ -15089,8 +15112,8 @@ header.header-nav.menu_style_home_one.home5_styles .ace-responsive-menu li ul.su
 
 .banner_one .details .title {
     color: #041e42;
-    font-size: 26px;
-    font-weight: 500;
+    font-size: 30px;
+    font-weight: 600;
     line-height: 38px;
     letter-spacing: 0em;
     width: 70%;
@@ -15609,6 +15632,7 @@ a.shop_btn:before {
     line-height: 22px;
     margin-bottom: 8px;
     text-transform: uppercase;
+    color:gray;
 }
 
 .shop_item .details .title,
@@ -15685,7 +15709,7 @@ a.shop_btn:before {
 .shop_item .details .si_footer .price,
 .shop_item.list_style .si_footer .price {
     color: #041e42;
-    font-size: 18px;
+    font-size: 30px;
     font-weight: 500;
     line-height: 26px;
     letter-spacing: 0em;
@@ -16134,6 +16158,7 @@ a.shop_btn:before {
     font-family: "Jost";
     font-style: normal;
     line-height: 28px;
+    font-size:28px;
 }
 
 .online_delivery.home6_style {
@@ -16250,9 +16275,9 @@ a.shop_btn:before {
 .mailchimp_widget .details .title {
     color: #041e42;
     font-family: Jost;
-    font-size: 28px;
+    font-size: 36px;
     font-style: normal;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 40px;
     letter-spacing: 0em;
     margin-bottom: 30px;
@@ -17565,11 +17590,104 @@ input.quantity-num[type="number"]::-webkit-outer-spin-button {
 
 }
 
-@media(max-width:640px) {
-    .apple_widget_home1 .title {
-    font-size: 40px;
-    font-weight: 500;
-    line-height: 53px;
-    letter-spacing: 0em;
+.margin1001{
+    margin-bottom:100px;
 }
+.paddin90{
+    padding-bottom:90px;
+}
+.featured-product{
+    padding-bottom:90px;
+}
+@media(max-width:640px) {
+    
+    .margin1001{
+    margin-bottom:10px;
+}
+    .paddin90{
+    padding-bottom:20px;
+}
+    .featured-product{
+    padding-bottom:0px;
+}
+  .apple_widget_home1 .title {
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 30px;
+        letter-spacing: 0em;
+    }
+.iconbox .icon {
+    background-color: #f3f5f6;
+    border-radius: 50%;
+    height: 75px;
+    border: 5px solid white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .15);
+    margin: 0 auto 7px;
+    line-height: 150px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    width: 75px;
+    -webkit-transition: all 0.3s ease;
+    -moz-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+    z-index: 0;
+}
+    .main-title h2 {
+        font-family: Jost;
+        font-size: 22px;
+        font-weight: 600;
+        line-height: 40px;
+        letter-spacing: 0em;
+        text-align:center;
+    }
+    .popular_listing_sliders{
+        display: flex;
+    justify-content: center;
+    }
+.title_more_btn {
+    color: #041e42;
+    font-family: Jost;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+    letter-spacing: 0em;
+    position: relative;
+}
+
+.iconbox .details .title {
+    line-height: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0em;
+    margin-bottom: 0;
+}
+.online_delivery .title {
+    font-family: "Jost";
+    font-style: normal;
+    line-height: 28px;
+    font-size: 18px;
+    padding: 10px;
+}
+.banner_one_large {
+    background-image: url(../images/background/banner1.jpg);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    padding: 40px 0;
+    position: relative;
+}
+.banner_one .details .title {
+    color: #ffffff;
+    font-size: 20px !important;
+    font-weight: 600;
+    line-height: 26px;
+    letter-spacing: 0em;
+    width: 80%;
+}
+}
+
+.cart_list{
+    align-items:center;
 }

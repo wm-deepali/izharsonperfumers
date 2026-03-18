@@ -40,6 +40,17 @@
     <link href="{{ asset('front/images/apple-touch-icon-72x72.png') }}" sizes="72x72" rel="apple-touch-icon">
     <link href="{{ asset('front/images/apple-touch-icon-114x114.png') }}" sizes="114x114" rel="apple-touch-icon">
     <link href="{{ asset('front/images/apple-touch-icon-180x180.png') }}" sizes="180x180" rel="apple-touch-icon">
+    
+    <style>
+        .mobile_menu_widget_icons a.cart_btn{
+            display: flex;
+    align-items: center;
+    justify-content: center;
+        }
+        .mobile_menu_widget_icons a.cart_btn .icon{
+            font-size:22px;
+        }
+    </style>
 
 
 </head>
@@ -96,24 +107,24 @@
 
 <body data-spy="scroll">
     <div class="wrapper ovh">
-        <div class="preloader"></div>
+        <!--<div class="preloader"></div>-->
 
         <!-- header middle start-->
-        <div class="header_middle pt20 pb20 dn-992">
+        <div class="header_middle  dn-992" style="padding:5px 0px;">
             <div class="container">
                 <div class="row" style="align-items: center;">
                     <div class="col-lg-2 col-xxl-2">
                         <div class="header_top_logo_home1">
                             <div class="logo"><img
                                     src="{{ $settings->header_logo ? asset('storage/' . $settings->header_logo) : 'https://izharsonperfumers.com/admin-login/storage/logo/awQrarVaGtUQtwtFSSNi78JDai2I5TQH7VIBThZE.png' }}"
-                                    style="border-radius: 7px; height: 60px;" /></div>
+                                    style="border-radius: 7px; height: 70px;" /></div>
                         </div>
                     </div>
                     <div class="col-lg-5 col-xxl-6">
                         <div class="header_middle_advnc_search">
                             <div class="search_form_wrapper">
                                 <div class="row">
-                                    <div class="col-auto pr0">
+                                    <div class="col-auto pr0" style="display:flex; align-items:center;">
                                         <div class="actegory">
                                             <select class="selectpicker" id="selectbox_alCategory" name="category">
                                                 <option value="">All Categories</option>
@@ -681,8 +692,8 @@
                                             class="icon flaticon-profile"></span></a> </li>
                                 <li class="list-inline-item"> <a class="cart_btn cart-filter-btn" href="#"><span
                                             class="icon"><img
-                                                src="{{ asset('front/images/icons/flaticon-shopping-cart-white.svg') }}"
-                                                alt=""></span><span class="badge bgc-thm">2</span></a> </li>
+                                                src="{{ asset('front/images/shopping-cart.png') }}"
+                                                alt="" style="width:22px;"></span><span class="badge bgc-thm">2</span></a> </li>
                             </ul>
                         </div>
                     </div>
@@ -813,15 +824,15 @@
                     <div class="row mt60">
                         <div class="col-sm-6 col-md-5 col-lg-3 col-xl-3">
                             <div class="footer_contact_widget">
-                                <h4>Contact Us</h4>
-                                <div class="footer_contact_iconbox d-flex">
+                                <h4 class="mb-3">Contact Us</h4>
+                                <div class="footer_contact_iconbox d-flex mb-2">
                                     <div class="icon"><span class="flaticon-location"></span></div>
                                     <div class="details ms-4">
-                                        <h5 class="title"></h5>
+
                                         <a href="#">{{ $settings->address }}</a>
                                     </div>
                                 </div>
-                                <div class="footer_contact_iconbox d-flex mb-4">
+                                <div class="footer_contact_iconbox d-flex mb-2">
                                     <div class="icon"><span class="flaticon-phone-call"></span></div>
                                     <div class="details ms-4">
                                         <h5 class="title">Monday-Friday: 08am-9pm</h5>

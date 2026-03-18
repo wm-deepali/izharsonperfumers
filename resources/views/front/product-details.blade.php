@@ -1,6 +1,159 @@
 @extends('front.app')
 
-@section('title', 'Product Details')
+@section('title', $product->meta_title ?? $product->name)
+
+
+<style>
+    .productcard-card{
+background:#fff;
+border-radius:16px;
+overflow:hidden;
+/*box-shadow:0 10px 25px rgba(0,0,0,.08);*/
+transition:.35s;
+border:1px solid #f1f1f1;
+}
+
+.productcard-card:hover{
+transform:translateY(-6px);
+/*box-shadow:0 18px 40px rgba(0,0,0,.15);*/
+}
+
+/* IMAGE */
+
+.productcard-image{
+position:relative;
+background:#f9fafc;
+padding:15px;
+text-align:center;
+}
+
+.productcard-image{
+    width:100%;
+    height:320px !important;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+}
+
+.productcard-image img{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+}
+
+
+
+/* ICONS */
+
+.productcard-icons{
+position:absolute;
+top:10px;
+right:10px;
+display:flex;
+flex-direction:column;
+gap:8px;
+}
+
+.productcard-icon{
+background:#fff;
+width:34px;
+height:34px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:50%;
+box-shadow:0 4px 10px rgba(0,0,0,.15);
+}
+
+/* BODY */
+
+.productcard-body{
+padding:0px 16px 16px 16px;
+}
+
+.productcard-category{
+font-size:12px;
+color:#888;
+margin-bottom:4px;
+    background: #f1f1f145;
+    border-radius: 4px;
+    padding: 0px 10px;
+}
+
+.productcard-title{
+font-size:15px;
+font-weight:600;
+margin-bottom:6px;
+margin-top: 10px;
+}
+
+.productcard-title a{
+color:#222;
+text-decoration:none;
+}
+
+/* RATING */
+
+.productcard-rating{
+font-size:13px;
+margin-bottom:6px;
+}
+
+.productcard-rating i{
+color:#ddd;
+}
+
+.productcard-rating i.active{
+color:#f6b100;
+}
+
+/* PRICE */
+
+.productcard-price{
+font-size:17px;
+font-weight:700;
+color:#222;
+margin-bottom:10px;
+}
+
+.productcard-oldprice{
+font-size:13px;
+color:#999;
+margin-left:6px;
+text-decoration:line-through;
+}
+
+/* BUTTONS */
+
+.productcard-buttons{
+display:flex;
+gap:8px;
+}
+
+.productcard-btn{
+flex:1;
+padding:8px;
+font-size:13px;
+border-radius:8px;
+text-align:center;
+text-decoration:none;
+font-weight:600;
+}
+
+.productcard-cart{
+background:#eef2ff;
+color:#4f46e5;
+}
+
+.productcard-buy{
+background:linear-gradient(135deg,#6366f1,#4f46e5);
+color:#fff;
+}
+
+ 
+
+</style>
 
 @section('content')
 
@@ -127,8 +280,10 @@
 
                             </div>
                         </div>
-                        <div class="shop_single_product_details ps-0 mt-4 d-block d-xl-none">
-                            <div class="sspd_price mt-4 mb25">
+                        <div class="shop_single_product_details  mt-4 d-block d-xl-none d-n" style="border: 1px solid #d0cbcb;
+    padding: 20px;
+    border-radius: 10px;">
+                            <div class="sspd_price mt-2 mb-3">
                                 ₹<span id="product-price">{{ $product->product_options->first()->price }}</span>
                                 <small>
                                     <del>₹<span id="product-mrp">{{ $product->product_options->first()->mrp }}</span></del>
@@ -140,7 +295,7 @@
 
                                     <div class="d-flex flex-wrap gap-2">
                                         @foreach($product->fragrance_names as $name)
-                                            <span class="badge bg-light border text-dark px-3 py-2">
+                                            <span class="badge bg-light border text-dark px-3 py-2" style="font-size:15px;font-weight:500">
                                                 {{ $name }}
                                             </span>
                                         @endforeach
@@ -223,8 +378,7 @@
 </a>
                                 </li>
                                                 
-                                    <li class="pe-2 ms-2"><a href="#"><span class="flaticon-graph me-2"></span>Compare</a>
-                                    </li>
+                                   
                                     <li class="pe-2 ms-2"><a href="#"><span class="flaticon-question me-2"></span>Ask a
                                             Question</a></li>
                                     <li class="ms-2"><a href="#" id="shareProduct">
@@ -553,9 +707,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-4 scroll-to-fixed-parent offset-xl-1 d-none d-xl-block">
-                    <div class="column scroll-to-fixed-child">
-                        <div class="shop_single_product_details sidebar mb-3 mb-xl-0">
+                <div class="col-xl-4  offset-xl-1 d-none d-xl-block">
+                    
+                        <div class="shop_single_product_details sidebar  mb-3 mb-xl-0 " style="border: 1px solid #d0cbcb;
+    padding: 20px;
+    border-radius: 10px;" >
                             <ul class="db-400 d-flex">
                                 <li class="border-right heading-color fz14">
                                     {{ $product->categories->name ?? 'Brand' }}
@@ -597,7 +753,7 @@
 
                                     <div class="d-flex flex-wrap gap-2">
                                         @foreach($product->fragrance_names as $name)
-                                            <span class="badge bg-light border text-dark px-3 py-2">
+                                            <span class="badge bg-light border text-dark px-3 py-2" style="font-size:14px;font-weight:500">
                                                 {{ $name }}
                                             </span>
                                         @endforeach
@@ -651,7 +807,7 @@
                             </div>
 
                             <hr>
-                            <ul class="cart_btn_widget shop_single3_style align-items-center mb-1">
+                            <ul class="cart_btn_widget shop_single3_style align-items-center d-flex justify-content-between mb-1">
                                 <li class="list-inline-item me-3 mb-2">
                                     <div class="cart_btn home_page_sidebar d-grid">
                                         <div class="quantity-block home_page_sidebar">
@@ -685,18 +841,20 @@
     Wishlist
 </a>
 </li>
-                                <li class="pe-2 ms-2"><a href="#"><span class="flaticon-graph me-2"></span>Compare</a></li>
+
                                 <li class="pe-2 ms-2"><a href="#"><span class="flaticon-question me-2"></span>Ask a
                                         Question</a></li>
                                 <li class="ms-2"><a href="#" id="shareProduct">
     <span class="flaticon-share me-2"></span>Share
-</a></li></li>
+</a></li>
                             </ul>
                         </div>
-                    </div>
+                    
                 </div>
             </div>
-            <div class="row">
+            
+             @if ($relatedProducts->isNotEmpty())
+            <div class="row" style="position:relative;">
                 <div class="col-lg-12">
                     <div class="main-title">
                         <h2 class="title">Related products</h2>
@@ -705,164 +863,206 @@
                         class="navi_pagi_top_right related_product_slider slider_dib_sm shop_item_6grid_slider owl-theme owl-carousel">
                         @foreach($relatedProducts as $item)
                             <div class="item">
-                                <div class="shop_item small_style bdr1 px-2 px-sm-3 mx--1">
-                                    <div class="thumb pb30">
-                                        <img class="w100" src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
-                                        <div class="thumb_info">
-                                            <ul class="mb0">
-                                                            <li>
-    <a href="#" class="add-to-wishlist-btn"
-        data-product="{{ $item->id }}">
-        <span class="flaticon-heart"
-                                                            style="{{ collect($wishlistIds)->contains($item->id) ? 'color:red;' : '' }}">
-                                                        </span>
-    </a>
-</li>
-                                                <li><a href="{{ url('product-details/' . $item->slug) }}"><span
-                                                            class="flaticon-show"></span></a>
-                                                </li>
-                                                <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a>
-                                                </li>
-                                            </ul>
-                                        </div>
+                                <div class="productcard-card">
 
-                                        <div class="shop_item_cart_btn d-grid">
-                                            <a href="#" class="btn btn-thm add-to-cart-btn" data-product="{{ $item->id }}">
-                                        Add to cart
-                                    </a>
-                                        </div>
-                                    </div>
-                                    <div class="details">
-                                        <div class="sub_title">
-                                            {{ $item->categories->name ?? '' }}
-                                        </div>
-                                        <div class="title">
-                                            <a href="{{ route('product-details', $item->slug) }}">
-                                                {{ Str::limit($item->name, 60) }}
-                                            </a>
-                                        </div>
-                                        <div class="review d-flex db-500">
-                                            <ul class="mb0 me-2">
-                                                @for($i = 1; $i <= 5; $i++)
-                                                    <li class="list-inline-item">
-                                                        <a href="#">
-                                                            <i
-                                                                class="fas fa-star {{ $i <= $item->avg_rating ? '' : 'text-muted' }}"></i>
-                                                        </a>
-                                                    </li>
-                                                @endfor
-                                            </ul>
+    <!-- IMAGE -->
+    <div class="productcard-image">
 
-                                            <div class="review_count">
-                                                <a href="#">{{ $item->review_count }} reviews</a>
-                                            </div>
-                                        </div>
-                                        <div class="si_footer">
-                                            <div class="price">
-                                                ₹{{ $item->product_options[0]->price ?? $item->min_price }}
+        <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
 
-                                                @if(!empty($item->product_options[0]->mrp))
-                                                    <small>
-                                                        <del>₹{{ $item->product_options[0]->mrp }}</del>
-                                                    </small>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+        <!-- ACTION ICONS -->
+        <div class="productcard-icons">
+
+            <a href="#" class="productcard-icon add-to-wishlist-btn" data-product="{{ $item->id }}">
+                <i class="flaticon-heart"
+                style="{{ collect($wishlistIds)->contains($item->id) ? 'color:red;' : '' }}"></i>
+            </a>
+
+            <a href="{{ url('product-details/' . $item->slug) }}" class="productcard-icon">
+                <i class="flaticon-show"></i>
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- DETAILS -->
+    <div class="productcard-body">
+
+        <!-- CATEGORY -->
+        <div class="productcard-category">
+            {{ $item->subcategories->name ?? ($item->categories->name ?? '')}}
+        </div>
+
+        <!-- TITLE -->
+        <h3 class="productcard-title">
+            <a href="{{ url('product-details/' . $item->slug) }}">
+                {{ Str::limit($item->name, 40) }}
+            </a>
+        </h3>
+
+
+        <!-- RATING -->
+        <div class="productcard-rating">
+
+            @for($i = 1; $i <= 5; $i++)
+                <i class="fas fa-star {{ $i <= $item->avg_rating ? 'active' : '' }}"></i>
+            @endfor
+
+            <span>({{ $item->review_count }})</span>
+
+        </div>
+
+
+        <!-- PRICE -->
+        <div class="productcard-price">
+
+            ₹{{ $item->product_options[0]->price ?? $item->min_price }}
+
+            @if(!empty($item->product_options[0]->mrp))
+            <span class="productcard-oldprice">
+                ₹{{ $item->product_options[0]->mrp }}
+            </span>
+            @endif
+
+        </div>
+
+
+        <!-- BUTTONS -->
+        <div class="productcard-buttons">
+
+            <a href="#"
+               class="productcard-btn productcard-cart add-to-cart-btn"
+               data-product="{{ $item->id }}"
+               data-option="{{ optional($item->product_options->first())->id }}">
+               Add to Cart
+            </a>
+
+            <a href="{{ url('product-details/' . $item->slug) }}"
+               class="productcard-btn productcard-buy">
+               Buy Now
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
                             </div>
                         @endforeach
                     </div>
                 </div>
             </div>
+            
+             @endif
+
+            @if ($recommendedProducts->isNotEmpty())
+            
             <div class="row mt50">
                 <div class="col-lg-12">
                     <div class="main-title">
                         <h2 class="title">You may also like</h2>
                     </div>
+                    
+                    
                     <div
-                        class="navi_pagi_top_right related_product_slider slider_dib_sm shop_item_6grid_slider owl-theme owl-carousel">
+                        class="navi_pagi_top_right related_product_slider slider_dib_sm shop_item_6grid_slider owl-theme owl-carousel ">
                         @foreach($recommendedProducts as $item)
-                            <div class="item">
-                                <div class="shop_item small_style bdr1 px-2 px-sm-3 mx--1">
-                                    <div class="thumb pb30">
-                                        <img class="w100" src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
-                                        <div class="thumb_info">
-                                            <ul class="mb0">
-                                               <li>
-    <a href="#" class="add-to-wishlist-btn"
-        data-product="{{ $item->id }}">
-       <span class="flaticon-heart"
-                                                            style="{{ collect($wishlistIds)->contains($item->id) ? 'color:red;' : '' }}">
-                                                        </span>
-    </a>
-</li>
-                                                <li><a href="{{ url('product-details/' . $item->slug) }}"><span
-                                                            class="flaticon-show"></span></a>
-                                                </li>
-                                                <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a>
-                                                </li>
-                                            </ul>
-                                        </div>
+                            <div class="item ">
+ <div class="productcard-card">
 
-                                        <div class="shop_item_cart_btn d-grid">
-                                              <a href="#" class="btn btn-thm add-to-cart-btn" data-product="{{ $item->id }}">
-                                        Add to cart
-                                    </a>
-                                        </div>
-                                    </div>
-                                    {{-- DETAILS --}}
-                                    <div class="details">
+    <!-- IMAGE -->
+    <div class="productcard-image">
 
-                                        {{-- BRAND / CATEGORY --}}
-                                        <div class="sub_title">
-                                            {{ $item->subcategories->name ?? ($item->categories->name ?? '')}}
-                                        </div>
+        <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
 
-                                        {{-- NAME --}}
-                                        <div class="title">
-                                            <a href="{{ url('product-details/' . $item->slug) }}">
-                                                {{ Str::limit($item->name, 40) }}
-                                            </a>
-                                        </div>
+        <!-- ACTION ICONS -->
+        <div class="productcard-icons">
 
-                                        {{-- RATING --}}
-                                        <div class="review d-flex db-500">
-                                            <ul class="mb0 me-2">
-                                                @for($i = 1; $i <= 5; $i++)
-                                                    <li class="list-inline-item">
-                                                        <a href="#">
-                                                            <i
-                                                                class="fas fa-star {{ $i <= $item->avg_rating ? '' : 'text-muted' }}"></i>
-                                                        </a>
-                                                    </li>
-                                                @endfor
-                                            </ul>
+            <a href="#" class="productcard-icon add-to-wishlist-btn" data-product="{{ $item->id }}">
+                <i class="flaticon-heart"
+                style="{{ collect($wishlistIds)->contains($item->id) ? 'color:red;' : '' }}"></i>
+            </a>
 
-                                            <div class="review_count">
-                                                <a href="#">{{ $item->review_count }} reviews</a>
-                                            </div>
-                                        </div>
-                                        {{-- PRICE --}}
-                                        <div class="si_footer">
-                                            <div class="price">
-                                                ₹{{ $item->product_options[0]->price ?? $item->min_price }}
+            <a href="{{ url('product-details/' . $item->slug) }}" class="productcard-icon">
+                <i class="flaticon-show"></i>
+            </a>
 
-                                                @if(!empty($item->product_options[0]->mrp))
-                                                    <small>
-                                                        <del>₹{{ $item->product_options[0]->mrp }}</del>
-                                                    </small>
-                                                @endif
-                                            </div>
-                                        </div>
+        </div>
 
-                                    </div>
-                                </div>
+    </div>
+
+
+    <!-- DETAILS -->
+    <div class="productcard-body">
+
+        <!-- CATEGORY -->
+        <div class="productcard-category">
+            {{ $item->subcategories->name ?? ($item->categories->name ?? '')}}
+        </div>
+
+        <!-- TITLE -->
+        <h3 class="productcard-title">
+            <a href="{{ url('product-details/' . $item->slug) }}">
+                {{ Str::limit($item->name, 40) }}
+            </a>
+        </h3>
+
+
+        <!-- RATING -->
+        <div class="productcard-rating">
+
+            @for($i = 1; $i <= 5; $i++)
+                <i class="fas fa-star {{ $i <= $item->avg_rating ? 'active' : '' }}"></i>
+            @endfor
+
+            <span>({{ $item->review_count }})</span>
+
+        </div>
+
+
+        <!-- PRICE -->
+        <div class="productcard-price">
+
+            ₹{{ $item->product_options[0]->price ?? $item->min_price }}
+
+            @if(!empty($item->product_options[0]->mrp))
+            <span class="productcard-oldprice">
+                ₹{{ $item->product_options[0]->mrp }}
+            </span>
+            @endif
+
+        </div>
+
+
+        <!-- BUTTONS -->
+        <div class="productcard-buttons">
+
+            <a href="#"
+               class="productcard-btn productcard-cart add-to-cart-btn"
+               data-product="{{ $item->id }}"
+               data-option="{{ optional($item->product_options->first())->id }}">
+               Add to Cart
+            </a>
+
+            <a href="{{ url('product-details/' . $item->slug) }}"
+               class="productcard-btn productcard-buy">
+               Buy Now
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
                             </div>
                         @endforeach
                     </div>
                 </div>
             </div>
+             @endif
+             
         </div>
     </section>
     <script src="{{ asset('front/js/jquery-3.6.0.js') }}"></script>

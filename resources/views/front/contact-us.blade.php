@@ -1,25 +1,19 @@
 @extends('front.app')
-
-@section('title', 'Page Vendor List')
+@section('title', 'Contact Us')
 
 @section('content')
 
     <!-- Inner Page Breadcrumb -->
-    <section class="inner_page_breadcrumb">
+    <section class="inner_page_breadcrumb py-4 bg-light">
         <div class="container">
             <div class="row">
                 <div class="col-xl-6">
                     <div class="breadcrumb_content">
-                        <ol class="breadcrumb">
-
+                        <ol class="breadcrumb mb-0">
                             <li class="breadcrumb-item">
                                 <a href="{{ url('/') }}">Home</a>
                             </li>
-
-                            <li class="breadcrumb-item active" aria-current="page">
-                                Contact Us
-                            </li>
-
+                            <li class="breadcrumb-item active" aria-current="page">Contact Us</li>
                         </ol>
                     </div>
                 </div>
@@ -27,297 +21,231 @@
         </div>
     </section>
 
-    <!-- Our Contact -->
-    <section class="our-contact p0">
+    <!-- Map Section -->
+    <section class="our-contact p-0">
         <div class="container-fluid">
             <div class="row">
-                <div class="h600" id="map-canvas-dynamic">
-                    {!! $branches[0]['map_url'] ?? '' !!}
+                <div class="h600 w-100" id="map-canvas-dynamic">
+                    {!! $branches[0]['map_url'] ?? '<div class="alert alert-info text-center py-5">No map available</div>' !!}
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Our Contact -->
-    <section class="our-contact pt55 pb30">
+    <!-- Main Contact Section -->
+    <section class="our-contact py-5">
         <div class="container">
-            <div class="row">
+
+            <div class="row g-4">
+
+                <!-- Left - Info + Social + Form Card -->
                 <div class="col-lg-6">
-                    <div class="contact_page_content">
-                        <div class="main-title">
-                            <h2 class="mtitle">Get in touch with us <br class="d-none d-md-block"> today</h2>
-                            <p>{{ $settings->address }}</p>
-                        </div>
-                        <div class="contact_icon_box mt30">
-                            <div class="contact_iconbox d-flex mb30">
-                                <div class="icon"><span class="flaticon-phone-call"></span></div>
-                                <div class="details ms-4">
-                                    <h4 class="title">Monday-Friday: 08am-9pm</h4>
-                                    <a href="#">{{ $settings->tollfree_number }}</a>
+
+                    <!-- Get in Touch Card -->
+                    <div class="card shadow-lg border-0 mb-4 h-100">
+                        <div class="card-body p-4 p-md-5">
+                            <h2 class="card-title mb-4">Get in touch with us today</h2>
+                            <p class="text-muted mb-4">{{ $settings->address }}</p>
+
+                            <div class="contact_icon_box mb-4">
+                                <div class="d-flex mb-3">
+                                    <div class="icon fs-4 me-3 text-primary"><span class="flaticon-phone-call"></span></div>
+                                    <div>
+                                        <h5>Monday-Friday: 08am-9pm</h5>
+                                        <a href="tel:{{ $settings->tollfree_number }}" class="text-decoration-none">
+                                            {{ $settings->tollfree_number }}
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex">
+                                    <div class="icon fs-4 me-3 text-primary"><span class="flaticon-email"></span></div>
+                                    <div>
+                                        <h5>Need help with your order?</h5>
+                                        <a href="mailto:{{ $settings->email }}" class="text-decoration-none">
+                                            {{ $settings->email }}
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="contact_iconbox d-flex">
-                                <div class="icon"><span class="flaticon-email"></span></div>
-                                <div class="details ms-4">
-                                    <h4 class="title">Need help with your order?</h4>
-                                    <a href="#">{{ $settings->email }}</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="footer_social_widget mt30 mb30-md">
-                            <h4 class="title mb0">Follow us</h4>
-                            <div class="social_icon_list mt10">
-                                <ul class="mb20">
-                                     <li class="list-inline-item"><a href="{{ $socialLinks->fb_name }}"><i
-                                                    class="fab fa-facebook"></i></a>
-                                        </li>
-                                        <li class="list-inline-item"><a href="{{ $socialLinks->twit_name }}"><i
-                                                    class="fab fa-x-twitter"></i></a>
-                                        </li>
-                                        <li class="list-inline-item"><a href="{{ $socialLinks->insta_name }}"><i
-                                                    class="fab fa-instagram"></i></a>
-                                        </li>
-                                        <li class="list-inline-item"><a href="{{ $socialLinks->linkedin_name }}"><i
-                                                    class="fab fa-linkedin-in"></i></a>
-                                        </li>
-                                        <li class="list-inline-item"><a href="{{ $socialLinks->youtube_name }}"><i
-                                                    class="fab fa-youtube"></i></a>
-                                        </li>
-                                        <li class="list-inline-item"><a
-                                                href="https://wa.me/{{ $settings->whatsapp_number }}" target="_blank"><i
-                                                    class="fab fa-whatsapp"></i></a>
-                                        </li>
+
+                            <div class="mt-4">
+                                <h5 class="mb-3">Follow us</h5>
+                                <ul class="social_icon_list list-inline mb-0">
+                                    <li class="list-inline-item"><a href="{{ $socialLinks->fb_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-facebook"></i></a></li>
+                                    <li class="list-inline-item"><a href="{{ $socialLinks->twit_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-x-twitter"></i></a></li>
+                                    <li class="list-inline-item"><a href="{{ $socialLinks->insta_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-instagram"></i></a></li>
+                                    <li class="list-inline-item"><a href="{{ $socialLinks->linkedin_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-linkedin-in"></i></a></li>
+                                    <li class="list-inline-item"><a href="{{ $socialLinks->youtube_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-youtube"></i></a></li>
+                                    <li class="list-inline-item"><a href="https://wa.me/{{ $settings->whatsapp_number ?? '' }}" target="_blank" class="text-dark fs-4"><i class="fab fa-whatsapp"></i></a></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
+
                 </div>
+
+                <!-- Right - Contact Form Card -->
                 <div class="col-lg-6">
-                    <div class="form_grid">
-                        <div class="wrapper">
+                    <div class="card shadow-lg border-0 h-100">
+                        <div class="card-body p-4 p-md-5">
+
                             @if(session('success'))
-<div class="alert alert-success">
-    {{ session('success') }}
-</div>
-@endif
-                            <form class="contact_form" method="POST" action="{{ route('contact.store') }}">
-    @csrf
-
-    <div class="row">
-
-        <div class="col-md-6">
-            <div class="form-group mb-4">
-                <label class="form-label">Name</label>
-                       <input class="form-control @error('name') is-invalid @enderror"
-       type="text"
-       name="name"
-       value="{{ old('name') }}"
-       placeholder="Enter your name">
-
-@error('name')
-<div class="text-danger">{{ $message }}</div>
-@enderror
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="form-group mb-4">
-                <label class="form-label">Email</label>
-                <input class="form-control email @error('email') is-invalid @enderror"
-       type="email"
-       name="email"
-       value="{{ old('email') }}"
-       placeholder="Enter your email">
-
-@error('email')
-<div class="text-danger">{{ $message }}</div>
-@enderror
-            </div>
-        </div>
-
-        <div class="col-md-12">
-            <div class="form-group mb-4">
-                <label class="form-label">Phone</label>
-               <input class="form-control @error('mobile_number') is-invalid @enderror"
-       type="tel"
-       name="mobile_number"
-       value="{{ old('mobile_number') }}"
-       placeholder="Enter your phone number"
-       pattern="[0-9]{10}">
-
-@error('mobile_number')
-<div class="text-danger">{{ $message }}</div>
-@enderror
-            </div>
-        </div>
-
-        <div class="col-sm-12">
-            <div class="form-group mb-4">
-                <label class="form-label">Message</label>
-                <textarea name="message"
-          class="form-control @error('message') is-invalid @enderror"
-          rows="8"
-          placeholder="Write your message here">{{ old('message') }}</textarea>
-
-@error('message')
-<div class="text-danger">{{ $message }}</div>
-@enderror
-            </div>
-
-            <div class="form-group mb0">
-                <button type="submit" class="btn btn-thm">
-                    Send Message
-                </button>
-            </div>
-        </div>
-
-    </div>
-</form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row mt60 pt55 bdrt1">
-                <div class="col-lg-6">
-                    <div class="main-title">
-                        <h2 class="mtitle">Come and visit one of our offices <br class="d-none d-md-block"> around the world
-                        </h2>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit ut aliquam <br class="d-none d-md-block">
-                            purus sit amet luctus venenatis lectus.</p>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="row">
-                        @foreach($branches as $branch)
-                            <div class="col-md-6">
-                                <div class="location_lists">
-                                    <div class="wrapper">
-
-                                        <h4 class="title">{{ $branch['name'] }}</h4>
-
-                                        <ul>
-                                            <li>
-                                                <a href="#">
-                                                    {{ $branch['address'] }}
-                                                </a>
-                                            </li>
-
-                                            <li>
-                                                <a href="#">
-                                                    {{ $branch['cities']['name'] ?? '' }},
-                                                    {{ $branch['states']['name'] ?? '' }}
-                                                </a>
-                                            </li>
-
-                                            <li>
-                                                <a href="tel:{{ $branch['contact_number'] }}">
-                                                    {{ $branch['contact_number'] }}
-                                                </a>
-                                            </li>
-
-                                            <li>
-                                                <a href="mailto:{{ $branch['email'] }}">
-                                                    {{ $branch['email'] }}
-                                                </a>
-                                            </li>
-                                        </ul>
-
-                                        <a href="#" class="locate_map_btn branch-map-btn" data-map='{!! $branch["map_url"] !!}'>
-                                            See Map
-                                        </a>
-
-                                    </div>
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    {{ session('success') }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-            <div class="row mt20 pt55 bdrt1">
-                <div class="col-lg-6 offset-lg-3">
-                    <div class="main-title text-center">
-                        <h2>Frequently Asked Questions</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-8 offset-lg-2">
-                    <div class="shortcode_widget_accprdons mb0">
-                        <div class="faq_according text-start">
-                            <div class="accordion" id="accordionExample">
-                               @foreach($faqs as $faq)
-<div class="card">
-    <div class="card-header" id="heading{{ $loop->index }}">
-        <h2 class="mb-0">
-            <button class="btn btn-link text-start collapsed"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapse{{ $loop->index }}"
-                aria-expanded="false"
-                aria-controls="collapse{{ $loop->index }}">
+                            @endif
 
-                <span>{{ $loop->iteration }}</span> {{ $faq->question }}
+                            <h3 class="mb-4">Send us a message</h3>
 
-            </button>
-        </h2>
-    </div>
+                            <form class="contact_form" method="POST" action="{{ route('contact.store') }}">
+                                @csrf
+                                <div class="row g-3">
 
-    <div id="collapse{{ $loop->index }}"
-        class="collapse"
-        aria-labelledby="heading{{ $loop->index }}"
-        data-bs-parent="#accordionExample">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Name</label>
+                                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
+                                               value="{{ old('name') }}" placeholder="Enter your name">
+                                        @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
 
-        <div class="card-body">
-            {{ $faq->answer }}
-        </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
+                                               value="{{ old('email') }}" placeholder="Enter your email">
+                                        @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
 
-    </div>
-</div>
-@endforeach
-                            </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Phone</label>
+                                        <input type="tel" name="mobile_number" pattern="[0-9]{10}" class="form-control @error('mobile_number') is-invalid @enderror"
+                                               value="{{ old('mobile_number') }}" placeholder="Enter your phone number">
+                                        @error('mobile_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label">Message</label>
+                                        <textarea name="message" rows="6" class="form-control @error('message') is-invalid @enderror"
+                                                  placeholder="Write your message here...">{{ old('message') }}</textarea>
+                                        @error('message') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-thm btn-lg w-100">Send Message</button>
+                                    </div>
+
+                                </div>
+                            </form>
+
                         </div>
                     </div>
                 </div>
+
             </div>
-            <div class="row pt55 bdrt1">
-                @foreach($features as $feature)
-                    <div class="col-sm-6 col-xl-3">
-                        <div class="icon_boxes">
-                            <div class="icon">
-                                <span class="{{ $feature->icon }}"></span>
-                            </div>
-                            <div class="details">
-                                <h5 class="title">{{ $feature->title }}</h5>
-                                <p class="para">{{ $feature->description }}</p>
+
+            <!-- Our Offices / Branches -->
+            <div class="row mt-5 pt-5 border-top">
+                <div class="col-12 text-center mb-5">
+                    <h2>Come and visit one of our offices</h2>
+                    <p class="text-muted">We have multiple locations ready to welcome you</p>
+                </div>
+
+                @foreach($branches as $branch)
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card shadow h-100 border-0">
+                            <div class="card-body p-4">
+                                <h4 class="card-title mb-3">{{ $branch['name'] }}</h4>
+                                <ul class="list-unstyled mb-4">
+                                    <li class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                        {{ $branch['address'] }}
+                                    </li>
+                                    <li class="mb-2"><i class="fas fa-city me-2 text-primary"></i>
+                                        {{ $branch['cities']['name'] ?? '' }}, {{ $branch['states']['name'] ?? '' }}
+                                    </li>
+                                    <li class="mb-2"><i class="fas fa-phone me-2 text-primary"></i>
+                                        <a href="tel:{{ $branch['contact_number'] }}" class="text-dark text-decoration-none">
+                                            {{ $branch['contact_number'] }}
+                                        </a>
+                                    </li>
+                                    <li><i class="fas fa-envelope me-2 text-primary"></i>
+                                        <a href="mailto:{{ $branch['email'] }}" class="text-dark text-decoration-none">
+                                            {{ $branch['email'] }}
+                                        </a>
+                                    </li>
+                                </ul>
+
+                                <a href="#" class="btn btn-outline-primary branch-map-btn w-100"
+                                   data-map='{!! $branch["map_url"] !!}'>
+                                    See on Map
+                                </a>
                             </div>
                         </div>
                     </div>
                 @endforeach
             </div>
+
+            <!-- FAQ Section -->
+            <div class="row mt-5 pt-5 border-top">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="card shadow border-0">
+                        <div class="card-body p-4 p-md-5">
+                            <h2 class="text-center mb-4">Frequently Asked Questions</h2>
+
+                            <div class="accordion" id="accordionExample">
+                                @foreach($faqs as $faq)
+                                    <div class="accordion-item border-0 shadow-sm mb-3">
+                                        <h2 class="accordion-header" id="heading{{ $loop->index }}">
+                                            <button class="accordion-button collapsed fw-bold" type="button"
+                                                    data-bs-toggle="collapse" data-bs-target="#collapse{{ $loop->index }}"
+                                                    aria-expanded="false" aria-controls="collapse{{ $loop->index }}">
+                                                <span class="me-3 badge bg-primary rounded-pill">{{ $loop->iteration }}</span>
+                                                {{ $faq->question }}
+                                            </button>
+                                        </h2>
+                                        <div id="collapse{{ $loop->index }}" class="accordion-collapse collapse"
+                                             aria-labelledby="heading{{ $loop->index }}" data-bs-parent="#accordionExample">
+                                            <div class="accordion-body">
+                                                {{ $faq->answer }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="row mt-5 pt-5 border-top g-4">
+                @foreach($features as $feature)
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card shadow-sm border-0 text-center h-100">
+                            <div class="card-body p-4">
+                                <div class="icon fs-1 text-primary mb-3">
+                                    <span class="{{ $feature->icon }}"></span>
+                                </div>
+                                <h5 class="card-title">{{ $feature->title }}</h5>
+                                <p class="card-text text-muted">{{ $feature->description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
         </div>
     </section>
 
     <script>
-
         document.querySelectorAll('.branch-map-btn').forEach(btn => {
-
             btn.addEventListener('click', function (e) {
-
                 e.preventDefault();
-
                 let map = this.dataset.map;
-
                 document.querySelector('#map-canvas-dynamic').innerHTML = map;
-
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
-
         });
-
     </script>
 
 @endsection

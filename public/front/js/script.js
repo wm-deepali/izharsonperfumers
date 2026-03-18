@@ -741,105 +741,89 @@
     }
 
     /*  Shop-Item-5-Grid-Slider-Owl-carousel  */
-    if($('.shop_item_5grid_slider').length){
-        $('.shop_item_5grid_slider').owlCarousel({
-            loop:true,
-            margin:0,
-            dots:true,
-            nav:true,
-            rtl:false,
-            autoplayHoverPause:false,
-            autoplay: false,
-            singleItem: true,
-            smartSpeed: 1200,
-            navText: [
-              '<i class="fas fa-arrow-left-long"></i>',
-              '<i class="fas fa-arrow-right-long"></i>'
-            ],
-            responsive: {
-                0: {
-                    items: 1,
-                    center: false
-                },
-                480:{
-                    items:1,
-                    center: false
-                },
-                520:{
-                    items:2,
-                    center: false
-                },
-                767: {
-                    items: 2,
-                    center: false
-                },
-                768: {
-                    items: 2
-                },
-                992: {
-                    items: 3
-                },
-                1200: {
-                    items: 3
-                },
-                1366: {
-                    items: 4
-                },
-                1400: {
-                    items: 5
-                }
+    if ($('.shop_item_5grid_slider').length) {
+    $('.shop_item_5grid_slider').owlCarousel({
+        loop: true,
+        margin: 20,
+        dots: true,
+        nav: true,
+        rtl: false,
+        autoplay: false,
+        smartSpeed: 800,
+        navText: [
+            '<i class="fas fa-arrow-left-long"></i>',
+            '<i class="fas fa-arrow-right-long"></i>'
+        ],
+        responsive: {
+            0: {
+                items: 1
+            },
+            480: {
+                items: 1
+            },
+            576: {
+                items: 2
+            },
+            768: {
+                items: 3
+            },
+            992: {
+                items: 4
+            },
+            1200: {
+                items: 4
             }
-        })
-    }
+        }
+    });
+}
+
 
     /*  Shop-Item-6-Grid-Slider-Owl-carousel  */
-    if($('.shop_item_6grid_slider').length){
-        $('.shop_item_6grid_slider').owlCarousel({
-            loop:true,
-            margin:0,
-            center:false,
-            dots:true,
-            nav:true,
-            rtl:false,
-            autoplayHoverPause:false,
-            autoplay: false,
-            singleItem: true,
-            smartSpeed: 1200,
-            navText: [
-              '<i class="fas fa-arrow-left-long"></i>',
-              '<i class="fas fa-arrow-right-long"></i>'
-            ],
-            responsive: {
-                0: {
-                    items: 1,
-                    center: false
-                },
-                480:{
-                    items:1,
-                    center: false
-                },
-                630: {
-                    items: 2,
-                    center: false
-                },
-                768: {
-                    items: 3
-                },
-                992: {
-                    items: 3
-                },
-                1024: {
-                    items: 3
-                },
-                1200: {
-                    items: 4
-                },
-                1400: {
-                    items: 6
-                }
+   if($('.shop_item_6grid_slider').length){
+    $('.shop_item_6grid_slider').owlCarousel({
+        loop:true,
+        margin:20, // 👈 gap between items
+        center:false,
+        dots:true,
+        nav:true,
+        rtl:false,
+        autoplayHoverPause:false,
+        autoplay:false,
+        singleItem:true,
+        smartSpeed:1200,
+        navText:[
+          '<i class="fas fa-arrow-left-long"></i>',
+          '<i class="fas fa-arrow-right-long"></i>'
+        ],
+        responsive:{
+            0:{
+                items:1
+            },
+            480:{
+                items:1
+            },
+            630:{
+                items:2
+            },
+            768:{
+                items:3
+            },
+            992:{
+                items:3
+            },
+            1024:{
+                items:3
+            },
+            1200:{
+                items:4
+            },
+            1400:{
+                items:6
             }
-        })
-    }
+        }
+    })
+}
+
 
     /*  Shop-Item-7-Grid-Slider-Owl-carousel  */
     if($('.shop_item_7grid_slider').length){

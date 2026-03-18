@@ -77,7 +77,6 @@ class CustomerForgotPasswordController extends Controller
             'password' => 'required|min:6|confirmed',
             'token' => 'required'
         ]);
-
         $record = DB::table('password_resets')
             ->where('token', $request->token)
             ->first();

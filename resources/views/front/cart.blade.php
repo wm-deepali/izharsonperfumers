@@ -56,14 +56,14 @@
                     <th scope="row">
                       <ul class="cart_list d-block d-xl-flex">
                         <li class="ps-1 ps-sm-4 pe-1 pe-sm-4">
-                          <a href="#">
+                          <a href="{{ url('product-details/' . $item->products->slug)  }}">
                             <img src="{{ asset('storage/' . ($item->product_options->image ?? $item->products->image)) }}"
                               style="width:100px; height:100px">
                           </a>
                         </li>
 
                         <li class="ms-2 ms-md-3">
-                          <a class="cart_title" href="#">
+                          <a class="cart_title" href="{{ url('product-details/' . $item->products->slug)  }}">
                             <span class="fz16">
                               {{ $item->products->name }}
                             </span>
@@ -182,10 +182,22 @@
                 <p>Product Subtotal <span class="float-end">₹{{ number_format($cart->total_price, 2) }}</span></p>
               </li>
 
+
+              <li class="subtitle">
+                <p>Estimated Shipping
+                  @if(($shippingData['shippingCost'][0]['shipping_type'] ?? '') == 'free')
+                    <small class="text-success">(FREE)</small>
+                  @endif
+                  <span class="float-end">
+                    ₹{{ $shippingData['shippingCost'][0]['TotalShipCost'] ?? 0 }}
+                  </span>
+                </p>
+              </li>
+             
               {{-- Product Discounts --}}
               @if($cart->pre_discount > 0)
                 <li class="subtitle">
-                  <p>Product Discount
+                  <p>Pre-Discount
                     <span class="float-end text-success">
                       -₹{{ number_format($cart->pre_discount, 2) }}
                     </span>
@@ -203,18 +215,7 @@
                   </p>
                 </li>
               @endif
-
-              <li class="subtitle">
-                <p>Estimated Shipping
-                  @if(($shippingData['shippingCost'][0]['shipping_type'] ?? '') == 'free')
-                    <small class="text-success">(FREE)</small>
-                  @endif
-                  <span class="float-end">
-                    ₹{{ $shippingData['shippingCost'][0]['TotalShipCost'] ?? 0 }}
-                  </span>
-                </p>
-              </li>
-
+              
               <li class="subtitle">
                 <p>
                   {{ $shippingData['shippingCost'][0]['gst_type'] ?? 'Tax' }}

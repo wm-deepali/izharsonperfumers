@@ -31,19 +31,20 @@
       </div>
     </div>
   </section>
-
+<div class="row " style="background:#f9f9f9; width:100%; height:100px; ">
+        <div class="col-sm-6 col-lg-4 m-auto">
+          <div class=" text-center ">
+            <h2 class="title m-0">Checkout</h2>
+          </div>
+        </div>
+        
+      </div>
   <!-- Shop Checkouts Content -->
   <section class="shop-checkouts pt30">
     <div class="container">
+      
       <div class="row">
-        <div class="col-sm-6 col-lg-4 m-auto">
-          <div class="main-title text-center mb50">
-            <h2 class="title">Checkout</h2>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-8 col-xl-9">
+        <div class="col-lg-8 col-xl-8">
           <div class="checkout_form style2">
 
             <!-- ================= BILLING ADDRESS ================= -->
@@ -51,7 +52,7 @@
             <h4 class="title mb20">Billing Address</h4>
 
             <div class="mb-3">
-              <button type="button" class="btn btn-outline-dark btn-sm" id="addBilling">
+              <button type="button" class="btn btn-outline-dark btn-sm" id="addBilling" style="border:1px solid gray;">
                 + Add Billing Address
               </button>
             </div>
@@ -72,7 +73,7 @@
                       📞 {{ $addr->mobile_number }}
                     </div>
 
-                    <button type="button" class="btn btn-sm btn-outline-secondary editBillingBtn"
+                    <button type="button" class="btn btn-sm btn-outline-secondary editBillingBtn" style="height:30px;border:1px solid gray;"
                       data-address='@json($addr->toArray())'>
                       Edit
                     </button>
@@ -170,7 +171,7 @@
             <div id="shippingSection">
 
               <div class="mb-3">
-                <button type="button" class="btn btn-outline-dark btn-sm" id="addShipping">
+                <button type="button" class="btn btn-outline-dark btn-sm" id="addShipping" style="border:1px solid gray;">
                   + Add Shipping Address
                 </button>
               </div>
@@ -191,7 +192,7 @@
                         📞 {{ $addr->mobile_number }}
                       </div>
 
-                      <button type="button" class="btn btn-sm btn-outline-secondary editShippingBtn"
+                      <button type="button" class="btn btn-sm btn-outline-secondary editShippingBtn" style="height:30px; border:1px solid gray;"
                         data-address='@json($addr->toArray())'>
                         Edit
                       </button>
@@ -264,7 +265,7 @@
 
           </div>
         </div>
-        <div class="col-lg-4 col-xl-3">
+        <div class="col-lg-4 col-xl-4">
 
           {{-- Order Summary --}}
           <div class="order_sidebar_widget checkout_page mb30">

@@ -399,34 +399,36 @@ class FrontController extends Controller
         |--------------------------------------------------------------------------
         */
         $bestSellers = OrderDetail::select('product_id')
-            ->whereHas('order', fn($q) => $q->where('created_at', '>=', now()->subDays(30)))
             ->selectRaw('SUM(quantity) as total_sold')
             ->groupBy('product_id')
             ->orderByDesc('total_sold')
+            ->whereHas('product', function ($q) use ($currentCategory, $currentSubcategory) {
+
+                if ($currentSubcategory) {
+                    $q->where('subcategory_id', $currentSubcategory->id);
+                } elseif ($currentCategory) {
+                    $q->where(function ($sub) use ($currentCategory) {
+                        $sub->where('category_id', $currentCategory->id)
+                            ->orWhere('subcategory_id', $currentCategory->id);
+                    });
+                }
+
+            })
             ->with('product.product_options')
-            ->limit(20)
+            ->limit(4)
             ->get()
-            ->pluck('product');
-
-        // filter best sellers
-        if ($currentSubcategory) {
-            $bestSellers = $bestSellers->where('subcategory_id', $currentSubcategory->id);
-        } elseif ($currentCategory) {
-            $bestSellers = $bestSellers->filter(
-                fn($p) =>
-                $p->category_id == $currentCategory->id ||
-                $p->subcategory_id == $currentCategory->id
-            );
-        }
-
-        $bestSellers = $bestSellers->take(4)->values();
+            ->pluck('product')
+            ->values();
 
         /*
         |--------------------------------------------------------------------------
         | Filter Data for Sidebar
         |--------------------------------------------------------------------------
         */
-        $packSizes = Brand::where('status', 'active')->get();
+        $packSizes = Brand::where('status', 'active')
+            ->orderByRaw('CAST(quantity AS DECIMAL(10,2)) ASC')
+            ->get();
+
         $fragranceTypes = OilGrade::where('status', 'active')->get();
         $shopBanners = HomepageSetting::where('page', 'shop')->get();
 
@@ -438,7 +440,6 @@ class FrontController extends Controller
                 ->map(fn($id) => (int) $id)
                 ->toArray();
         }
-        // dd($shopBanners->toArray());
         /*
         |--------------------------------------------------------------------------
         | Return View
@@ -505,6 +506,7 @@ class FrontController extends Controller
             ->take(12)
             ->get();
 
+            
         /*
         |--------------------------------------------------------------------------
         | You May Also Like (random products)
@@ -524,6 +526,7 @@ class FrontController extends Controller
                 ->map(fn($id) => (int) $id)
                 ->toArray();
         }
+        // dd($relatedProducts->toArray());
 
         return view('front.product-details', compact(
             'product',
