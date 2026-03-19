@@ -13,6 +13,7 @@ class UnAuthCart extends Model
         'device_id',
         'coupon_id',
         'total_price',
+        'pre_discount',
         'discount_amount',
         'total_price_after_discount',
     ];

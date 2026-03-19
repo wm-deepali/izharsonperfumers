@@ -5,6 +5,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
     crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     @section('title', 
     isset($currentSubcategory) && $currentSubcategory
@@ -522,6 +523,10 @@
                                 <a href="{{ url('/') }}">Home</a>
                             </li>
 
+ <li class="breadcrumb-item">
+                                <a href="{{ route('shop.category') }}">Shop</a>
+                            </li>
+                            
                             @if($currentCategory)
                                 <li class="breadcrumb-item">
                                     <a href="{{ route('shop.category', $currentCategory->slug) }}">
@@ -542,6 +547,194 @@
             </div>
         </div>
     </section>
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileFilterDrawer">
+
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Filters</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+
+    <div class="offcanvas-body">
+
+       <form method="GET" id="filterFormMobile" action="{{ $currentSubcategory
+        ? route('shop.category', [$currentCategory->slug, $currentSubcategory->slug])
+        : ($currentCategory ? route('shop.category', $currentCategory->slug) : route('shop.category')) }}">
+
+                            @if(request()->hasAny(['price', 'size', 'fragrance', 'deal', 'rating', 'sort', 'perPage']))
+                                <a href="{{ url()->current() }}" class="btn btn-outline-danger btn-sm w-100 mb-4">
+                                    <i class="fas fa-times me-2"></i> Clear Filters
+                                </a>
+                            @endif
+
+                            <div class="accordion shop-v3-accordion" id="shopV3AccordionMobile">
+
+                                <!-- Sub Categories -->
+                                @if($subcategories->count())
+                                    <div  class="accordion-item shop-v3-accordion-item border-0 mb-3 rounded-3 shadow-sm">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button shop-v3-accordion-btn fw-bold" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#v3subcat">
+                                                Sub Categories
+                                            </button>
+                                        </h2>
+                                        <div id="v3subcat" class="accordion-collapse collapse show">
+                                            <div class="accordion-body shop-v3-accordion-body">
+                                                <ul class="list-unstyled mb-0">
+                                                    @foreach($subcategories as $sub)
+                                                        <li class="mb-2">
+                                                            <a href="{{ route('shop.category', [$currentCategory->slug, $sub->slug]) }}?{{ http_build_query(request()->except(['page'])) }}"
+                                                                class="shop-v3-subcat-link {{ request()->segment(3) == $sub->slug ? 'active' : '' }}">
+                                                                {{ $sub->name }}
+                                                                <span
+                                                                    class="badge bg-light text-muted float-end">{{ $sub->productssn_count }}</span>
+                                                            </a>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <!-- Price -->
+                                <div class="accordion-item shop-v3-accordion-item border-0 mb-3 rounded-3 shadow-sm">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed shop-v3-accordion-btn fw-bold"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#v3priceMobile">
+                                            Price
+                                        </button>
+                                    </h2>
+                                    <div id="v3priceMobile" class="accordion-collapse collapse">
+                                        <div class="accordion-body shop-v3-accordion-body">
+                                            @php $ranges = ['0-500', '500-1000', '1000-3000', '3000+']; @endphp
+                                            @if(count($ranges))
+                                                @foreach($ranges as $range)
+                                                    <label class="shop-v3-checkbox-label d-flex align-items-center mb-2">
+                                                        <input type="checkbox" name="price[]" value="{{ $range }}" class="me-2" {{ in_array($range, request('price', [])) ? 'checked' : '' }}>
+                                                        ₹{{ str_replace('-', ' – ₹', $range) }}
+                                                    </label>
+                                                @endforeach
+                                            @else
+                                                <div class="shop-v3-no-data-mini text-center py-3">
+                                                    <small class="text-muted">No price ranges available</small>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Pack Size -->
+                                <div class="accordion-item shop-v3-accordion-item border-0 mb-3 rounded-3 shadow-sm">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed shop-v3-accordion-btn fw-bold"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#v3size">
+                                            Pack Size
+                                        </button>
+                                    </h2>
+                                    <div id="v3size" class="accordion-collapse collapse">
+                                        <div class="accordion-body shop-v3-accordion-body">
+                                            @if(($packSizes ?? [])->count())
+                                                @foreach($packSizes as $size)
+                                                    <label class="shop-v3-checkbox-label d-flex align-items-center mb-2">
+                                                        <input type="checkbox" name="size[]" value="{{ $size->id }}" class="me-2" {{ in_array($size->id, request('size', [])) ? 'checked' : '' }}>
+                                                        {{ $size->quantity }} {{ $size->quantity_in }}
+                                                    </label>
+                                                @endforeach
+                                            @else
+                                                <div class="shop-v3-no-data-mini text-center py-3">
+                                                    <small class="text-muted">No pack sizes available</small>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Fragrance Type -->
+                                <div class="accordion-item shop-v3-accordion-item border-0 mb-3 rounded-3 shadow-sm">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed shop-v3-accordion-btn fw-bold"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#v3fragrance">
+                                            Fragrance Type
+                                        </button>
+                                    </h2>
+                                    <div id="v3fragrance" class="accordion-collapse collapse">
+                                        <div class="accordion-body shop-v3-accordion-body">
+                                            @if(($fragranceTypes ?? [])->count())
+                                                @foreach($fragranceTypes as $type)
+                                                    <label class="shop-v3-checkbox-label d-flex align-items-center mb-2">
+                                                        <input type="checkbox" name="fragrance[]" value="{{ $type->id }}"
+                                                            class="me-2" {{ in_array($type->id, request('fragrance', [])) ? 'checked' : '' }}>
+                                                        {{ $type->title }}
+                                                    </label>
+                                                @endforeach
+                                            @else
+                                                <div class="shop-v3-no-data-mini text-center py-3">
+                                                    <small class="text-muted">No fragrance types available</small>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Deals -->
+                                <div class="accordion-item shop-v3-accordion-item border-0 mb-3 rounded-3 shadow-sm">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed shop-v3-accordion-btn fw-bold"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#v3deals">
+                                            Deals & Offers
+                                        </button>
+                                    </h2>
+                                    <div id="v3deals" class="accordion-collapse collapse">
+                                        <div class="accordion-body shop-v3-accordion-body">
+                                            <label class="shop-v3-checkbox-label d-flex align-items-center mb-2">
+                                                <input type="checkbox" name="deal" value="1" class="me-2" {{ request('deal') ? 'checked' : '' }}>
+                                                On Sale
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Rating -->
+                                <div class="accordion-item shop-v3-accordion-item border-0 rounded-3 shadow-sm">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed shop-v3-accordion-btn fw-bold"
+                                            type="button" data-bs-toggle="collapse" data-bs-target="#v3rating">
+                                            Customer Rating
+                                        </button>
+                                    </h2>
+                                    <div id="v3rating" class="accordion-collapse collapse">
+                                        <div class="accordion-body shop-v3-accordion-body">
+                                            <label class="d-flex align-items-center mb-2" style="font-size:18px;">
+                                                <input type="radio" name="rating" value="5" class="me-2" {{ request('rating') == 5 ? 'checked' : '' }}>
+                                                ⭐⭐⭐⭐⭐
+                                            </label>
+                                            <label class="d-flex align-items-center mb-2" style="font-size:18px;">
+                                                <input type="radio" name="rating" value="4" class="me-2" {{ request('rating') == 4 ? 'checked' : '' }}>
+                                                ⭐⭐⭐⭐
+                                            </label>
+                                            <label class="d-flex align-items-center mb-2" style="font-size:18px;">
+                                                <input type="radio" name="rating" value="3" class="me-2" {{ request('rating') == 3 ? 'checked' : '' }}>
+                                                ⭐⭐⭐
+                                            </label>
+                                            <label class="d-flex align-items-center mb-2" style="font-size:18px;">
+                                                <input type="radio" name="rating" value="2" class="me-2" {{ request('rating') == 2 ? 'checked' : '' }}>
+                                                ⭐⭐
+                                            </label>
+                                            <label class="d-flex align-items-center mb-2" style="font-size:18px;">
+                                                <input type="radio" name="rating" value="1" class="me-2" {{ request('rating') == 1 ? 'checked' : '' }}>
+                                                ⭐
+                                            </label>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </form>
+    </div>
+
+</div>
 
     <!-- Listing Grid View -->
     <section class="shop-v3-listing py-5 bg-light">
@@ -569,7 +762,7 @@
 
                                 <!-- Sub Categories -->
                                 @if($subcategories->count())
-                                    <div class="accordion-item shop-v3-accordion-item border-0 mb-3 rounded-3 shadow-sm">
+                                    <div  class="accordion-item shop-v3-accordion-item border-0 mb-3 rounded-3 shadow-sm">
                                         <h2 class="accordion-header">
                                             <button class="accordion-button shop-v3-accordion-btn fw-bold" type="button"
                                                 data-bs-toggle="collapse" data-bs-target="#v3subcat">
@@ -703,14 +896,27 @@
                                     </h2>
                                     <div id="v3rating" class="accordion-collapse collapse">
                                         <div class="accordion-body shop-v3-accordion-body">
-                                            <label class="d-flex align-items-center mb-2">
+                                            <label class="d-flex align-items-center mb-2" style="font-size:18px;">
+                                                <input type="radio" name="rating" value="5" class="me-2" {{ request('rating') == 5 ? 'checked' : '' }}>
+                                                ⭐⭐⭐⭐⭐
+                                            </label>
+                                            <label class="d-flex align-items-center mb-2" style="font-size:18px;">
                                                 <input type="radio" name="rating" value="4" class="me-2" {{ request('rating') == 4 ? 'checked' : '' }}>
-                                                ⭐ 4★ & up
+                                                ⭐⭐⭐⭐
                                             </label>
-                                            <label class="d-flex align-items-center">
+                                            <label class="d-flex align-items-center mb-2" style="font-size:18px;">
                                                 <input type="radio" name="rating" value="3" class="me-2" {{ request('rating') == 3 ? 'checked' : '' }}>
-                                                ⭐ 3★ & up
+                                                ⭐⭐⭐
                                             </label>
+                                            <label class="d-flex align-items-center mb-2" style="font-size:18px;">
+                                                <input type="radio" name="rating" value="2" class="me-2" {{ request('rating') == 2 ? 'checked' : '' }}>
+                                                ⭐⭐
+                                            </label>
+                                            <label class="d-flex align-items-center mb-2" style="font-size:18px;">
+                                                <input type="radio" name="rating" value="1" class="me-2" {{ request('rating') == 1 ? 'checked' : '' }}>
+                                                ⭐
+                                            </label>
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -722,107 +928,15 @@
 
                 <div class="col-lg-9 new-iz-products-area">
 
-                    @if($bestSellers->count())
-                        <div class="new-iz-bestsellers mb-5">
-                            <h2 class="new-iz-section-title mb-4 fw-bold">
-                                {{ $currentCategory ? $currentCategory->name . ' Best Sellers' : 'Best Sellers' }}
-                            </h2>
+                    <div class="d-lg-none mb-3">
+    <button class="btn btn-dark w-100"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#mobileFilterDrawer">
+        🔍 Filters
+    </button>
+</div>
 
-                            <div class="row g-3 g-md-4 new-iz-product-grid" id="productsGrid">
-                                @foreach($bestSellers as $product)
-                                    <div class="col-6 col-md-4 col-xl-4 product-item">
-                                        <div class="productcard-card">
-
-                                            <!-- IMAGE -->
-                                            <div class="productcard-image">
-
-                                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
-
-                                                <!-- ACTION ICONS -->
-                                                <div class="productcard-icons">
-
-                                                    <a href="#" class="productcard-icon add-to-wishlist-btn"
-                                                        data-product="{{ $product->id }}">
-                                                        <i class="flaticon-heart"
-                                                            style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}"></i>
-                                                    </a>
-
-                                                    <a href="{{ url('product-details/' . $product->slug) }}"
-                                                        class="productcard-icon">
-                                                        <i class="flaticon-show"></i>
-                                                    </a>
-
-                                                </div>
-                                            </div>
-
-                                            <!-- DETAILS -->
-                                            <div class="productcard-body">
-
-                                                <!-- CATEGORY -->
-                                                <div class="productcard-category">
-                                                    {{ $product->subcategories->name ?? ($product->categories->name ?? '')}}
-                                                </div>
-
-                                                <!-- TITLE -->
-                                                <h3 class="productcard-title">
-                                                    <a href="{{ url('product-details/' . $product->slug) }}">
-                                                        {{ Str::limit($product->name, 40) }}
-                                                    </a>
-                                                </h3>
-
-
-                                                <!-- RATING -->
-                                                <div class="productcard-rating">
-
-                                                    @for($i = 1; $i <= 5; $i++)
-                                                        <i class="fas fa-star {{ $i <= $product->avg_rating ? 'active' : '' }}"></i>
-                                                    @endfor
-
-                                                    <span>({{ $product->review_count }})</span>
-
-                                                </div>
-
-
-                                                <!-- PRICE -->
-                                                <div class="productcard-price">
-
-                                                    ₹{{ $product->product_options[0]->price ?? $product->min_price }}
-
-                                                    @if(!empty($product->product_options[0]->mrp))
-                                                        <span class="productcard-oldprice">
-                                                            ₹{{ $product->product_options[0]->mrp }}
-                                                        </span>
-                                                    @endif
-
-                                                </div>
-
-
-                                                <!-- BUTTONS -->
-                                                <div class="productcard-buttons">
-
-                                                    <a href="#" class="productcard-btn productcard-cart add-to-cart-btn"
-                                                        data-product="{{ $product->id }}"
-                                                        data-option="{{ optional($product->product_options->first())->id }}">
-                                                        Add to Cart
-                                                    </a>
-
-                                                    <a href="{{ url('product-details/' . $product->slug) }}"
-                                                        class="productcard-btn productcard-buy">
-                                                        Buy Now
-                                                    </a>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-
-                    <!-- Main Header -->
+   <!-- Main Header -->
                     <div class="new-iz-main-header d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                         <div>
                             <h2 class="new-iz-section-title mb-1 fw-bold">
@@ -838,8 +952,8 @@
                             <!--           class="{{ request('perPage',12) == $n ? 'fw-bold text-primary' : '' }}">{{ $n }}</a>-->
                             <!--    @endforeach-->
                             <!--</div>-->
-                            <select name="sort" form="filterForm" class="form-select form-select-sm new-iz-sort-select"
-                                onchange="document.getElementById('filterForm').submit()">
+                            <select name="sort" class="form-select form-select-sm new-iz-sort-select"
+    onchange="this.closest('form') ? this.closest('form').submit() : document.getElementById('filterForm').submit()">
                                 <option value="">Sort by</option>
                                 <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Newest</option>
                                 <option value="price_low" {{ request('sort') == 'price_low' ? 'selected' : '' }}>Price Low →
@@ -1019,6 +1133,109 @@
                         </div>
                     @endif
 
+
+
+                    @if($bestSellers->count())
+                        <div class="new-iz-bestsellers mb-5">
+                            <h2 class="new-iz-section-title mb-4 fw-bold">
+                                {{ $currentCategory ? $currentCategory->name . ' Best Sellers' : 'Best Sellers' }}
+                            </h2>
+
+                            <div class="row g-3 g-md-4 new-iz-product-grid">
+                                @foreach($bestSellers as $product)
+                                    <div class="col-6 col-md-4 col-xl-4 product-item">
+                                        <div class="productcard-card">
+
+                                            <!-- IMAGE -->
+                                            <div class="productcard-image">
+
+                                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+
+                                                <!-- ACTION ICONS -->
+                                                <div class="productcard-icons">
+
+                                                    <a href="#" class="productcard-icon add-to-wishlist-btn"
+                                                        data-product="{{ $product->id }}">
+                                                        <i class="flaticon-heart"
+                                                            style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}"></i>
+                                                    </a>
+
+                                                    <a href="{{ url('product-details/' . $product->slug) }}"
+                                                        class="productcard-icon">
+                                                        <i class="flaticon-show"></i>
+                                                    </a>
+
+                                                </div>
+                                            </div>
+
+                                            <!-- DETAILS -->
+                                            <div class="productcard-body">
+
+                                                <!-- CATEGORY -->
+                                                <div class="productcard-category">
+                                                    {{ $product->subcategories->name ?? ($product->categories->name ?? '')}}
+                                                </div>
+
+                                                <!-- TITLE -->
+                                                <h3 class="productcard-title">
+                                                    <a href="{{ url('product-details/' . $product->slug) }}">
+                                                        {{ Str::limit($product->name, 40) }}
+                                                    </a>
+                                                </h3>
+
+
+                                                <!-- RATING -->
+                                                <div class="productcard-rating">
+
+                                                    @for($i = 1; $i <= 5; $i++)
+                                                        <i class="fas fa-star {{ $i <= $product->avg_rating ? 'active' : '' }}"></i>
+                                                    @endfor
+
+                                                    <span>({{ $product->review_count }})</span>
+
+                                                </div>
+
+
+                                                <!-- PRICE -->
+                                                <div class="productcard-price">
+
+                                                    ₹{{ $product->product_options[0]->price ?? $product->min_price }}
+
+                                                    @if(!empty($product->product_options[0]->mrp))
+                                                        <span class="productcard-oldprice">
+                                                            ₹{{ $product->product_options[0]->mrp }}
+                                                        </span>
+                                                    @endif
+
+                                                </div>
+
+
+                                                <!-- BUTTONS -->
+                                                <div class="productcard-buttons">
+
+                                                    <a href="#" class="productcard-btn productcard-cart add-to-cart-btn"
+                                                        data-product="{{ $product->id }}"
+                                                        data-option="{{ optional($product->product_options->first())->id }}">
+                                                        Add to Cart
+                                                    </a>
+
+                                                    <a href="{{ url('product-details/' . $product->slug) }}"
+                                                        class="productcard-btn productcard-buy">
+                                                        Buy Now
+                                                    </a>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                
                 </div>
 
                 <!-- Load More Script -->
@@ -1147,7 +1364,7 @@
 
                     /* No Products */
                     .new-iz-no-products {
-                        max-width: 680px;
+                        /* max-width: 680px; */
                         margin: 6rem auto;
                         border-radius: 20px;
                     }
@@ -1328,13 +1545,16 @@
         }
     </style>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const form = document.getElementById("filterForm");
+       document.addEventListener("DOMContentLoaded", function () {
 
-            form.querySelectorAll("input, select").forEach(el => {
-                el.addEventListener("change", () => form.submit());
+    document.querySelectorAll("#filterForm input, #filterForm select, #filterFormMobile input, #filterFormMobile select")
+        .forEach(el => {
+            el.addEventListener("change", function () {
+                this.closest("form").submit();
             });
         });
+
+});
     </script>
 
 

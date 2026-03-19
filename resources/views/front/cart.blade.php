@@ -2,11 +2,97 @@
 
 @section('title', 'Cart')
 
+<style>
+    .cart-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.cart-card-top {
+    display: flex;
+    gap: 10px;
+    position: relative;
+}
+
+.cart-card-top img {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.cart-info h4 {
+    font-size: 14px;
+    margin: 0;
+}
+
+.cart-info p {
+    font-size: 12px;
+    color: #777;
+    margin: 3px 0;
+}
+
+.price .new {
+    font-weight: bold;
+    color: #000;
+}
+
+.price .old {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+.remove {
+    position: absolute;
+    right: 0;
+    top: 0;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cart-card-middle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.qty-box {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.qty-box button {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: #eee;
+    border-radius: 50%;
+}
+
+.qty-box input {
+    width: 40px;
+    text-align: center;
+    border: none;
+}
+
+.total {
+    font-weight: bold;
+    color: #000;
+}
+
+</style>
 
 @section('content')
 
   <!-- Inner Page Breadcrumb -->
-  <section class="inner_page_breadcrumb">
+  <section class="inner_page_breadcrumb" style="background:#f9f9f9;">
     <div class="container">
       <div class="row">
         <div class="col-xl-6">
@@ -26,11 +112,11 @@
   </section>
 
   <!-- Shop Checkouts Content -->
-  <section class="shop-cart pt30">
+  <section class="shop-cart pt-2">
     <div class="container">
       <div class="row">
         <div class="col-sm-6 col-lg-4 m-auto">
-          <div class="main-title text-center mb50">
+          <div class="main-title text-center ">
             <h2 class="title">Shopping Cart</h2>
           </div>
         </div>
@@ -38,7 +124,8 @@
       <div class="row mt15">
         <div class="col-lg-8 col-xl-9">
           <div class="shopping_cart_table table-responsive">
-            <table class="table table-borderless">
+              <div class="d-none d-md-block">
+   <table class="table table-borderless">
               <thead>
                 <tr>
                   <th scope="col">PRODUCT</th>
@@ -133,11 +220,59 @@
               </tbody>
 
             </table>
+</div>
+
+            
+            <div class="cart-mobile d-block d-md-none p-2" >
+
+    @forelse($cartItems as $item)
+        <div class="cart-card">
+
+            <!-- TOP -->
+            <div class="cart-card-top">
+                <img src="{{ asset('storage/' . ($item->product_options->image ?? $item->products->image)) }}">
+
+                <div class="cart-info">
+                    <h4>{{ $item->products->name }}</h4>
+                    <p>
+                        {{ $item->product_options->packaging->quantity ?? '' }}
+                        {{ $item->product_options->packaging->quantity_in ?? '' }}
+                    </p>
+
+                    <div class="price">
+                        <span class="new">₹{{ number_format($item->product_options->price, 2) }}</span>
+                        <span class="old">₹{{ number_format($item->product_options->mrp, 2) }}</span>
+                    </div>
+                </div>
+
+                <span class="remove remove-item" data-id="{{ $item->id }}">✕</span>
+            </div>
+
+            <!-- MIDDLE -->
+            <div class="cart-card-middle">
+                <div class="qty-box">
+                    <button class="mini-minus" data-id="{{ $item->id }}">-</button>
+                    <input type="number" value="{{ $item->quantity }}" class="qty-input" data-id="{{ $item->id }}">
+                    <button class="mini-plus" data-id="{{ $item->id }}">+</button>
+                </div>
+
+                <div class="total">
+                    ₹{{ number_format($item->product_options->price * $item->quantity, 2) }}
+                </div>
+            </div>
+
+        </div>
+    @empty
+        <p class="text-center py-5">Your cart is empty</p>
+    @endforelse
+
+</div>
+
             <div class="checkout_form mt30">
               <div class="checkout_coupon posr d-block d-xl-flex">
                 <form id="couponForm" class="form_one posr mb10-lg">
                   <input id="coupon_code" name="coupon_code" class="form-control coupon_input" type="search"
-                    placeholder="Coupon code">
+                    placeholder="Enter Coupon code">
 
                   <a href="#" id="applyCouponBtn" class="btn apply_count_btn">
                     Apply Coupon
@@ -164,8 +299,9 @@
                     </div>
                   </div>
                 @endif
-                <form class="form_two">
-                  <a href="{{ route('shop.category') }}" class="btn btn_shopping btn-white me-3">
+                <form class="form_two d-flex flex-column flex-md-row gap-2">
+                  <a href="{{ route('shop.category') }}" class="btn btn_shopping btn-white " style="height:52px; display:flex;align-items:center;    border: 1px solid;
+    text-align: center;">
                     Continue Shopping
                   </a>
                   <button type="button" class="btn btn_cart btn3 btn-thm">Update Cart</button>
@@ -177,6 +313,9 @@
         <div class="col-lg-4 col-xl-3">
           <div class="order_sidebar_widget style2">
             <h4 class="title">Cart Totals</h4>
+            
+                <hr>
+
             <ul>
               <li class="subtitle">
                 <p>Product Subtotal <span class="float-end">₹{{ number_format($cart->total_price, 2) }}</span></p>
@@ -198,7 +337,7 @@
               @if($cart->pre_discount > 0)
                 <li class="subtitle">
                   <p>Pre-Discount
-                    <span class="float-end text-success">
+                    <span class="float-end" style="color:green;">
                       -₹{{ number_format($cart->pre_discount, 2) }}
                     </span>
                   </p>
@@ -216,14 +355,16 @@
                 </li>
               @endif
               
-              <li class="subtitle">
-                <p>
-                  {{ $shippingData['shippingCost'][0]['gst_type'] ?? 'Tax' }}
-                  <span class="float-end">
-                    ₹{{ $shippingData['shippingCost'][0]['total_gst_amount'] ?? 0 }}
-                  </span>
-                </p>
-              </li>
+             @if(($shippingData['shippingCost'][0]['total_gst_amount'] ?? 0) > 0)
+<li class="subtitle">
+    <p>
+        {{ $shippingData['shippingCost'][0]['gst_type'] ?? 'Tax' }}
+        <span class="float-end">
+            ₹{{ $shippingData['shippingCost'][0]['total_gst_amount'] ?? 0 }}
+        </span>
+    </p>
+</li>
+@endif
               <li class="subtitle">
                 <hr>
               </li>

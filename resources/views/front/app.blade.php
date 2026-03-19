@@ -40,16 +40,70 @@
     <link href="{{ asset('front/images/apple-touch-icon-72x72.png') }}" sizes="72x72" rel="apple-touch-icon">
     <link href="{{ asset('front/images/apple-touch-icon-114x114.png') }}" sizes="114x114" rel="apple-touch-icon">
     <link href="{{ asset('front/images/apple-touch-icon-180x180.png') }}" sizes="180x180" rel="apple-touch-icon">
-    
+
     <style>
-        .mobile_menu_widget_icons a.cart_btn{
+        .mobile_menu_widget_icons a.cart_btn {
             display: flex;
-    align-items: center;
-    justify-content: center;
+            align-items: center;
+            justify-content: center;
         }
-        .mobile_menu_widget_icons a.cart_btn .icon{
-            font-size:22px;
+
+        .mobile_menu_widget_icons a.cart_btn .icon {
+            font-size: 22px;
         }
+
+        /* ===== MOBILE STICKY FOOTER ===== */
+        .newiz-mobile-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border-top: 1px solid #e5e5e5;
+            z-index: 9999;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Menu */
+        .newiz-footer-menu {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 0;
+            padding: 8px 0;
+            list-style: none;
+        }
+
+        /* Items */
+        .newiz-footer-menu li {
+            text-align: center;
+            flex: 1;
+        }
+
+        /* Links */
+        .newiz-footer-menu li a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #555;
+            font-size: 11px;
+            transition: 0.3s;
+        }
+
+        /* Icons */
+        .newiz-footer-menu li a i {
+            font-size: 18px;
+            margin-bottom: 3px;
+        }
+
+        /* Hover + Active */
+        .newiz-footer-menu li a:hover,
+        .newiz-footer-menu li a.active {
+            color: #000;
+        }
+
+        /* Safe spacing for body */
     </style>
 
 
@@ -115,9 +169,12 @@
                 <div class="row" style="align-items: center;">
                     <div class="col-lg-2 col-xxl-2">
                         <div class="header_top_logo_home1">
-                            <div class="logo"><img
-                                    src="{{ $settings->header_logo ? asset('storage/' . $settings->header_logo) : 'https://izharsonperfumers.com/admin-login/storage/logo/awQrarVaGtUQtwtFSSNi78JDai2I5TQH7VIBThZE.png' }}"
-                                    style="border-radius: 7px; height: 70px;" /></div>
+                            <div class="logo">
+                                <a href="{{ url('/') }}">
+                                    <img src="{{ $settings->header_logo ? asset('storage/' . $settings->header_logo) : 'https://izharsonperfumers.com/admin-login/storage/logo/awQrarVaGtUQtwtFSSNi78JDai2I5TQH7VIBThZE.png' }}"
+                                        style="border-radius: 7px; height: 70px;" />
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div class="col-lg-5 col-xxl-6">
@@ -691,9 +748,9 @@
                                 <li class="list-inline-item"> <a class="cart_btn signin-filter-btn" href="#"><span
                                             class="icon flaticon-profile"></span></a> </li>
                                 <li class="list-inline-item"> <a class="cart_btn cart-filter-btn" href="#"><span
-                                            class="icon"><img
-                                                src="{{ asset('front/images/shopping-cart.png') }}"
-                                                alt="" style="width:22px;"></span><span class="badge bgc-thm">2</span></a> </li>
+                                            class="icon"><img src="{{ asset('front/images/shopping-cart.png') }}" alt=""
+                                                style="width:22px;"></span><span class="badge bgc-thm">2</span></a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -793,34 +850,119 @@
 
 
             @yield('content')
+            <!-- ================= MOBILE STICKY FOOTER ================= -->
+            <div class="newiz-mobile-footer d-block d-xl-none">
+
+                <!-- Guest User -->
+                @guest
+                    <ul class="newiz-footer-menu">
+                        <li>
+                            <a href="{{ url('/') }}">
+                                <i class="fas fa-home"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('customer.wishlist') }}">
+                                <i class="far fa-heart"></i>
+                                <span>Wishlist</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('shop.category') }}">
+                                <i class="fas fa-th-large"></i>
+                                <span>Categories</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('cart.index') }}">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Cart</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('login') }}">
+                                <i class="far fa-user"></i>
+                                <span>Login</span>
+                            </a>
+                        </li>
+                    </ul>
+                @endguest
+
+
+                <!-- Logged In User -->
+                @auth
+                    <ul class="newiz-footer-menu">
+                        <li>
+                            <a href="{{ url('/') }}">
+                                <i class="fas fa-home"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('customer.wishlist') }}">
+                                <i class="far fa-heart"></i>
+                                <span>Wishlist</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('shop.category') }}">
+                                <i class="fas fa-th-large"></i>
+                                <span>Categories</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('cart.index') }}">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Cart</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('customer.account-details') }}">
+                                <i class="fas fa-user-circle"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                    </ul>
+                @endauth
+
+            </div>
 
             <!-- Our Footer -->
-            <section class="footer_one home1 bdrt1">
+            <section class=" home1 bdrt1 p-0">
                 <div class="container pb60">
-                    <div class="row">
-                        <div class="col-lg-6 offset-lg-3">
-                            <div class="mailchimp_widget mb30-md text-center">
-                                <div class="icon float-start"><span class="flaticon-email-1"></span></div>
-                                <div class="details">
-                                    <h3 class="title">Subscribe and get 20% discount.</h3>
-                                </div>
-                            </div>
-                            <div class="footer_social_widget">
-                                <form id="subscribeForm" class="footer_mailchimp_form">
-                                    @csrf
-                                    <div class="row align-items-center">
-                                        <div class="col-auto">
-                                            <input type="email" name="email" class="form-control"
-                                                placeholder="Your email address" required>
-                                            <button class="ms-sm-2 btn-thm" type="submit">Subscribe</button>
-                                        </div>
-                                    </div>
-                                </form>
+                    <!--<div class="row">-->
+                    <!--    <div class="col-lg-6 offset-lg-3">-->
+                    <!--        <div class="mailchimp_widget mb30-md text-center">-->
+                    <!--            <div class="icon float-start"><span class="flaticon-email-1"></span></div>-->
+                    <!--            <div class="details">-->
+                    <!--                <h3 class="title">Subscribe and get 20% discount.</h3>-->
+                    <!--            </div>-->
+                    <!--        </div>-->
+                    <!--        <div class="footer_social_widget">-->
+                    <!--            <form id="subscribeForm" class="footer_mailchimp_form">-->
+                    <!--                @csrf-->
+                    <!--                <div class="row align-items-center">-->
+                    <!--                    <div class="col-auto">-->
+                    <!--                        <input type="email" name="email" class="form-control"-->
+                    <!--                            placeholder="Your email address" required>-->
+                    <!--                        <button class="ms-sm-2 btn-thm" type="submit">Subscribe</button>-->
+                    <!--                    </div>-->
+                    <!--                </div>-->
+                    <!--            </form>-->
 
-                                <div id="subscribeMsg" style="margin-top:8px;"></div>
-                            </div>
-                        </div>
-                    </div>
+                    <!--            <div id="subscribeMsg" style="margin-top:8px;"></div>-->
+                    <!--        </div>-->
+                    <!--    </div>-->
+                    <!--</div>-->
                     <div class="row mt60">
                         <div class="col-sm-6 col-md-5 col-lg-3 col-xl-3">
                             <div class="footer_contact_widget">

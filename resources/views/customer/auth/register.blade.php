@@ -33,14 +33,18 @@
 
                                 <div class="form-group">
                                     <label class="form-label">Your Email</label>
-                                    <input type="email" name="email" value="{{ old('email') }}" class="form-control"
-                                        placeholder="example@email.com" required>
+                                    <input id="email" type="email" name="email" value="{{ old('email') }}"
+                                        class="form-control" placeholder="example@email.com" required>
+                                    <small id="email-error" class="text-danger"></small>
+
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label">Contact Number</label>
-                                    <input type="text" name="mobile_number" value="{{ old('mobile_number') }}"
-                                        class="form-control" placeholder="Enter mobile number" required>
+                                    <input id="mobile_number" type="text" name="mobile_number"
+                                        value="{{ old('mobile_number') }}" class="form-control"
+                                        placeholder="Enter mobile number" required>
+                                    <small id="mobile-error" class="text-danger"></small>
                                 </div>
 
                                 <div class="form-group mb20">
@@ -53,6 +57,10 @@
                                     <label class="form-label">Confirm Password</label>
                                     <input type="password" name="password_confirmation" class="form-control"
                                         placeholder="******************" required>
+                                </div>
+
+                                <div class="form-group mb20">
+                                    <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
                                 </div>
 
                                 <button type="submit" class="btn btn-signup btn-thm">
@@ -88,4 +96,67 @@
             </div>
         </div>
     </section>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   <script>
+$(document).ready(function () {
+
+    let typingTimer;
+    let delay = 500; // 0.5 sec wait
+    let lastEmail = '';
+    let lastMobile = '';
+
+    $('#email, #mobile_number').on('keyup', function () {
+
+        clearTimeout(typingTimer);
+
+        typingTimer = setTimeout(function () {
+
+            let email = $('#email').val();
+            let mobile = $('#mobile_number').val();
+
+            // same value pe request mat bhejo
+            if (email === lastEmail && mobile === lastMobile) {
+                return;
+            }
+
+            lastEmail = email;
+            lastMobile = mobile;
+
+            $.ajax({
+                url: "{{ route('check.user.exists') }}",
+                method: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    email: email,
+                    mobile_number: mobile
+                },
+                success: function (res) {
+
+                    // Email check
+                    if (res.email) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Email Already Exists',
+                            text: 'Please use a different email',
+                        });
+                    }
+
+                    // Mobile check
+                    if (res.mobile) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Mobile Already Exists',
+                            text: 'Please use a different number',
+                        });
+                    }
+                }
+            });
+
+        }, delay);
+
+    });
+
+});
+</script>
 @endsection

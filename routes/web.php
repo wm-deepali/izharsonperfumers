@@ -93,7 +93,7 @@ Route::post('/store-device', function (\Illuminate\Http\Request $request) {
   return response()->json(['ok']);
 })->name('device.store');
 
-Route::get('/mini-cart', [CartController::class,'miniCart'])->name('mini.cart');
+Route::get('/mini-cart', [CartController::class, 'miniCart'])->name('mini.cart');
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/store', [CartController::class, 'storeCart'])->name('cart.store');
 Route::post('/cart/update/{id}', [CartController::class, 'updateQty']);
@@ -103,6 +103,7 @@ Route::get('checkout', [CheckoutController::class, 'checkout'])->name('checkout'
 Route::get('/states/{country}', [CheckoutController::class, 'states']);
 Route::get('/cities/{state}', [CheckoutController::class, 'cities']);
 
+Route::post('/check-user-exists', [CustomerAuthController::class, 'checkUserExists'])->name('check.user.exists');
 // Customer Routes list
 Route::prefix('customer')->name('customer.')->group(function () {
 
@@ -129,7 +130,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/orders/{id}', [App\Http\Controllers\DashboardController::class, 'orderDetails'])->name('order.details');
     Route::post('/order-review-submit', [App\Http\Controllers\DashboardController::class, 'submitReview'])->name('review.submit');
     Route::post('/order-cancel', [App\Http\Controllers\DashboardController::class, 'cancelOrder'])->name('order.cancel');
-    
+
     Route::get('/wishlist', [FrontController::class, 'wishlist'])->name('wishlist');
     Route::post('/wishlist/remove', [FrontController::class, 'removeFromWishlist'])->name('wishlist.remove');
 
@@ -137,7 +138,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
 
     Route::get('/account-details', [App\Http\Controllers\DashboardController::class, 'accountDetails'])->name('account-details');
     Route::post('/profile-update', [App\Http\Controllers\DashboardController::class, 'updateProfile'])->name('profile.update');
-    Route::post('/update-password',[App\Http\Controllers\DashboardController::class,'updatePassword'])->name('password.update');
+    Route::post('/update-password', [App\Http\Controllers\DashboardController::class, 'updatePassword'])->name('password.update');
 
     Route::get('/account-address', [App\Http\Controllers\DashboardController::class, 'accountAddress'])->name('account-address');
 
@@ -145,7 +146,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.removeCoupon');
     Route::post('/billing-address/save', [CheckoutController::class, 'saveBilling']);
     Route::post('/shipping-address/save', [CheckoutController::class, 'saveShipping']);
-    Route::post('/copy-billing-to-shipping', [CheckoutController::class,'copyBillingToShipping']);
+    Route::post('/copy-billing-to-shipping', [CheckoutController::class, 'copyBillingToShipping']);
     Route::post('/place-order', [CheckoutController::class, 'placeOrder']);
     Route::get('/payment/request/{order}', [CheckoutController::class, 'request'])->name('payment.request');
     Route::post('/payment/response', [CheckoutController::class, 'response'])->name('payment.response');

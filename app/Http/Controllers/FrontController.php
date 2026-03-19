@@ -42,18 +42,20 @@ class FrontController extends Controller
 
         $categories = Category::whereNull('parent_id')
             ->where('status', 'active')
-            ->with([
-                'productsn',              // products in parent
-                'direct_childs.productssn' // products in subcategories
-            ])
+            ->with(['direct_childs'])
             ->get()
             ->map(function ($category) {
 
-                $subcategoryProducts =
-                    $category->direct_childs->sum(fn($child) => $child->productssn->count());
+                $childIds = $category->direct_childs->pluck('id');
 
-                $category->items_count =
-                    $subcategoryProducts + $category->productsn->count();
+                $count = Product::where('status', 'active')
+                    ->where(function ($q) use ($category, $childIds) {
+                        $q->where('category_id', $category->id)
+                            ->orWhereIn('subcategory_id', $childIds);
+                    })
+                    ->count();
+
+                $category->items_count = $count;
 
                 return $category;
             });
@@ -375,11 +377,12 @@ class FrontController extends Controller
         | Pagination
         |--------------------------------------------------------------------------
         */
-        $perPage = $request->perPage ?? 20;
+        $perPage = $request->perPage ?? 12;
         $products = $products->latest()
             ->paginate($perPage)
             ->withQueryString();
 
+        // dd($products->toArray());
         /*
         |--------------------------------------------------------------------------
         | Sidebar Subcategories
@@ -415,7 +418,7 @@ class FrontController extends Controller
 
             })
             ->with('product.product_options')
-            ->limit(4)
+            ->limit(6)
             ->get()
             ->pluck('product')
             ->values();
@@ -506,7 +509,7 @@ class FrontController extends Controller
             ->take(12)
             ->get();
 
-            
+
         /*
         |--------------------------------------------------------------------------
         | You May Also Like (random products)
@@ -528,11 +531,37 @@ class FrontController extends Controller
         }
         // dd($relatedProducts->toArray());
 
+        $canReview = false;
+        $orderId = null;
+        $orderDetailId = null;
+
+        if (auth()->guard('customer')->check()) {
+
+            $customerId = auth()->guard('customer')->id();
+
+            $orderDetail = OrderDetail::whereHas('order', function ($q) use ($customerId) {
+                $q->where('customer_id', $customerId);
+                // ->where('order_status', 'Delivered'); // optional
+            })
+                ->where('product_id', $product->id)
+                ->latest() // get latest purchase (important)
+                ->first();
+
+            if ($orderDetail) {
+                $canReview = true;
+                $orderId = $orderDetail->order_id;
+                $orderDetailId = $orderDetail->id;
+            }
+        }
+
         return view('front.product-details', compact(
             'product',
             'relatedProducts',
             'recommendedProducts',
-            'wishlistIds'
+            'wishlistIds',
+            'canReview',
+            'orderId',
+            'orderDetailId',
         ));
     }
 

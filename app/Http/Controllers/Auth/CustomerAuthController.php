@@ -8,6 +8,7 @@ use App\Models\Customer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\CartController;
+use Illuminate\Support\Facades\Http;
 
 class CustomerAuthController extends Controller
 {
@@ -45,7 +46,22 @@ class CustomerAuthController extends Controller
             'email' => 'required|email|unique:customers,email',
             'mobile_number' => 'required|digits:10|unique:customers,mobile_number',
             'password' => 'required|min:6|confirmed',
+            'g-recaptcha-response' => 'required'
         ]);
+
+        // Verify captcha
+        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => env('RECAPTCHA_SECRET_KEY'),
+            'response' => $request->input('g-recaptcha-response'),
+            'remoteip' => $request->ip(),
+        ]);
+
+        $result = $response->json();
+
+        if (!$result['success']) {
+            return back()->withErrors(['captcha' => 'Captcha verification failed'])->withInput();
+        }
+
 
         $customer = Customer::create([
             'name' => $request->name,
@@ -64,6 +80,21 @@ class CustomerAuthController extends Controller
 
         return redirect()->route('customer.account-details')
             ->with('success', 'Registration successful!');
+    }
+
+    public function checkUserExists(Request $request)
+    {
+        $response = [];
+
+        if ($request->email) {
+            $response['email'] = Customer::where('email', $request->email)->exists();
+        }
+
+        if ($request->mobile_number) {
+            $response['mobile'] = Customer::where('mobile_number', $request->mobile_number)->exists();
+        }
+
+        return response()->json($response);
     }
     /**
      * Customer Login

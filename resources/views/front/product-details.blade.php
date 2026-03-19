@@ -283,6 +283,9 @@ color:#fff;
                         <div class="shop_single_product_details  mt-4 d-block d-xl-none d-n" style="border: 1px solid #d0cbcb;
     padding: 20px;
     border-radius: 10px;">
+      <h4 class="title">{{ $product->name }}</h4>
+                            <p class="mb15">{!! nl2br(e($product->short_description)) !!}</p>
+                            <hr>
                             <div class="sspd_price mt-2 mb-3">
                                 ₹<span id="product-price">{{ $product->product_options->first()->price }}</span>
                                 <small>
@@ -378,9 +381,7 @@ color:#fff;
 </a>
                                 </li>
                                                 
-                                   
-                                    <li class="pe-2 ms-2"><a href="#"><span class="flaticon-question me-2"></span>Ask a
-                                            Question</a></li>
+                            
                                     <li class="ms-2"><a href="#" id="shareProduct">
     <span class="flaticon-share me-2"></span>Share
 </a></li>
@@ -392,7 +393,7 @@ color:#fff;
                                 <li><a href="#">Category: {{ $product->categories->name ?? 'N/A' }}</a></li>
                             </ul>
                             <hr>
-                            <div class="vendor_iconbox style2 d-flex mb-1 mt-4">
+                            <!-- <div class="vendor_iconbox style2 d-flex mb-1 mt-4">
                                 <span class="icon fz30 heading-color"><span class="flaticon-truck"></span></span>
                                 <div class="details ms-3 mt-0">
                                     <p class="heading-color">Free Shipping & Returns: On all orders over ₹200.00</p>
@@ -412,7 +413,7 @@ color:#fff;
                                     <p class="heading-color">Free 15-Day returns <a class="tdu" href="">Details</a></p>
                                 </div>
                             </div>
-                            <hr>
+                            <hr> -->
                         </div>
                         <div class="shortcode_widget_accprdons shop_single_accordion px-0 mt-5">
                             <div class="faq_according text-start">
@@ -553,10 +554,7 @@ color:#fff;
 </div>
 @endforeach
                                                       
-                                                        <div class="all_review_btn mb30">
-                                                            <a href="#" class="btn btn-lg btn-white bdr_thm">Write Your
-                                                                Review</a>
-                                                        </div>
+                                                      
                                                     </div>
                                                     <div class="col-lg-12">
                                                         <div class="product_single_content mb30">
@@ -628,75 +626,72 @@ color:#fff;
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="bsp_reveiw_wrt mb-0">
-                                                            <form class="comments_form">
-                                                                <div class="row">
-                                                                    <div class="col-md-12">
-                                                                        <h4 class="title mb20">Add a Review</h4>
-                                                                        <p class="heading-color">Your email address will not
-                                                                            be published. Required fields are marked *</p>
-                                                                        <h5 class="mb0">Your rating of this product</h5>
-                                                                        <div class="sspd_postdate vendor_single">
-                                                                            <div class="sspd_review">
-                                                                                <ul class="mb0">
-                                                                                    <li class="list-inline-item"><a
-                                                                                            href="#"><i
-                                                                                                class="fas fa-star"></i></a>
-                                                                                    </li>
-                                                                                    <li class="list-inline-item"><a
-                                                                                            href="#"><i
-                                                                                                class="fal fa-star"></i></a>
-                                                                                    </li>
-                                                                                    <li class="list-inline-item"><a
-                                                                                            href="#"><i
-                                                                                                class="fal fa-star"></i></a>
-                                                                                    </li>
-                                                                                    <li class="list-inline-item"><a
-                                                                                            href="#"><i
-                                                                                                class="fal fa-star"></i></a>
-                                                                                    </li>
-                                                                                    <li class="list-inline-item"><a
-                                                                                            href="#"><i
-                                                                                                class="fal fa-star"></i></a>
-                                                                                    </li>
-                                                                                </ul>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="form-group">
-                                                                            <label class="heading-color mb10">Your
-                                                                                review</label>
-                                                                            <textarea class="form-control"
-                                                                                rows="6"></textarea>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="form-group">
-                                                                            <label class="heading-color mb10">Name</label>
-                                                                            <input type="text" class="form-control">
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="form-group">
-                                                                            <label class="heading-color mb10">Email</label>
-                                                                            <input type="email" class="form-control">
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-12">
-                                                                        <div class="form-check">
-                                                                            <input class="form-check-input" type="checkbox"
-                                                                                value="" id="defaultCheck1">
-                                                                            <label class="form-check-label"
-                                                                                for="defaultCheck1">Save my name, email, and
-                                                                                website in this browser for the next time I
-                                                                                comment.</label>
-                                                                        </div>
-                                                                        <br>
-                                                                        <button type="submit"
-                                                                            class="btn btn-thm">Submit</button>
-                                                                    </div>
-                                                                </div>
-                                                            </form>
-                                                        </div>
+                                                        @if(auth()->guard('customer')->check() && $canReview)
+
+        <div class="bsp_reveiw_wrt mb-0">
+            <form class="comments_form" action="{{ route('customer.review.submit') }}" method="POST">
+                @csrf
+
+                <input type="hidden" name="order_id" value="{{ $orderId }}">
+                <input type="hidden" name="order_detail_id" value="{{ $orderDetailId }}">
+               <input type="hidden" name="rating" id="rating" value="0">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4 class="title mb20">Add a Review</h4>
+                        <p class="heading-color">Your email address will not be published. Required fields are marked *</p>
+
+                        <h5 class="mb0">Your rating of this product</h5>
+
+                        <div class="sspd_postdate vendor_single">
+                            <div class="sspd_review">
+                                <ul class="mb0">
+
+                                  @for($i = 1; $i <= 5; $i++)
+    <li class="list-inline-item">
+        <a href="#" class="rating-star" data-value="{{ $i }}">
+            <i class="fas fa-star" style="color:#ccc;"></i>
+        </a>
+    </li>
+@endfor
+
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="heading-color mb10">Your review</label>
+                            <textarea name="review" class="form-control" rows="6"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="heading-color mb10">Name</label>
+                            <input type="text" class="form-control"
+                                value="{{ auth()->guard('customer')->user()->name }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="heading-color mb10">Email</label>
+                            <input type="email" class="form-control"
+                                value="{{ auth()->guard('customer')->user()->email }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <br>
+                        <button type="submit" class="btn btn-thm">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    @endif
+
+                                                        
                                                     </div>
                                                 </div>
                                             </div>
@@ -1384,4 +1379,25 @@ document.querySelectorAll('.buy-now-btn').forEach(btn=>{
 
 
 </script>
+<script>
+document.querySelectorAll('.rating-star').forEach((star, index) => {
+
+    star.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        let rating = parseInt(this.dataset.value);
+        document.getElementById('rating').value = rating;
+
+        document.querySelectorAll('.rating-star').forEach((el, i) => {
+            if (i < rating) {
+                el.querySelector('i').style.color = '#f6b100';
+            } else {
+                el.querySelector('i').style.color = '#ccc';
+            }
+        });
+    });
+
+});
+</script>
+
 @endsection
