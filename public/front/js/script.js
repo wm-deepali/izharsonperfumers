@@ -779,50 +779,33 @@
 
 
     /*  Shop-Item-6-Grid-Slider-Owl-carousel  */
-   if($('.shop_item_6grid_slider').length){
+  if ($('.shop_item_6grid_slider').length) {
     $('.shop_item_6grid_slider').owlCarousel({
-        loop:true,
-        margin:20, // 👈 gap between items
-        center:false,
-        dots:true,
-        nav:true,
-        rtl:false,
-        autoplayHoverPause:false,
-        autoplay:false,
-        singleItem:true,
-        smartSpeed:1200,
-        navText:[
-          '<i class="fas fa-arrow-left-long"></i>',
-          '<i class="fas fa-arrow-right-long"></i>'
+        loop: true,
+        margin: 20,
+        dots: true,
+        nav: true,
+        rtl: false,
+
+        autoplay: true,              // ✅ auto slide ON
+        autoplayTimeout: 2000,       // 2 sec
+        autoplayHoverPause: true,    // hover pe stop
+
+        smartSpeed: 800,             // smooth scroll speed
+
+        navText: [
+            '<span class="custom-prev"><i class="fas fa-arrow-left"></i></span>',
+            '<span class="custom-next"><i class="fas fa-arrow-right"></i></span>'
         ],
-        responsive:{
-            0:{
-                items:1
-            },
-            480:{
-                items:1
-            },
-            630:{
-                items:2
-            },
-            768:{
-                items:3
-            },
-            992:{
-                items:3
-            },
-            1024:{
-                items:3
-            },
-            1200:{
-                items:4
-            },
-            1400:{
-                items:6
-            }
+
+        responsive: {
+            0: { items: 2 },
+            768: { items: 3 },
+            1200: { items: 4 }
         }
-    })
+    });
 }
+
 
 
     /*  Shop-Item-7-Grid-Slider-Owl-carousel  */

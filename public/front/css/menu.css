@@ -407,7 +407,7 @@ font-size: 18px;
 margin: auto;
 position: absolute;
 right: 30px;
-top: 10px;
+top: 3px;
 }
 .mm-btn_prev:before {
 -webkit-transform: rotate(180deg);
@@ -529,14 +529,18 @@ text-decoration: none}.mm-listitem__btn,
 color: inherit;
 display: block;
 padding-top: 12px;
-padding-top: calc((var(--mm-listitem-size) - var(--mm-line-height))/ 2);
+padding-top: 3px;
+color:#041e42;
+font-weight: 500;
+text-transform: uppercase;
 padding-bottom: 12px;
-padding-bottom: calc((var(--mm-listitem-size) - var(--mm-line-height))/ 2)}.mm-listitem__text {
+padding-bottom: 4px}.mm-listitem__text {
 -o-text-overflow: ellipsis;
 text-overflow: ellipsis;
 white-space: nowrap;
 overflow: hidden;
 padding-left: 20px;
+font-size: 13px;
 padding-right: 10px;
 -webkit-box-flex: 1;
 -ms-flex-positive: 1;
@@ -940,7 +944,7 @@ height: 100%;
 padding: 0 20px;
 position: absolute;
 top: 0;
-width: 100%;
+width: 95%;
 }
 .leftside_navbar_menu{
 padding-top: 30px;
@@ -1126,7 +1130,7 @@ height: 52px;
 line-height: 40px;
 box-sizing: border-box;
 filter: drop-shadow(0px 5px 20px rgba(245, 195, 75, 0.15));
-max-width: 180px;
+max-width: 100%;
 width: 100%;
 }
 .hsidebar_footer_content .list_last_content .checkout_btns{
@@ -1136,7 +1140,7 @@ line-height: 40px;
 -moz-box-shadow:0px 5px 20px rgba(245, 195, 75, 0.15);
 -o-box-shadow:0px 5px 20px rgba(245, 195, 75, 0.15);
 box-shadow:0px 5px 20px rgba(245, 195, 75, 0.15);
-width: 180px;
+width: 100%;
 }
 .signin-hidden-sbar .hsidebar-header .title,
 .signup-hidden-sbar .hsidebar-header .title,
@@ -1184,6 +1188,9 @@ width: 40px;
 -ms-transition: all 500ms ease;
 -o-transition: all 500ms ease;
 transition: all 500ms ease;
+display:flex;
+justify-content:center;
+align-items:center;
 }
 .mobile_menu_close_btn{
 background-color: #F3F5F6;
