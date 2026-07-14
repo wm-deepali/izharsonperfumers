@@ -13,6 +13,7 @@ class Blog extends Model
         'title',
         'url',
         'image',
+        'image_thumb',
         'content',
         'author',
         'status',

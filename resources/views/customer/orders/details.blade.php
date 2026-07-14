@@ -195,7 +195,8 @@
 
                                 <div class="address-pd product-image">
 
-                                    <img src="{{ asset('storage/' . $item->product->image) }}" width="110">
+                                    <img src="{{ asset('storage/' . ($item->product->image_thumb ?? $item->product->image)) }}"
+                                        width="110">
 
                                 </div>
 

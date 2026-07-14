@@ -7,8 +7,46 @@ use App\Models\Slider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
+
 class SliderController extends Controller
 {
+    /**
+     * Sliders are full-width hero banners (background-image), so — same as
+     * categories — we only need one optimized file, no separate thumb.
+     * Width is capped higher (1920) since it has to stay sharp stretched
+     * across the full viewport, not just a card/listing image.
+     *
+     * @param  \Illuminate\Http\UploadedFile  $file
+     * @param  string  $folder  storage/app/public/{folder}
+     * @return string  stored relative path
+     */
+    private function optimizeAndStore($file, string $folder, int $maxWidth = 1920): string
+    {
+        $uuid = Str::uuid();
+        $folder = trim($folder, '/');
+
+        $image = Image::make($file->getRealPath());
+        $image->orientate();
+        $image->resize($maxWidth, null, function ($constraint) {
+            $constraint->aspectRatio();
+            $constraint->upsize();
+        });
+
+        $path = $folder . '/' . $uuid . '.webp';
+        Storage::disk('public')->put($path, (string) $image->encode('webp', 85));
+
+        return $path;
+    }
+
+    private function deleteIfExists(?string $path): void
+    {
+        if (!empty($path) && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+    }
+
     public function index()
     {
         $sliders = Slider::latest()->get();
@@ -39,7 +77,9 @@ class SliderController extends Controller
             'title' => 'nullable|min:3|max:255',
             'sub_title' => 'nullable|min:3|max:255',
             'content' => 'nullable|min:3|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+            // raised to 8MB — client can upload a large banner photo, it gets
+            // resized/compressed server-side before it's ever stored
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:8192',
             'status' => 'required',
             'button_link' => 'nullable',
         ]);
@@ -62,7 +102,7 @@ class SliderController extends Controller
                 'sub_title_ar' => $request->sub_title_ar,
                 'content' => $request->content,
                 'color' => $request->color,
-                'image' => $request->image->store('sliders'),
+                'image' => $this->optimizeAndStore($request->image, 'sliders'),
                 'status' => $request->status
             ]);
            return response()->json([
@@ -102,7 +142,7 @@ class SliderController extends Controller
             'title' => 'nullable|min:3|max:255',
             'sub_title' => 'nullable|min:3|max:255',
             'content' => 'nullable|min:3|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:8192',
             'status' => 'required',
             'button_link' => 'nullable',
         ]);
@@ -129,10 +169,8 @@ class SliderController extends Controller
                 'button_link' => $request->button_link,
             );
             if($request->hasFile('image')) {
-                $data['image'] = $request->image->store('sliders');
-                if(isset($slider->image) && Storage::exists($slider->image)) {
-                    Storage::delete($slider->image);
-                }
+                $this->deleteIfExists($slider->image);
+                $data['image'] = $this->optimizeAndStore($request->image, 'sliders');
             }
             $slider->update($data);
             return response()->json([
@@ -152,9 +190,7 @@ class SliderController extends Controller
     {
         try {
             $slider = Slider::findOrFail($id);
-            if(isset($slider->image) && Storage::exists($slider->image)) {
-                Storage::delete($slider->image);
-            }
+            $this->deleteIfExists($slider->image);
             $slider->delete();
             return response()->json([
                 'success' => true,

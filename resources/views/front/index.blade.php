@@ -474,7 +474,7 @@ right:-10px;
                             <div class="item ovh">
                                 <div class="shop_item bdrtrb1 px-2 px-sm-3 wow fadeIn" data-wow-duration="1.0s">
                                     <div class="thumb pb30">
-                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+                                        <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}">
                                         <div class="thumb_info">
                                             <ul class="mb0">
                                                 <li>
@@ -1101,7 +1101,7 @@ right:-10px;
     <!-- IMAGE -->
     <div class="product-img">
         <a href="{{ url('product-details/' . $product->slug) }}">
-            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+            <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}">
         </a>
     </div>
 
@@ -1137,7 +1137,7 @@ right:-10px;
     <!-- IMAGE -->
     <div class="product-img">
         <a href="{{ url('product-details/' . $product->slug) }}">
-            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+            <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}">
         </a>
     </div>
 
@@ -1173,7 +1173,7 @@ right:-10px;
     <!-- IMAGE -->
     <div class="product-img">
         <a href="{{ url('product-details/' . $product->slug) }}">
-            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+           <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}">
         </a>
     </div>
 

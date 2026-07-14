@@ -986,7 +986,7 @@
                                     <!-- IMAGE -->
                                     <div class="productcard-image">
 
-                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+                                    <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}">
 
                                         <!-- ACTION ICONS -->
                                         <div class="productcard-icons">
@@ -1067,55 +1067,7 @@
                                     </div>
 
                                 </div>
-                                <!--<div class="new-iz-product-card rounded-4 overflow-hidden bg-white shadow h-100">-->
-                                <!--    <div class="position-relative new-iz-img-wrapper">-->
-                                <!--        <img src="{{ asset('storage/' . $product->image) }}" class="w-100" style="aspect-ratio:1/1;object-fit:cover;" alt="{{ $product->name }}">-->
-
-                                <!-- Category Badge -->
-                                <!--        @if($cat = $product->subcategories->name ?? $product->categories->name ?? '')-->
-                                <!--            <span class="new-iz-category-badge position-absolute top-3 start-3 px-3 py-1 rounded-pill bg-white shadow-sm small fw-bold text-dark">-->
-                                <!--                {{ $cat }}-->
-                                <!--            </span>-->
-                                <!--        @endif-->
-
-                                <!-- Hover Overlay -->
-
-                                <!--    </div>-->
-                                <!--    <div class="p-3 text-center">-->
-
-                                <!--        <h6 class="new-iz-title mb-2 fw-bold fs-6">-->
-                                <!--            <a href="{{ url('product-details/' . $product->slug) }}" class="text-dark text-decoration-none">-->
-                                <!--                {{ Str::limit($product->name, 40) }}-->
-                                <!--            </a>-->
-                                <!--        </h6>-->
-                                <!--        <div class="new-iz-rating mb-2 d-flex justify-content-center small">-->
-                                <!--            @for($i=1; $i<=5; $i++)-->
-                                <!--                <i class="fas fa-star {{ $i <= $product->avg_rating ? 'text-warning' : 'text-muted' }}"></i>-->
-                                <!--            @endfor-->
-                                <!--            <small class="text-muted ms-2">({{ $product->review_count }})</small>-->
-                                <!--        </div>-->
-                                <!--        <div class="new-iz-price fw-bold fs-5 text-primary">-->
-                                <!--            ₹{{ $product->product_options[0]->price ?? $product->min_price ?? 'N/A' }}-->
-                                <!--            @if(!empty($product->product_options[0]->mrp))-->
-                                <!--                <small class="text-muted ms-2"><del>₹{{ $product->product_options[0]->mrp }}</del></small>-->
-                                <!--            @endif-->
-                                <!--        </div>-->
-
-                                <!--        <div class="new-iz-overlay  d-flex align-items-center justify-content-between p-2 ">-->
-                                <!--            <div class="d-flex flex-column flex-sm-row gap-3 gap-sm-2 px-2 ">-->
-                                <!--                <a href="{{ url('product-details/' . $product->slug) }}"-->
-                                <!--                   class="new-iz-action-btn btn btn-light shadow-sm px-3 py-2 fw-600 small d-flex align-items-center">-->
-                                <!--                     View Details-->
-                                <!--                </a>-->
-                                <!--                <a href="#" class="new-iz-action-btn btn btn-thm  shadow-sm px-3 py-2 fw-600 small d-flex align-items-center add-to-cart-btn"-->
-                                <!--                   data-product="{{ $product->id }}"-->
-                                <!--                   data-option="{{ optional($product->product_options->first())->id }}">-->
-                                <!--                    Add to Cart-->
-                                <!--                </a>-->
-                                <!--            </div>-->
-                                <!--        </div>-->
-                                <!--    </div>-->
-                                <!--</div>-->
+                              
                             </div>
                         @endforeach
                     </div>
@@ -1160,7 +1112,7 @@
                                             <!-- IMAGE -->
                                             <div class="productcard-image">
 
-                                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+                                                <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}">
 
                                                 <!-- ACTION ICONS -->
                                                 <div class="productcard-icons">

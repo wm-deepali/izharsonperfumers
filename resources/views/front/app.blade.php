@@ -601,9 +601,9 @@
                                                 @foreach($miniCartItems as $item)
                                                     <li class="list_content">
                                                         <div>
-                                                            <img class="float-start"
-                                                                src="{{ asset('storage/' . ($item->product_options->image ?? $item->products->image)) }}"
-                                                                width="60">
+                                                           <img class="float-start"
+    src="{{ asset('storage/' . ($item->product_options->image_thumb ?? $item->product_options->image ?? $item->products->image_thumb ?? $item->products->image)) }}"
+    width="60">
 
                                                             <p>{{ $item->products->name }}</p>
 
@@ -1190,7 +1190,7 @@
 <li>
     <a href="/product-details/${product.slug}" class="d-flex align-items-center">
         <div class="thumb">
-            <img src="/storage/${product.image}" alt="${product.name}">
+        <img src="/storage/${product.image_thumb ?? product.image}" alt="${product.name}">
         </div>
         <div class="info-product">
             <div class="item_title">${product.name}</div>
@@ -1261,7 +1261,7 @@
 <li>
     <a href="/product-details/${product.slug}" class="d-flex align-items-center">
         <div class="thumb">
-            <img src="/storage/${product.image}" alt="${product.name}">
+            <img src="/storage/${product.image_thumb ?? product.image}" alt="${product.name}">
         </div>
         <div class="info-product">
             <div class="item_title">${product.name}</div>
@@ -1447,7 +1447,8 @@
 
                         data.items.forEach(item => {
 
-                            const image = item.product_options?.image ?? item.products.image;
+                        const image = item.product_options?.image_thumb ?? item.product_options?.image
+    ?? item.products.image_thumb ?? item.products.image;
                             const price = (item.product_options?.price ?? item.products.price ?? 0) * item.quantity;
 
                             html += `

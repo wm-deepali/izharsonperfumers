@@ -9,9 +9,57 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Intervention\Image\Facades\Image;
 
 class BlogController extends Controller
 {
+    /**
+     * Blog image is used at two different render sizes — small listing card
+     * (~335px) and the larger detail/featured banner (~695px) — so, same as
+     * products, we store TWO versions instead of one:
+     * - "full": for the detail/featured banner usage
+     * - "thumb": for listing cards / grid
+     *
+     * @param  \Illuminate\Http\UploadedFile  $file
+     * @param  string  $folder  storage/app/public/{folder}
+     * @return array{full: string, thumb: string}
+     */
+    private function optimizeAndStore($file, string $folder): array
+    {
+        $uuid = Str::uuid();
+        $folder = trim($folder, '/');
+
+        $source = Image::make($file->getRealPath());
+        $source->orientate();
+
+        // ---- Full version (blog detail / featured banner, ~695px rendered) ----
+        $full = clone $source;
+        $full->resize(1400, null, function ($constraint) {
+            $constraint->aspectRatio();
+            $constraint->upsize();
+        });
+        $fullPath = $folder . '/' . $uuid . '.webp';
+        Storage::disk('public')->put($fullPath, (string) $full->encode('webp', 88));
+
+        // ---- Thumbnail version (listing card, ~335px rendered) ----
+        $thumb = clone $source;
+        $thumb->resize(500, null, function ($constraint) {
+            $constraint->aspectRatio();
+            $constraint->upsize();
+        });
+        $thumbPath = $folder . '/' . $uuid . '-thumb.webp';
+        Storage::disk('public')->put($thumbPath, (string) $thumb->encode('webp', 75));
+
+        return ['full' => $fullPath, 'thumb' => $thumbPath];
+    }
+
+    private function deleteIfExists(?string $path): void
+    {
+        if (!empty($path) && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+    }
+
     public function index()
     {
         $blogs = Blog::latest()->get();
@@ -45,7 +93,8 @@ class BlogController extends Controller
             'title' => 'required|min:3|max:255|regex:/^[\pL\s\-]+$/u',
             'title_ar' => 'max:300',
             'url' => 'required|max:255|unique:blogs',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+            // raised to 8MB — resized/compressed server-side before storing
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:8192',
             'content' => 'required|min:3',
             'author' => 'required|min:3|max:50|regex:/^[\pL\s\-]+$/u',
         //     'meta_keyword' => 'required|min:3|max:255|regex:/^[0-9A-Za-z.\s,-]*$/',
@@ -57,11 +106,14 @@ class BlogController extends Controller
         ]);
         if ($validator->passes()) {
             try {
+                $img = $this->optimizeAndStore($request->image, 'blogs');
+
              $blog =   Blog::create([
                     'title' => $request->title,
                     'title_ar' => $request->title_ar,
                     'url' => $request->url,
-                    'image' => $request->image->store('blogs'),
+                    'image' => $img['full'],
+                    'image_thumb' => $img['thumb'],
                     'content' => $request->content,
                     'content_ar' => $request->content_ar,
                     'author' => $request->author,
@@ -122,7 +174,7 @@ class BlogController extends Controller
             'title' => 'required|min:3|max:255|regex:/^[\pL\s\-]+$/u',
             'title_ar' => 'max:300',
             'url' => 'required|alpha_dash|max:255|unique:blogs,url,'.$id,
-           'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+           'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:8192',
             'content' => 'required|min:3',
             'author' => 'required|min:3|max:50|regex:/^[\pL\s\-]+$/u',
         //     'meta_keyword' => 'required|min:3|max:255|regex:/^[0-9A-Za-z.\s,-]*$/',
@@ -146,10 +198,12 @@ class BlogController extends Controller
                 );
                 // $data = $request->all();
                 if($request->hasFile('image')) {
-                    $data['image'] = $request->image->store('blogs');
-                    if(isset($blog->image) && Storage::exists($blog->image)) {
-                        Storage::delete($blog->image);
-                    }
+                    $this->deleteIfExists($blog->image);
+                    $this->deleteIfExists($blog->image_thumb);
+
+                    $img = $this->optimizeAndStore($request->image, 'blogs');
+                    $data['image'] = $img['full'];
+                    $data['image_thumb'] = $img['thumb'];
                 }
                 $blog->update($data);
                 $blog->setMeta([
@@ -184,9 +238,8 @@ class BlogController extends Controller
     {
         try {
             $blog = Blog::findOrFail($id);
-            if(isset($blog->image) && Storage::exists($blog->image)) {
-                Storage::delete($blog->image);
-            }
+            $this->deleteIfExists($blog->image);
+            $this->deleteIfExists($blog->image_thumb);
             $blog->delete();
             return response()->json([
                 'success' => true,

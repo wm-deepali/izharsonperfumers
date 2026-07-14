@@ -37,7 +37,7 @@
                     <div class="col-md-6 col-xl-4 mb-4">
                         <div class="blog-card glass-card">
                             <div class="thumb">
-                                <img class="img-whp" src="{{ asset('storage/' . $blog->image) }}" alt="{{ $blog->title }}">
+                                <img class="img-whp" src="{{ asset('storage/' . ($blog->image_thumb ?? $blog->image)) }}" alt="{{ $blog->title }}">
                             </div>
                             <div class="details">
                                 <div class="tc_content">

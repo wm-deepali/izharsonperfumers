@@ -92,7 +92,7 @@
                             <td style="padding:10px; border:1px solid #ddd; "> 
                             @if(isset($order_detail->product))
                                 <a href="javascript:void(0)">
-                                    <img src="{{ URL::asset('storage/' . $order_detail->product->image) }}" class="img-fluid"style="height:50px;" />
+                                    <img src="{{ URL::asset('storage/' . ($order_detail->product->thumb_image ?? $order_detail->product->image)) }}" class="img-fluid"style="height:50px;" />
                                 </a>
                             @else
                                 <a href="javascript:void(0)">

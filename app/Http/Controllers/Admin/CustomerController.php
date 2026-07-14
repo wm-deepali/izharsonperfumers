@@ -17,10 +17,35 @@ use App\Models\Country;
 use App\Models\State;
 use App\Models\City;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 use Storage;
 use Maize\EmailDomainRule\EmailDomainRule;
 class CustomerController extends Controller
 {
+    /**
+     * Same as the front-facing DashboardController::optimizeAvatarAndStore —
+     * customer avatar, single square-cropped webp, no thumb needed.
+     *
+     * @param  \Illuminate\Http\UploadedFile  $file
+     * @param  string  $folder  storage/app/public/{folder}
+     * @return string  stored relative path
+     */
+    private function optimizeAvatarAndStore($file, string $folder, int $size = 400): string
+    {
+        $uuid = Str::uuid();
+        $folder = trim($folder, '/');
+
+        $image = Image::make($file->getRealPath());
+        $image->orientate();
+        $image->fit($size, $size); // crop-to-square around the center
+
+        $path = $folder . '/' . $uuid . '.webp';
+        Storage::disk('public')->put($path, (string) $image->encode('webp', 85));
+
+        return $path;
+    }
+
     public function index(){
         $customers = Customer::with('orders')->with('services')->latest()->get();
         return view('admin.customer.index', compact('customers'));
@@ -137,7 +162,10 @@ class CustomerController extends Controller
      public function updatecustomerprofile(Request $request){
           $validator = Validator::make($request->all(), [  
         'name' => 'required|min:3|max:255|regex:/^[\pL\s\-]+$/u',
-        'image'=>'nullable|mimes:png,jpeg,svg,gif|dimensions:min_width=500,min_height=500,max_width=500,max_height=500',
+        // dimensions rule removed — image is now resized + center-cropped to
+        // a square server-side, so the customer can upload any photo shape
+        // instead of being forced to pre-crop to exactly 500x500.
+        'image'=>'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:8192',
          'email'=>['required','email',new EmailDomainRule],
         // 'pincode'=>'required|digits_between:5,10',
         'country'=>'required',
@@ -160,10 +188,10 @@ class CustomerController extends Controller
           $data = $request->except(['_token']);
           $customer=Customer::find($request->id);
            if($request->hasFile('image')) {
-                    $data['image'] = $request->image->store('profile');
-                    if(Storage::exists($customer->image)) {
-                        Storage::delete($customer->image);
+                    if($customer->image && Storage::disk('public')->exists($customer->image)) {
+                        Storage::disk('public')->delete($customer->image);
                     }
+                    $data['image'] = $this->optimizeAvatarAndStore($request->file('image'), 'profile');
         }
         // print_r($data);
         //   die();
@@ -274,8 +302,8 @@ class CustomerController extends Controller
         
         try {
             $brand = Customer::findorFail($id);
-            if(isset($brand->image) && Storage::exists($brand->image)){
-                Storage::delete($brand->image);
+            if(isset($brand->image) && Storage::disk('public')->exists($brand->image)){
+                Storage::disk('public')->delete($brand->image);
             }
             $brand->delete();
            

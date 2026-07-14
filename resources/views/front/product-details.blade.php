@@ -329,19 +329,25 @@ color:#fff;
         </div>
     </section>
 
-    @php
-        $images = [];
+@php
+    $images = [];
 
-        foreach ($product->product_options as $opt) {
-            foreach ($opt->product_variant_images as $img) {
-                $images[] = $img->image;
-            }
+    foreach ($product->product_options as $opt) {
+        foreach ($opt->product_variant_images as $img) {
+            $images[] = [
+                'full'  => $img->image,
+                'thumb' => $img->image_thumb ?? $img->image,
+            ];
         }
+    }
 
-        if (empty($images) && $product->image) {
-            $images[] = $product->image;
-        }
-    @endphp
+    if (empty($images) && $product->image) {
+        $images[] = [
+            'full'  => $product->image,
+            'thumb' => $product->image_thumb ?? $product->image,
+        ];
+    }
+@endphp
 
     <!-- Shop Single Content -->
     <section class="shop-single-content pb80 pt0 ovh">
@@ -356,49 +362,43 @@ color:#fff;
                                 <div class="nav flex-row mt-2 mt-md-0 flex-md-column nav-pills me-0 me-md-3 gap-2" id="v-pills-tab2" role="tablist"
                                     aria-orientation="vertical">
 
-                                    @foreach($images as $key => $img)
-                                        <button class="nav-link {{ $key == 0 ? 'active' : '' }}" id="v-pills-tab-{{ $key }}"
-                                            data-bs-toggle="pill" data-bs-target="#v-pills-img-{{ $key }}" type="button"
-                                            role="tab">
-                                            <img src="{{ asset('storage/' . $img) }}" alt="">
-                                        </button>
-                                    @endforeach
+                                  @foreach($images as $key => $img)
+    <button class="nav-link {{ $key == 0 ? 'active' : '' }}" id="v-pills-tab-{{ $key }}"
+        data-bs-toggle="pill" data-bs-target="#v-pills-img-{{ $key }}" type="button"
+        role="tab">
+        <img src="{{ asset('storage/' . $img['thumb']) }}" alt="">
+    </button>
+@endforeach
 
                                 </div>
 
                                 <!-- Main Images -->
                                 <div class="tab-content m-auto" id="v-pills-tabContent2">
 
-                                    @foreach($images as $key => $img)
+                                @foreach($images as $key => $img)
+    @php
+        $zoomId = 'zoom_' . str_pad($key + 1, 2, '0', STR_PAD_LEFT);
+    @endphp
 
-                                        @php
-                                            // create zoom id like zoom_01, zoom_02
-                                            $zoomId = 'zoom_' . str_pad($key + 1, 2, '0', STR_PAD_LEFT);
-                                        @endphp
+    <div class="tab-pane fade {{ $key == 0 ? 'show active' : '' }}"
+        id="v-pills-img-{{ $key }}" role="tabpanel">
 
-                                        <div class="tab-pane fade {{ $key == 0 ? 'show active' : '' }}"
-                                            id="v-pills-img-{{ $key }}" role="tabpanel">
+        <div class="shop_single_navmenu_content justify-content-center">
 
-                                            <div class="shop_single_navmenu_content justify-content-center">
+            <a class="product_popup popup-img" href="{{ asset('storage/' . $img['full']) }}">
+                <span class="flaticon-full-screen"></span>
+            </a>
 
-                                                <!-- Popup -->
-                                                <a class="product_popup popup-img" href="{{ asset('storage/' . $img) }}">
-                                                    <span class="flaticon-full-screen"></span>
-                                                </a>
+            <div class="zoomimg_wrapper m-auto">
+                <img class="zoom-img main-product-image" id="mainProductImage"
+                    src="{{ asset('storage/' . $img['full']) }}"
+                    data-zoom-image="{{ asset('storage/' . $img['full']) }}" width="410"
+                    alt="Product Image">
+            </div>
 
-                                                <!-- Zoom -->
-                                                <div class="zoomimg_wrapper m-auto">
-                                                    <img class="zoom-img main-product-image" id="mainProductImage"
-                                                        src="{{ asset('storage/' . $img) }}"
-                                                        data-zoom-image="{{ asset('storage/' . $img) }}" width="410"
-                                                        alt="Product Image">
-                                                </div>
-
-                                            </div>
-                                        </div>
-
-                                    @endforeach
-
+        </div>
+    </div>
+@endforeach
                                 </div>
 
                             </div>
@@ -1035,7 +1035,7 @@ color:#fff;
     <!-- IMAGE -->
     <div class="productcard-image">
 
-        <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
+        <img src="{{ asset('storage/' . ($item->image_thumb ?? $item->image)) }}" alt="{{ $item->name }}">
 
         <!-- ACTION ICONS -->
         <div class="productcard-icons">
@@ -1143,7 +1143,7 @@ color:#fff;
     <!-- IMAGE -->
     <div class="productcard-image">
 
-        <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
+        <img src="{{ asset('storage/' . ($item->image_thumb ?? $item->image)) }}" alt="{{ $item->name }}">
 
         <!-- ACTION ICONS -->
         <div class="productcard-icons">

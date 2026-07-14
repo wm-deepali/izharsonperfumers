@@ -70,7 +70,7 @@
                                 <a href="{{ url('blog/' . $recent->url) }}" 
                                    class="recent-post-card d-flex text-decoration-none mb-4 p-3 rounded-3 bg-light-hover transition-all">
                                     <div class="thumb me-3 flex-shrink-0">
-                                        <img src="{{ asset('storage/' . $recent->image) }}" 
+                                        <img src="{{ asset('storage/' . ($recent->image_thumb ?? $recent->image)) }}" 
                                              alt="{{ $recent->title }}"
                                              class="rounded-3"
                                              width="90" 

@@ -57,7 +57,7 @@
     </a>
 </div>
                                                 <div class="thumb pb30">
-                                                    <img src="{{ asset('storage/' . $wishlistItem->product->image) }}"
+                                                    <img src="{{ asset('storage/' . ($wishlistItem->product->image_thumb ?? $wishlistItem->product->image )) }}"
                                                         alt="{{ $wishlistItem->product->name }}">
                                                 </div>
                                                 <div class="details">

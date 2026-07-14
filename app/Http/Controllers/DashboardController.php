@@ -18,9 +18,37 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 
 class DashboardController extends Controller
 {
+    /**
+     * Customer profile picture is a small avatar shown at a fixed square
+     * size everywhere it appears, so — same idea as categories/sliders —
+     * we only need ONE optimized file, but cropped to a square (fit) instead
+     * of a plain aspect-preserving resize, so it always looks right in a
+     * circular/square avatar slot regardless of what shape photo was uploaded.
+     *
+     * @param  \Illuminate\Http\UploadedFile  $file
+     * @param  string  $folder  storage/app/public/{folder}
+     * @return string  stored relative path
+     */
+    private function optimizeAvatarAndStore($file, string $folder, int $size = 400): string
+    {
+        $uuid = Str::uuid();
+        $folder = trim($folder, '/');
+
+        $image = Image::make($file->getRealPath());
+        $image->orientate();
+        $image->fit($size, $size); // crop-to-square around the center
+
+        $path = $folder . '/' . $uuid . '.webp';
+        Storage::disk('public')->put($path, (string) $image->encode('webp', 85));
+
+        return $path;
+    }
+
     public function myOrders()
     {
         $customer = auth()->guard('customer')->user();
@@ -229,6 +257,9 @@ class DashboardController extends Controller
             'name' => 'required',
             'email' => 'required|email',
             'mobile_number' => 'required',
+            // raised to 8MB — client can upload any photo, it gets cropped
+            // to a square avatar and compressed server-side before storing
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:8192',
         ]);
 
         $data = $request->only([
@@ -244,12 +275,12 @@ class DashboardController extends Controller
         if ($request->hasFile('image')) {
 
             // Delete previous image
-            if ($customer->image && Storage::exists($customer->image)) {
-                Storage::delete($customer->image);
+            if ($customer->image && Storage::disk('public')->exists($customer->image)) {
+                Storage::disk('public')->delete($customer->image);
             }
 
-            // Upload new image
-            $data['image'] = $request->file('image')->store('customers');
+            // Upload new image — cropped to square + compressed to webp
+            $data['image'] = $this->optimizeAvatarAndStore($request->file('image'), 'customers');
         }
 
         $customer->update($data);
@@ -289,5 +320,3 @@ class DashboardController extends Controller
         return view('customer.account-address', compact('shippingAddresses', 'billingAddresses', 'countries'));
     }
 }
-
-

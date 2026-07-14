@@ -18,6 +18,7 @@ class Product extends Model
         'slug',
         'sku',
         'image',
+        'image_thumb',
         'fabric',
         'short_description',
         'description',
