@@ -1,4 +1,6 @@
-<div class="col-lg-3 col-xl-2 dn-md">
+<div class="col-lg-3 col-xl-3 dn-md" style="    background: #f9f9f9;
+    padding: 12px;
+    border-radius: 8px;">
     <div class="users_account_details extra-dashboard-menu">
         <div class="account_details_user d-flex pb10 bb1 mb10">
             @php $customer = auth()->guard('customer')->user(); @endphp

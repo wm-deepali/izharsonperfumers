@@ -11,24 +11,18 @@
             <div class="modal-body">
                 <div class="form-group row">
                     <div class="col-sm-12">
-                        <label class="label-control label">Title <span class="required">*</span></label>
+                        <label class="label-control label">Title</label>
                         <input type="text" class="form-control" name="title" value="{{ $slider->title }}" >
                         <div class="text-danger" id="title-err"></div>
                     </div>
-                    @if($language)
+                
                     <div class="col-sm-12">
-                        <label class="label-control label">Title Ar<span class="required">*</span></label>
-                        <input type="text" class="form-control" name="title_ar" value="{{ $slider->title_ar }}" >
-                        <div class="text-danger" id="title_ar-err"></div>
-                    </div>
-                    @endif
-                    <div class="col-sm-12">
-                        <label class="label-control label">Sub-title <span class="required">*</span></label>
+                        <label class="label-control label">Sub-title</label>
                         <input type="text" class="form-control" name="sub_title" value="{{ $slider->sub_title }}" >
                         <div class="text-danger" id="sub_title-err"></div>
                     </div>
                     <div class="col-sm-12">
-                        <label class="label-control label">Description <span class="required">*</span></label>
+                        <label class="label-control label">Description </label>
                         <textarea type="text" class="form-control" name="content" >{{$slider->content}}</textarea>
                         <div class="text-danger" id="content-err"></div>
                     </div>
@@ -38,17 +32,10 @@
                          <div class="text-danger" id="color-err"></div>
                     </div>
                     <div class="col-sm-12">
-                        <label class="label-control label">Button Link <span class="required">*</span></label>
+                        <label class="label-control label">Button Link</label>
                         <input type="text" class="form-control" name="button_link" value="{{ $slider->button_link }}" >
                         <div class="text-danger" id="button_link-err"></div>
                     </div>
-                    @if($language)
-                    <div class="col-sm-12">
-                        <label class="label-control label">Sub-title Ar<span class="required">*</span></label>
-                        <input type="text" class="form-control" name="sub_title_ar"  value="{{ $slider->sub_title_ar }}" >
-                        <div class="text-danger" id="sub_title_ar-err"></div>
-                    </div>
-                    @endif
                     <div class="col-sm-12">
                         <label class="label-control label">Image <span class="required">*</span><span class="text-danger">(Image Size 1440*500)</span></label>
                         <input type="file" class="form-control" name="image">

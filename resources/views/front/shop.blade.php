@@ -1,11 +1,11 @@
 @extends('front.app')
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-    crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"-->
+<!--    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">-->
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"-->
+<!--    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"-->
+<!--    crossorigin="anonymous"></script>-->
+    <!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>-->
 
     @section('title', 
     isset($currentSubcategory) && $currentSubcategory
@@ -391,7 +391,11 @@
         text-decoration: line-through;
     }
 
-    /* BUTTONS */
+   .inner_page_breadcrumb {
+    padding: 10px 0 !important;
+    position: relative;
+    background: #f9f9f9 !important;
+}
 
     .productcard-buttons {
         display: flex;
@@ -466,7 +470,7 @@
         }
 
         .productcard-category {
-            font-size: 12px;
+            font-size: 11px;
             color: #888;
             margin-bottom: 4px;
             margin-top: 4px;
@@ -484,33 +488,16 @@
         .shop-v3-container {
             padding: 10px !important;
         }
+        .new-iz-section-title {
+    font-size: 20px !important;
+    margin-top: 18px;
+    letter-spacing: -0.5px;
+    color: #111;
+}
     }
 </style>
 
 @section('content')
-
-    <section class="p0 bb1 overflow-hidden">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="custom_shop_category_nav_list_menu">
-                        <ul class="mb0 d-flex">
-
-                            @foreach($categories as $category)
-                                <li>
-                                    <a href="{{ route('shop.category', $category->slug) }}?{{ http_build_query(request()->except(['page'])) }}"
-                                        class="{{ isset($currentCategory) && $currentCategory->id == $category->id ? 'active' : '' }}">
-                                        {{ $category->name }}
-                                    </a>
-                                </li>
-                            @endforeach
-
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <section class="inner_page_breadcrumb">
         <div class="container">
@@ -547,6 +534,30 @@
             </div>
         </div>
     </section>
+    <section class="p0 bb1 overflow-hidden">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="custom_shop_category_nav_list_menu">
+                        <ul class="mb0 d-flex">
+
+                            @foreach($categories as $category)
+                                <li>
+                                    <a href="{{ route('shop.category', $category->slug) }}?{{ http_build_query(request()->except(['page'])) }}"
+                                        class="{{ isset($currentCategory) && $currentCategory->id == $category->id ? 'active' : '' }}">
+                                        {{ $category->name }}
+                                    </a>
+                                </li>
+                            @endforeach
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
 
     <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileFilterDrawer">
 
@@ -737,7 +748,7 @@
 </div>
 
     <!-- Listing Grid View -->
-    <section class="shop-v3-listing py-5 bg-light">
+    <section class="shop-v3-listing py-0 py-md-5 bg-light">
         <div class="container shop-v3-container">
 
             <div class="row g-4">
@@ -1137,7 +1148,7 @@
 
                     @if($bestSellers->count())
                         <div class="new-iz-bestsellers mb-5">
-                            <h2 class="new-iz-section-title mb-4 fw-bold">
+                            <h2 class="new-iz-section-title mb-1 mb-md-4  fw-bold">
                                 {{ $currentCategory ? $currentCategory->name . ' Best Sellers' : 'Best Sellers' }}
                             </h2>
 
@@ -1276,6 +1287,7 @@
                         font-size: 1.9rem;
                         letter-spacing: -0.5px;
                         color: #111;
+                        margin-top:20px;
                     }
 
                     /* Product Card */
@@ -1656,7 +1668,10 @@
                     .then(res => res.json())
                     .then(data => {
 
-                        const heartIcon = button.querySelector('span');
+                                         const heartIcon = button.querySelector('span, i');
+
+if (!heartIcon) return; // stop error
+
 
                         if (data.status === "added") {
                             heartIcon.style.color = "red";

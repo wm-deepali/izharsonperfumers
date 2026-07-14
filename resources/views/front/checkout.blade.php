@@ -107,7 +107,8 @@
                   </div>
 
                   <div class="col-md-6 mb-2">
-                    <input type="email" name="email" id="billing_email" class="form-control" placeholder="Email">
+                    <input type="email" name="email" id="billing_email" class="form-control" placeholder="Email"
+                      required>
                   </div>
 
                   <div class="col-md-6 mb-2">
@@ -221,6 +222,11 @@
                     <div class="col-md-6 mb-2">
                       <input type="text" name="mobile_number" id="shipping_mobile" class="form-control"
                         placeholder="Mobile Number" required>
+                    </div>
+
+                    <div class="col-md-6 mb-2">
+                      <input type="email" name="email" id="shipping_email" class="form-control" placeholder="Email"
+                        required>
                     </div>
 
                     <div class="col-md-12 mb-2">
@@ -543,9 +549,10 @@
         billing_id.value = a.id;
         billing_name.value = a.name;
         billing_mobile.value = a.mobile_number;
+        billing_email.value = a.email ?? '';
         billing_address.value = a.address;
         billing_pincode.value = a.pincode;
-        billing_country.value = a.country.id;
+        billing_country.value = a.countries?.id ?? '';
 
         loadStates(a.countries.id, a.states?.id);
         loadCities(a.states?.id, a.cities?.id);
@@ -562,9 +569,10 @@
         shipping_id.value = a.id;
         shipping_name.value = a.name;
         shipping_mobile.value = a.mobile_number;
+        shipping_email.value = a.email ?? '';
         shipping_address.value = a.address;
         shipping_pincode.value = a.pincode;
-        shipping_country.value = a.country.id;
+        shipping_country.value = a.countries?.id ?? '';
 
         loadShipStates(a.countries.id, a.states?.id);
         loadShipCities(a.states?.id, a.cities?.id);

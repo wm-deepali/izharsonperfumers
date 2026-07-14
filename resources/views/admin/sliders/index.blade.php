@@ -1,4 +1,10 @@
 @include('admin.header')
+<style>
+    .modal-body {
+        max-height: 65vh;
+        overflow-y: auto;
+    }
+</style>
 <div class="app-content content container-fluid">
     <div class="content-wrapper">
         <div class="content-header row">
@@ -54,7 +60,8 @@
                                                             <td>{{ $slider->sub_title }}</td>
                                                             <td>
                                                                 @if (isset($slider->image) && Storage::exists($slider->image))
-                                                                    <img src="{{ URL::asset('storage/' . $slider->image) }}" class="img-fluid" style="height:50px;">
+                                                                    <img src="{{ URL::asset('storage/' . $slider->image) }}"
+                                                                        class="img-fluid" style="height:50px;">
                                                                 @else
                                                                     NA
                                                                 @endif
@@ -62,8 +69,14 @@
                                                             <td>{{ $slider->status }}</td>
                                                             <td class="text-truncate">
                                                                 <ul class="actions">
-                                                                    <li><a href="javascript:void(0)" class="edit-slider" slider_id="{{ $slider->id }}" title="Edit Slider"><i class="fa fa-pencil" aria-hidden="true"></i></a></li>
-                                                                    <li><a href="javascript:void(0)" onclick="deleteConfirmation({{ $slider->id }})" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></a></li>
+                                                                    <li><a href="javascript:void(0)" class="edit-slider"
+                                                                            slider_id="{{ $slider->id }}" title="Edit Slider"><i
+                                                                                class="fa fa-pencil" aria-hidden="true"></i></a>
+                                                                    </li>
+                                                                    <li><a href="javascript:void(0)"
+                                                                            onclick="deleteConfirmation({{ $slider->id }})"
+                                                                            title="Delete"><i class="fa fa-trash"
+                                                                                aria-hidden="true"></i></a></li>
                                                                 </ul>
                                                             </td>
                                                         </tr>
@@ -100,13 +113,13 @@
                     url: `{{ URL::to('admin/manage-slider/${id}') }}`,
                     type: "DELETE",
                     dataType: "json",
-                    success: function(result) {
+                    success: function (result) {
                         if (result.success) {
                             Swal.fire(
                                 'Deleted!',
                                 'success'
                             );
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 location.reload();
                             }, 400);
                         } else {
@@ -118,13 +131,13 @@
             }
         })
     };
-    $(document).ready(function() {
-        $(document).on("click", "#add-slider", function(event) {
+    $(document).ready(function () {
+        $(document).on("click", "#add-slider", function (event) {
             $.ajax({
                 url: "{{ URL::to('admin/manage-slider/create') }}",
                 type: "GET",
                 dataType: "json",
-                success: function(result) {
+                success: function (result) {
                     if (result.success) {
                         $("#slider-modal").html(result.html);
                         $("#slider-modal").modal('show');
@@ -135,13 +148,13 @@
             });
         });
 
-        $(document).on("click", ".edit-slider", function(event) {
+        $(document).on("click", ".edit-slider", function (event) {
             let id = $(this).attr('slider_id');
             $.ajax({
                 url: `{{ URL::to('admin/manage-slider/${id}/edit') }}`,
                 type: "get",
                 dataType: "json",
-                success: function(result) {
+                success: function (result) {
                     if (result.success) {
                         $("#slider-modal").html(result.html);
                         $("#slider-modal").modal('show');
@@ -149,88 +162,88 @@
                         toastr.error('error encountered ' + result.msgText);
                     }
                 },
-                error: function(error) {
+                error: function (error) {
                     toastr.error('error encountered ' + error.statusText);
                 }
             });
         });
     });
-    
-    $(document).on("click", ".add-slider-btn", function(event) {
-    event.preventDefault();
-     $('#title-err').html('');
-     $('#sub_title-err').html('');
-     $('#content-err').html('');
-     $('#button_link-err').html('');
-     $('#image-err').html('');
-     $('#status-err').html('');
-            // for (instance in CKEDITOR.instances) {
-            //     CKEDITOR.instances[instance].updateElement();
-            // }
-            //  $(this).attr('disabled', true);
-              var frm = $('#addformslider');
-             var formData = new FormData(frm[0]);
-            $.ajax({
-                url: $('#addformslider').attr('action'),
-                 type: 'POST',
-                 processData: false,
-                contentType: false,
-                dataType: 'json',
-                data: formData,
-                context: this,
-                success: function(result) {
-                    if (result.success) {
-                        window.location = "{{ URL::to('admin/manage-slider') }}";
-                    } else {
-                        $(this).attr('disabled', false);
-                        if (result.code == 422) {
-                            for (const key in result.errors) {
-                                $(`#${key}-err`).html(result.errors[key][0]);
-                            }
-                        } else {
-                            console.log(result);
+
+    $(document).on("click", ".add-slider-btn", function (event) {
+        event.preventDefault();
+        $('#title-err').html('');
+        $('#sub_title-err').html('');
+        $('#content-err').html('');
+        $('#button_link-err').html('');
+        $('#image-err').html('');
+        $('#status-err').html('');
+        // for (instance in CKEDITOR.instances) {
+        //     CKEDITOR.instances[instance].updateElement();
+        // }
+        //  $(this).attr('disabled', true);
+        var frm = $('#addformslider');
+        var formData = new FormData(frm[0]);
+        $.ajax({
+            url: $('#addformslider').attr('action'),
+            type: 'POST',
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            data: formData,
+            context: this,
+            success: function (result) {
+                if (result.success) {
+                    window.location = "{{ URL::to('admin/manage-slider') }}";
+                } else {
+                    $(this).attr('disabled', false);
+                    if (result.code == 422) {
+                        for (const key in result.errors) {
+                            $(`#${key}-err`).html(result.errors[key][0]);
                         }
+                    } else {
+                        console.log(result);
                     }
                 }
-            });
+            }
         });
-        
-         $(document).on("click", ".update-slider-btn", function(event) {
-    event.preventDefault();
-    $('#title-err').html('');
-     $('#sub_title-err').html('');
-     $('#content-err').html('');
-     $('#button_link-err').html('');
-     $('#image-err').html('');
-     $('#status-err').html('');
-            // for (instance in CKEDITOR.instances) {
-            //     CKEDITOR.instances[instance].updateElement();
-            // }
-            //  $(this).attr('disabled', true);
-              var frm = $('#updateslider');
-             var formData = new FormData(frm[0]);
-            $.ajax({
-                url: $('#updateslider').attr('action'),
-                 type: 'POST',
-                 processData: false,
-                contentType: false,
-                dataType: 'json',
-                data: formData,
-                context: this,
-                success: function(result) {
-                    if (result.success) {
-                        window.location = "{{ URL::to('admin/manage-slider') }}";
-                    } else {
-                        $(this).attr('disabled', false);
-                        if (result.code == 422) {
-                            for (const key in result.errors) {
-                                $(`#${key}-err`).html(result.errors[key][0]);
-                            }
-                        } else {
-                            console.log(result);
+    });
+
+    $(document).on("click", ".update-slider-btn", function (event) {
+        event.preventDefault();
+        $('#title-err').html('');
+        $('#sub_title-err').html('');
+        $('#content-err').html('');
+        $('#button_link-err').html('');
+        $('#image-err').html('');
+        $('#status-err').html('');
+        // for (instance in CKEDITOR.instances) {
+        //     CKEDITOR.instances[instance].updateElement();
+        // }
+        //  $(this).attr('disabled', true);
+        var frm = $('#updateslider');
+        var formData = new FormData(frm[0]);
+        $.ajax({
+            url: $('#updateslider').attr('action'),
+            type: 'POST',
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            data: formData,
+            context: this,
+            success: function (result) {
+                if (result.success) {
+                    window.location = "{{ URL::to('admin/manage-slider') }}";
+                } else {
+                    $(this).attr('disabled', false);
+                    if (result.code == 422) {
+                        for (const key in result.errors) {
+                            $(`#${key}-err`).html(result.errors[key][0]);
                         }
+                    } else {
+                        console.log(result);
                     }
                 }
-            });
+            }
         });
+    });
 </script>

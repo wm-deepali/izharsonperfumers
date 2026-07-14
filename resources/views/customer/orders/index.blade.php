@@ -4,16 +4,17 @@
 
 @section('content')
     <!-- Our Dashbord -->
-    <section class="our-dashbord dashbord pb80">
+    <section class="our-dashbord dashbord p-3">
         <div class="container">
             <div class="row">
                 @include('customer.dashboard-nav')
-                <div class="col-lg-9 col-xl-10">
+                <div class="col-lg-9 col-xl-9">
                     @include('customer.dashboard-nav-dropdown')
                     <div class="row">
                         <div class="col-xl-12">
                             <div class="account_user_deails pl40 pl0-lg">
-                                <h2 class="title mb30">Order</h2>
+                                <h2 class="title mb10">Order</h2>
+                                <hr class="mt-0">
                                 <div class="order_table table-responsive">
                                     <table class="table">
                                         <thead class="table-light">

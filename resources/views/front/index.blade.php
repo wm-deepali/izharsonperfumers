@@ -230,13 +230,23 @@ flex:0 0 50%;
 .ptb{
     padding:48px 0px;
 }
+
+
 @media(min-width:481px){
     .cardsecview1{
         display:none;
     }
+    .homebannerpd{
+    padding-top:30px ;
+    padding-bottom:0px;
+}
 }
 
 @media(max-width:480px){
+    .homebannerpd{
+    padding-top:10px;
+    padding-bottom:0px;
+}
     .cardsecview{
         display:none;
     }
@@ -348,7 +358,7 @@ right:-10px;
 @section('content')
 
    
-    <section class="home-one pt30">
+    <section class="home-one homebannerpd">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
@@ -357,30 +367,30 @@ right:-10px;
 
                             @foreach($sliders as $slider)
                                 <div class="slide slide-one"
-                                    style="background-image:url('{{ asset('storage/' . $slider->image) }}'); height:500px">
+                                    onclick="window.location='{{ $slider->button_link ?? '#' }}'"
+                                    style="background-image:url('{{ asset('storage/' . $slider->image) }}'); height:445px; cursor:pointer;"">
 
                                     <div class="container">
                                         <div class="row home-content">
                                             <div class="col-lg-6 offset-lg-1 col-xl-5">
 
+                                                @if($slider->title)
                                                 <span class="tag" style="color: {{ $slider->color }}">
                                                     {{ $slider->title }}
                                                 </span>
-
+                                                @endif
+                                                
+                                                @if($slider->sub_title)
                                                 <h3 class="banner-title">
                                                     {{ $slider->sub_title }}
                                                 </h3>
-
-                                                <p>
-                                                    {{ $slider->content }}
-                                                </p>
-
-                                                @if($slider->button_link)
-                                                    <a href="{{ url($slider->button_link) }}" class="btn banner-btn btn-thm">
-                                                        Shop Now
-                                                    </a>
                                                 @endif
-
+                                                
+                                                @if($slider->content)
+                                                <p>
+                                                    {{ $slider->content ?? ''}}
+                                                </p>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -593,7 +603,7 @@ right:-10px;
                                     <h5 class="title m-0"><i class="fa-solid fa-plus" style="font-size:24px"></i></h5>
                                 </div>
                                 <div class="details">
-                                    <h5 class="title">View All Category</h5>
+                                    <h5 class="title">All Categories</h5>
                                     
                                 </div>
                             </div>
@@ -605,10 +615,12 @@ right:-10px;
                 {{-- Banner 1 --}}
                 <div class="col-lg-6 col-xl-6 wow fadeInUp" data-wow-duration=".7s">
                     <div class="banner_one home1_style color1 mb30">
+                        <a href="{{ $deliveryBanner1->button_link ?? '#' }}" >
                         <div class="thumb style1">
                             <img class="float-end" src="{{ asset('storage/' . $deliveryBanner1->image) }}"
                                 alt="{{ $deliveryBanner1->heading }}">
                         </div>
+                        </a>
                         <div class="details">
                             <p class="para color-light-blue">
                                 {!!  $deliveryBanner1->content !!}
@@ -616,9 +628,9 @@ right:-10px;
                             <h3 class="title">
                                 {{ $deliveryBanner1->heading }}
                             </h3>
-                            <a href="{{ $deliveryBanner1->button_link ?? '#' }}" class="shop_btn">
-                                Shop Now
-                            </a>
+                            <!--<a href="{{ $deliveryBanner1->button_link ?? '#' }}" class="shop_btn">-->
+                            <!--    Shop Now-->
+                            <!--</a>-->
                         </div>
                     </div>
                 </div>
@@ -626,10 +638,13 @@ right:-10px;
                 {{-- Banner 2 --}}
                 <div class="col-lg-6 col-xl-6 wow fadeInUp" data-wow-duration=".9s">
                     <div class="banner_one home1_style color2 mb30">
+                         <a href="{{ $deliveryBanner2->button_link ?? '#' }}" class="shop_btn">
                         <div class="thumb style1">
+                            
                             <img class="float-end" src="{{ asset('storage/' . $deliveryBanner2->image) }}"
                                 alt="{{ $deliveryBanner2->heading }}">
                         </div>
+                        </a>
                         <div class="details">
                             <p class="para color-light-blue">
                                 {!!  $deliveryBanner2->content !!}
@@ -637,9 +652,9 @@ right:-10px;
                             <h3 class="title">
                                 {{ $deliveryBanner2->heading }}
                             </h3>
-                            <a href="{{ $deliveryBanner2->button_link ?? '#' }}" class="shop_btn">
-                                Shop Now
-                            </a>
+                            <!--<a href="{{ $deliveryBanner2->button_link ?? '#' }}" class="shop_btn">-->
+                            <!--    Shop Now-->
+                            <!--</a>-->
                         </div>
                     </div>
                 </div>
@@ -1325,20 +1340,21 @@ right:-10px;
                 })
                     .then(res => res.json())
                     .then(data => {
-
                         Swal.close(); // ✅ stop loading
 
-                        const heartIcon = button.querySelector('span');
+                     const heartIcon = button.querySelector('span, i');
 
-                        if (data.status === "added") {
+if (!heartIcon) return; // stop error
+
+                        if (data.status == "added") {
                             heartIcon.style.color = "red";
                         }
 
-                        if (data.status === "removed") {
+                        if (data.status == "removed") {
                             heartIcon.style.color = "";
                         }
 
-                        if (data.status === "login_required") {
+                        if (data.status == "login_required") {
                             window.location.href = "/customer/login";
                         }
 

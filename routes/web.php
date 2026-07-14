@@ -99,7 +99,7 @@ Route::post('/cart/store', [CartController::class, 'storeCart'])->name('cart.sto
 Route::post('/cart/update/{id}', [CartController::class, 'updateQty']);
 Route::post('/cart/remove/{id}', [CartController::class, 'removeItem']);
 Route::post('/cart/set-quantity/{id}', [CartController::class, 'setQuantity']);
-Route::get('checkout', [CheckoutController::class, 'checkout'])->name('checkout');
+Route::get('/checkout', [CheckoutController::class, 'checkout'])->name('checkout');
 Route::get('/states/{country}', [CheckoutController::class, 'states']);
 Route::get('/cities/{state}', [CheckoutController::class, 'cities']);
 
@@ -124,6 +124,8 @@ Route::prefix('customer')->name('customer.')->group(function () {
 
   Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
 
+  Route::match(['get', 'post'], '/payment/response', [CheckoutController::class, 'response'])->name('payment.response');
+    Route::get('/order-success/{id}', [CheckoutController::class, 'success'])->name('order.success');
   Route::middleware('auth:customer')->group(function () {
 
     Route::get('/orders', [App\Http\Controllers\DashboardController::class, 'myOrders'])->name('orders');
@@ -149,8 +151,6 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/copy-billing-to-shipping', [CheckoutController::class, 'copyBillingToShipping']);
     Route::post('/place-order', [CheckoutController::class, 'placeOrder']);
     Route::get('/payment/request/{order}', [CheckoutController::class, 'request'])->name('payment.request');
-    Route::post('/payment/response', [CheckoutController::class, 'response'])->name('payment.response');
-    Route::get('/order-success/{id}', [CheckoutController::class, 'success'])->name('order.success');
 
   });
 });

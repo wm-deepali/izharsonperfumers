@@ -17,6 +17,11 @@
                 <input type="text" name="mobile_number" id="shipping_mobile" class="form-control"
                     placeholder="Mobile Number" required>
             </div>
+            
+             <div class="col-md-6 mb-2">
+                <input type="email" name="email" id="billing_email" class="form-control" placeholder="Email" required>
+            </div>
+
 
             <div class="col-md-12 mb-2">
                 <textarea name="address" id="shipping_address" class="form-control" placeholder="Address"

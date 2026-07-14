@@ -253,8 +253,7 @@ class CartController extends Controller
                 'total_price' => $totalPrice,
                 'pre_discount' => $preDiscount,
                 'total_price_after_discount' => $totalPrice - ($cart->discount_amount ?? 0)
-                ]);
-                dd($cart);
+            ]);
 
             return response()->json([
                 'success' => true,

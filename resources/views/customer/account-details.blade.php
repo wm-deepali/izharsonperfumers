@@ -5,16 +5,17 @@
 @section('content')
 
   <!-- Our Dashbord -->
-  <section class="our-dashbord dashbord">
+  <section class="our-dashbord dashbord p-3">
     <div class="container">
       <div class="row">
         @include('customer.dashboard-nav')
-        <div class="col-lg-9 col-xl-10">
+        <div class="col-lg-9 col-xl-9">
           @include('customer.dashboard-nav-dropdown')
           <div class="row">
             <div class="col-xl-12">
               <div class="account_user_deails pl40 pl0-md">
-                <h2 class="title mb30">Account Details</h2>
+                <h2 class="title mb10">Account Details</h2>
+                <hr class="mt-0">
 
                 @if(session('success'))
                   <div class="alert alert-success">
@@ -37,9 +38,10 @@
                     </ul>
                   </div>
                 @endif
-                <div class="ui_kit_tab style2">
+                <div class="ui_kit_tab style2 " >
                   <!-- nav tab Nav List Start -->
-                  <ul class="nav nav-tabs mb15" id="myTab" role="tablist">
+                  <ul class="nav nav-tabs mb15" id="myTab" role="tablist" style="padding: 10px;
+    background: #f9f9f9;">
                     <li class="nav-item" role="presentation">
                       <button class="nav-link active" id="t20-tab" data-bs-toggle="tab" data-bs-target="#t20"
                         type="button" role="tab" aria-controls="t20" aria-selected="true">Profile İnformation</button>
@@ -55,7 +57,8 @@
                   </ul>
                   <!-- nav tab Nav List End -->
                   <!-- nav tab contents Start -->
-                  <div class="tab-content pt20 row" id="myTabContent">
+                  <div class="tab-content pt20 row" id="myTabContent" style="padding: 10px;
+    background: #f9f9f9; border-radius:10px;">
 
                     <div class="tab-pane fade show active col-lg-12" id="t20" role="tabpanel" aria-labelledby="t20-tab">
                       <div class="account_details_page form_grid">

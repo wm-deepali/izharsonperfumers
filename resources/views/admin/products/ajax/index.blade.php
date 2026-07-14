@@ -35,14 +35,21 @@
 
                         {{-- FRAGRANCE --}}
                         <td>
-                            @if($product->fragrance)
-                                @php
-                                    $fragrances = App\Models\OilGrade::whereIn('id', json_decode($product->fragrance))->pluck('title')->toArray();
-                                @endphp
-                                {{ implode(', ', $fragrances) }}
-                            @else
-                                NA
-                            @endif
+                        @if($product->fragrance)
+    @php
+        $fragranceIds = is_array($product->fragrance)
+            ? $product->fragrance
+            : json_decode($product->fragrance, true);
+
+        $fragrances = App\Models\OilGrade::whereIn('id', $fragranceIds ?? [])
+                        ->pluck('title')
+                        ->toArray();
+    @endphp
+
+    {{ !empty($fragrances) ? implode(', ', $fragrances) : 'NA' }}
+@else
+    NA
+@endif
                         </td>
 
                         <td>{{ $product->categories->name ?? '-' }}</td>

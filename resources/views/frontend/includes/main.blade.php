@@ -14,7 +14,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Krishna Chikan and Woon Ghar | @yield('title')</title>
+    <title>Izharson Perfumers, Lucknow | @yield('title')</title>
 
     <link href="{{asset('frontend/images/favicon.png')}}" rel="shortcut icon" type="image/x-icon">
 

@@ -4,11 +4,11 @@
 
 @section('content')
 
-    <section class="our-log-reg bgc-f5">
+    <section class="our-log-reg bgc-f5 p-4">
         <div class="container">
             <div class="row">
                 <div class="col-lg-6 col-xl-5 col-xxl-4 m-auto">
-                    <div class="log_reg_form mt70-992">
+                    <div class="log_reg_form ">
                         <h2 class="title">Sign-In</h2>
 
                         {{-- Success message --}}
@@ -28,12 +28,12 @@
                                 <div class="mb-2 mr-sm-2">
                                     <label class="form-label">Username or email address</label>
                                     <input type="text" name="email" value="{{ old('email') }}" class="form-control"
-                                        placeholder="Ali Tufan" required>
+                                        placeholder="Enter Name or Email" required>
                                 </div>
 
-                                <div class="form-group mb5">
+                                <div class="form-group ">
                                     <label class="form-label">Password</label>
-                                    <input type="password" name="password" class="form-control" placeholder="Password"
+                                    <input type="password" name="password" class="form-control m-0" placeholder="Password"
                                         required>
                                 </div>
 
@@ -44,29 +44,23 @@
                                         Lost your password?
                                     </a>
                                 </div>
+                                <div class="custom-control custom-checkbox mt-4">
+                                    <input type="checkbox" name="remember" class="custom-control-input" id="exampleCheck3">
+                                    <label class="custom-control-label" for="exampleCheck3">I agree to the Terms & Conditions</label>
+                                    
+                                </div>
 
-                                <button type="submit" class="btn btn-log btn-thm mt20">Login</button>
+
+                                
+                                
+                                <button type="submit" class="btn btn-log btn-thm mt10">Login</button>
 
                                 <p class="text-center mb25 mt10">
                                     Don't have an account?
-                                    <a href="{{ route('customer.register') }}">Create account</a>
+                                    <a href="{{ route('customer.register') }}" style="color:blue;">Create account</a>
                                 </p>
 
-                                <div class="hr_content">
-                                    <hr>
-                                    <span class="hr_top_text">or</span>
-                                </div>
-
-                                <ul class="login_with_social text-center mt30 mb0">
-                                    <li class="list-inline-item"><a href="#"><i class="fab fa-facebook"></i></a></li>
-                                    <li class="list-inline-item">
-                                        <a href="{{ route('customer.google.login') }}">
-                                            <i class="fab fa-google"></i>
-                                        </a>
-                                    </li>
-                                    <li class="list-inline-item"><a href="#"><i class="fab fa-x-twitter"></i></a></li>
-                                    <li class="list-inline-item"><a href="#"><i class="fab fa-apple"></i></a></li>
-                                </ul>
+                               
                             </form>
                         </div>
 

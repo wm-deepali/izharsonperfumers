@@ -102,6 +102,7 @@ class CheckoutController extends Controller
     {
         $data = $request->validate([
             'name' => 'required',
+            'email'=> 'required',
             'mobile_number' => 'required',
             'country' => 'required',
             'state' => 'required',
@@ -124,6 +125,7 @@ class CheckoutController extends Controller
     {
         $data = $request->validate([
             'name' => 'required',
+             'email'=> 'required',
             'mobile_number' => 'required',
             'country' => 'required',
             'state' => 'required',
@@ -154,6 +156,7 @@ class CheckoutController extends Controller
         // check if same shipping address already exists
         $existingShipping = CustomerAddress::where('customer_id', $customer->id)
             ->where('name', $billing->name)
+            ->where('email', $billing->email)
             ->where('mobile_number', $billing->mobile_number)
             ->where('country', $billing->country)
             ->where('state', $billing->state)
@@ -174,6 +177,7 @@ class CheckoutController extends Controller
         $shipping = CustomerAddress::create([
             'customer_id' => $customer->id,
             'name' => $billing->name,
+            'email'=>$billing->email,
             'mobile_number' => $billing->mobile_number,
             'country' => $billing->country,
             'state' => $billing->state,
@@ -662,8 +666,9 @@ class CheckoutController extends Controller
             "order_id" => $order->order_number,
             "amount" => $order->order_amount_with_shipping,
             "currency" => "INR",
-            "redirect_url" => route('customer.payment.response'),
-            "cancel_url" => route('customer.payment.response'),
+            "redirect_url" => url('/customer/payment/response'),
+            "cancel_url" => url('/customer/payment/response'),
+            
             "language" => "EN",
 
             // BILLING DETAILS
@@ -706,7 +711,7 @@ class CheckoutController extends Controller
     public function response(Request $request)
     {
         $response = decryptCCavenue($request->encResp);
-
+   
         $order = Order::where('order_number', $response['order_id'])->first();
         $ccavenue = CCAvenue::where('order_id', $response['order_id'])->first();
 
@@ -716,14 +721,13 @@ class CheckoutController extends Controller
 
         if ($response['order_status'] === "Success") {
 
-            $ccavenue->update(['payment_status' => $response['order_status'], 'status' => 'completed']);
+            $ccavenue->update(['payment_status'=>$order_status,'status'=>'completed']);
             $order->update([
-                'payment_status' => 'paid',
-                'order_status' => 'Confirmed',
+                'payment_status' => 'success',
                 'transaction_number' => $response['tracking_id'] ?? null,
                 'payment_message' => $response['status_message'] ?? null
             ]);
-
+            
             $admin = User::first();
             Mail::to($admin->alert_email)->send(new AdminPaymentMail($order));
 

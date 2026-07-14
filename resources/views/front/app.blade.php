@@ -40,70 +40,136 @@
     <link href="{{ asset('front/images/apple-touch-icon-72x72.png') }}" sizes="72x72" rel="apple-touch-icon">
     <link href="{{ asset('front/images/apple-touch-icon-114x114.png') }}" sizes="114x114" rel="apple-touch-icon">
     <link href="{{ asset('front/images/apple-touch-icon-180x180.png') }}" sizes="180x180" rel="apple-touch-icon">
-
+    
     <style>
-        .mobile_menu_widget_icons a.cart_btn {
+        .mobile_menu_widget_icons a.cart_btn{
             display: flex;
-            align-items: center;
-            justify-content: center;
+    align-items: center;
+    justify-content: center;
         }
-
-        .mobile_menu_widget_icons a.cart_btn .icon {
-            font-size: 22px;
+        .mobile_menu_widget_icons a.cart_btn .icon{
+            font-size:22px;
         }
-
+        
         /* ===== MOBILE STICKY FOOTER ===== */
-        .newiz-mobile-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #fff;
-            border-top: 1px solid #e5e5e5;
-            z-index: 9999;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-        }
+.newiz-mobile-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border-top: 1px solid #e5e5e5;
+  z-index: 999;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
 
-        /* Menu */
-        .newiz-footer-menu {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin: 0;
-            padding: 8px 0;
-            list-style: none;
-        }
+/* Menu */
+.newiz-footer-menu {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 0;
+  padding: 8px 0;
+  list-style: none;
+}
 
-        /* Items */
-        .newiz-footer-menu li {
-            text-align: center;
-            flex: 1;
-        }
+/* Items */
+.newiz-footer-menu li {
+  text-align: center;
+  flex: 1;
+}
 
-        /* Links */
-        .newiz-footer-menu li a {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            color: #555;
-            font-size: 11px;
-            transition: 0.3s;
-        }
+/* Links */
+.newiz-footer-menu li a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: #555;
+  font-size: 11px;
+  transition: 0.3s;
+}
 
-        /* Icons */
-        .newiz-footer-menu li a i {
-            font-size: 18px;
-            margin-bottom: 3px;
-        }
+/* Icons */
+.newiz-footer-menu li a i {
+  font-size: 18px;
+  margin-bottom: 3px;
+}
 
-        /* Hover + Active */
-        .newiz-footer-menu li a:hover,
-        .newiz-footer-menu li a.active {
-            color: #000;
-        }
+/* Hover + Active */
+.newiz-footer-menu li a:hover,
+.newiz-footer-menu li a.active {
+  color: #000;
+}
 
-        /* Safe spacing for body */
+/* Safe spacing for body */
+.preloader1 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loader {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #ddd;
+  border-top: 5px solid #000; 
+  border-radius: 50%;
+  animation: spin 2s linear infinite; /* 1 second */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.custom-nav-buttons {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    padding: 10px;
+}
+
+.custom-nav-btn {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    color: #fff !important;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+/* HOME */
+.custom-home-btn {
+    background: #000 !important;
+}
+
+.custom-home-btn:hover {
+    background: #222 !important;
+}
+
+/* SHOP */
+.custom-shop-btn {
+    background: #ff6b00 !important;
+}
+
+.custom-shop-btn:hover {
+    background: #e65c00 !important;
+}
+
+
+
     </style>
 
 
@@ -161,7 +227,10 @@
 
 <body data-spy="scroll">
     <div class="wrapper ovh">
-        <!--<div class="preloader"></div>-->
+       <div class="preloader1">
+  <div class="loader"></div>
+</div>
+
 
         <!-- header middle start-->
         <div class="header_middle  dn-992" style="padding:5px 0px;">
@@ -169,7 +238,7 @@
                 <div class="row" style="align-items: center;">
                     <div class="col-lg-2 col-xxl-2">
                         <div class="header_top_logo_home1">
-                            <div class="logo">
+                             <div class="logo">
                                 <a href="{{ url('/') }}">
                                     <img src="{{ $settings->header_logo ? asset('storage/' . $settings->header_logo) : 'https://izharsonperfumers.com/admin-login/storage/logo/awQrarVaGtUQtwtFSSNi78JDai2I5TQH7VIBThZE.png' }}"
                                         style="border-radius: 7px; height: 70px;" />
@@ -180,7 +249,7 @@
                     <div class="col-lg-5 col-xxl-6">
                         <div class="header_middle_advnc_search">
                             <div class="search_form_wrapper">
-                                <div class="row">
+                                <div class="row" style="flex-wrap:nowrap;">
                                     <div class="col-auto pr0" style="display:flex; align-items:center;">
                                         <div class="actegory">
                                             <select class="selectpicker" id="selectbox_alCategory" name="category">
@@ -222,14 +291,16 @@
                     <div class="col-lg-5 col-xxl-4 pr0-lg">
                         <div class="hm_log_fav_cart_widget justify-content-center">
                             <div class="wrapper">
-                                <ul class="mb0">
+                                <ul class="mb0" style="display: flex;
+    align-items: center;
+    flex-wrap: nowrap;">
                                     <li class="list-inline-item"><a class="header_top_iconbox"
                                             href="{{ route('customer.wishlist') }}">
-                                            <div class="d-block d-md-flex">
+                                            <div class="d-block d-md-flex align-items-center">
                                                 <div class="icon"><span class="flaticon-heart"></span></div>
                                                 <div class="details">
                                                     <p class="subtitle">Wishlist</p>
-                                                    <h5 class="title">My Items</h5>
+                                                    <h5 class="title" style="white-space:nowrap;">My Items</h5>
                                                 </div>
                                             </div>
                                         </a>
@@ -245,14 +316,14 @@
                                                 <a class="header_top_iconbox signin-filter-btn" href="#">
                                             @endauth
 
-                                                <div class="d-block d-md-flex">
+                                                <div class="d-block d-md-flex align-items-center">
                                                     <div class="icon">
                                                         <span class="flaticon-profile"></span>
                                                     </div>
                                                     <div class="details">
                                                         @auth('customer')
-                                                            <p class="subtitle">Welcome</p>
-                                                            <h5 class="title">{{ auth('customer')->user()->name }}</h5>
+                                                            <!--<p class="subtitle">Welcome</p>-->
+                                                            <h5 class="title" style="">{{ auth('customer')->user()->name }}</h5>
                                                         @else
                                                             <p class="subtitle">Sign In</p>
                                                             <h5 class="title">Account</h5>
@@ -263,7 +334,7 @@
                                     </li>
                                     <li class="list-inline-item">
                                         <a class="header_top_iconbox cart-filter-btn" href="{{ route('cart.index') }}">
-                                            <div class="d-block d-md-flex">
+                                            <div class="d-block d-md-flex align-items-center">
 
                                                 <div class="icon position-relative">
                                                     <span>
@@ -464,7 +535,7 @@
 
                     <div class="login_form">
 
-                        <form method="POST" action="{{ route('customer.login') }}">
+                        <form method="POST" action="{{ route('customer.login') }}" class="pb-4">
                             @csrf
 
                             <div class="mb-2 mr-sm-2">
@@ -497,24 +568,10 @@
 
                             <p class="text-center mb25 mt10">
                                 Don't have an account?
-                                <a class="signup-filter-btn" href="#">Create account</a>
+                                <a class="signup-filter-btn" href="#" style="color:blue;">Create account</a>
                             </p>
 
-                            <div class="hr_content">
-                                <hr>
-                                <span class="hr_top_text">or</span>
-                            </div>
-
-                            <ul class="login_with_social text-center mt30 mb0">
-                                <li class="list-inline-item"><a href="#"><i class="fab fa-facebook"></i></a></li>
-                                <li class="list-inline-item">
-                                    <a href="{{ route('customer.google.login') }}">
-                                        <i class="fab fa-google"></i>
-                                    </a>
-                                </li>
-                                <li class="list-inline-item"><a href="#"><i class="fab fa-x-twitter"></i></a></li>
-                                <li class="list-inline-item"><a href="#"><i class="fab fa-apple"></i></a></li>
-                            </ul>
+                            
 
                         </form>
 
@@ -544,7 +601,7 @@
                                                 @foreach($miniCartItems as $item)
                                                     <li class="list_content">
                                                         <div>
-                                                            <img class="float-start mt10"
+                                                            <img class="float-start"
                                                                 src="{{ asset('storage/' . ($item->product_options->image ?? $item->products->image)) }}"
                                                                 width="60">
 
@@ -585,7 +642,7 @@
                                                 @endforeach
 
                                                 <li class="list_content_total_price">
-                                                    <h5>
+                                                    <h5 style="font-weight:600;">
                                                         Total:
                                                         <span class="total_price float-end" id="mini-cart-total">
                                                             ₹{{ number_format($miniCart->total_price_after_discount ?? 0, 2) }}
@@ -618,19 +675,23 @@
                                 <input class="range-example-km" value="80" type="text">
                             </div>
                         </div>
-                        <a href="{{ route('cart.index') }}" class="cart_btns btn btn-white">
+                        
+                        <div class=" d-flex gap-2">
+                        <a href="{{ route('cart.index') }}" class="cart_btns btn btn-white" style="font-weight:600;">
                             View Cart
                         </a>
 
                         @if(Auth::guard('customer')->check())
-                            <a href="{{ route('checkout') }}" class="checkout_btns btn btn-thm">
+                            <a href="{{ route('checkout') }}" class="checkout_btns btn btn-thm" style="font-weight:600;">
                                 Checkout
                             </a>
                         @else
-                            <a href="{{ route('customer.login') }}" class="checkout_btns btn btn-thm">
+                            <a href="{{ route('customer.login') }}" class="checkout_btns btn btn-thm" style="font-weight:600;">
                                 Login to Checkout
                             </a>
                         @endif
+                        </div>
+                       
                     </div>
                 </div>
             </div>
@@ -658,7 +719,7 @@
 
                     <div class="sign_up_form">
 
-                        <form method="POST" action="{{ route('customer.register') }}">
+                        <form method="POST" action="{{ route('customer.register') }}" class="pb-4">
                             @csrf
 
                             <div class="form-group">
@@ -674,7 +735,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Contact Number</label>
+                                <label class="form-label">Mobile Number</label>
                                 <input type="text" name="mobile_number" class="form-control"
                                     value="{{ old('mobile_number') }}" placeholder="Enter mobile number" required>
                             </div>
@@ -697,24 +758,10 @@
 
                             <p class="text-center mb25 mt10">
                                 Already have an account?
-                                <a class="signin-filter-btn" href="#">Sign in</a>
+                                <a class="signin-filter-btn" href="#" style="color:blue;">Sign in</a>
                             </p>
 
-                            <div class="hr_content">
-                                <hr>
-                                <span class="hr_top_text">or</span>
-                            </div>
-
-                            <ul class="login_with_social text-center mt30 mb0">
-                                <li class="list-inline-item"><a href="#"><i class="fab fa-facebook"></i></a></li>
-                                <li class="list-inline-item">
-                                    <a href="{{ route('customer.google.login') }}">
-                                        <i class="fab fa-google"></i>
-                                    </a>
-                                </li>
-                                <li class="list-inline-item"><a href="#"><i class="fab fa-x-twitter"></i></a></li>
-                                <li class="list-inline-item"><a href="#"><i class="fab fa-apple"></i></a></li>
-                            </ul>
+                            
 
                         </form>
 
@@ -745,12 +792,22 @@
                         </div>
                         <div class="mobile_menu_widget_icons">
                             <ul class="cart mt15">
-                                <li class="list-inline-item"> <a class="cart_btn signin-filter-btn" href="#"><span
-                                            class="icon flaticon-profile"></span></a> </li>
-                                <li class="list-inline-item"> <a class="cart_btn cart-filter-btn" href="#"><span
-                                            class="icon"><img src="{{ asset('front/images/shopping-cart.png') }}" alt=""
-                                                style="width:22px;"></span><span class="badge bgc-thm">2</span></a>
-                                </li>
+                                <li class="list-inline-item"> 
+                                     @auth('customer')
+                                            {{-- Logged in → go to dashboard --}}
+                                           <a class="cart_btn" href="{{ route('customer.account-details') }}">
+                                        @else
+                                                {{-- Guest → open sidebar login --}}
+                                                <a class="cart_btn signin-filter-btn" href="#">
+                                            @endauth
+                                    <span class="icon flaticon-profile"></span>
+                                    </a>
+                            </li>
+                                            
+                                <li class="list-inline-item"> <a class="cart_btn cart-filter-btn"  href="{{ route('cart.index') }}"><span
+                                            class="icon"><img
+                                                src="{{ asset('front/images/shopping-cart.png') }}"
+                                                alt="" style="width:22px;"></span><span class="badge bgc-thm"> {{ $cartCount }}</span></a> </li>
                             </ul>
                         </div>
                     </div>
@@ -792,14 +849,11 @@
             <!-- /.mobile-menu -->
             <nav id="menu" class="stylehome1">
                 <ul>
-                    <li>
-                        <a href="{{ url('/') }}">Home</a>
-                    </li>
+                   <li class="custom-nav-buttons">
+    <a href="{{ url('/') }}" class="custom-nav-btn custom-home-btn">Home</a>
+    <a href="{{ route('shop.category') }}" class="custom-nav-btn custom-shop-btn">Shop</a>
+</li>
 
-                    {{-- SHOP --}}
-                    <li>
-                        <a href="{{ route('shop.category') }}">Shop</a>
-                    </li>
                     <li class="title my-3 bb1 pl20 fz20 fw500 pb-3">Categories</li>
                     @foreach ($menuCategories as $category)
                         <li>
@@ -839,6 +893,11 @@
                     <li class="list-inline-item list_c">
                         <a href="{{ route('feedback') }}">Feedback</a>
                     </li>
+                     <li><a href="{{ route('terms-conditions') }}">Terms & Conditions</a></li>
+                                    <li><a href="{{ route('privacy-policy') }}">Privacy Policy</a></li>
+                                    <li><a href="{{ route('refund-policy') }}">Refund & Cancellation</a></li>
+                                    <li><a href="{{ route('cookie-policy') }}">Cookie Policy</a></li>
+                                    <li><a href="{{ route('shipping-policy') }}">Shipping Policy</a></li>
                     <!-- Only for Mobile View -->
                 </ul>
             </nav>
@@ -850,91 +909,59 @@
 
 
             @yield('content')
-            <!-- ================= MOBILE STICKY FOOTER ================= -->
-            <div class="newiz-mobile-footer d-block d-xl-none">
+<!-- ================= MOBILE STICKY FOOTER ================= -->
+<div class="newiz-mobile-footer d-block d-xl-none">
 
-                <!-- Guest User -->
-                @guest
-                    <ul class="newiz-footer-menu">
-                        <li>
-                            <a href="{{ url('/') }}">
-                                <i class="fas fa-home"></i>
-                                <span>Home</span>
-                            </a>
-                        </li>
+<ul class="newiz-footer-menu">
 
-                        <li>
-                            <a href="{{ route('customer.wishlist') }}">
-                                <i class="far fa-heart"></i>
-                                <span>Wishlist</span>
-                            </a>
-                        </li>
+    <li>
+        <a href="{{ url('/') }}">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+    </li>
 
-                        <li>
-                            <a href="{{ route('shop.category') }}">
-                                <i class="fas fa-th-large"></i>
-                                <span>Categories</span>
-                            </a>
-                        </li>
+    <li>
+        <a href="{{ route('customer.wishlist') }}">
+            <i class="far fa-heart"></i>
+            <span>Wishlist</span>
+        </a>
+    </li>
 
-                        <li>
-                            <a href="{{ route('cart.index') }}">
-                                <i class="fas fa-shopping-cart"></i>
-                                <span>Cart</span>
-                            </a>
-                        </li>
+    <li>
+        <a href="{{ route('shop.category') }}">
+            <i class="fas fa-th-large"></i>
+            <span>Categories</span>
+        </a>
+    </li>
 
-                        <li>
-                            <a href="{{ route('login') }}">
-                                <i class="far fa-user"></i>
-                                <span>Login</span>
-                            </a>
-                        </li>
-                    </ul>
-                @endguest
+    <li>
+        <a href="{{ route('cart.index') }}">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Cart</span>
+        </a>
+    </li>
 
+    {{-- ✅ Only change this part --}}
+    @if(auth('customer')->check())
+        <li>
+            <a href="{{ route('customer.account-details') }}">
+                <i class="fas fa-user-circle"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+    @else
+        <li>
+            <a href="{{ route('customer.login') }}">
+                <i class="far fa-user"></i>
+                <span>Login</span>
+            </a>
+        </li>
+    @endif
 
-                <!-- Logged In User -->
-                @auth
-                    <ul class="newiz-footer-menu">
-                        <li>
-                            <a href="{{ url('/') }}">
-                                <i class="fas fa-home"></i>
-                                <span>Home</span>
-                            </a>
-                        </li>
+</ul>
 
-                        <li>
-                            <a href="{{ route('customer.wishlist') }}">
-                                <i class="far fa-heart"></i>
-                                <span>Wishlist</span>
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('shop.category') }}">
-                                <i class="fas fa-th-large"></i>
-                                <span>Categories</span>
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('cart.index') }}">
-                                <i class="fas fa-shopping-cart"></i>
-                                <span>Cart</span>
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{{ route('customer.account-details') }}">
-                                <i class="fas fa-user-circle"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                    </ul>
-                @endauth
-
-            </div>
+</div>
 
             <!-- Our Footer -->
             <section class=" home1 bdrt1 p-0">
@@ -1426,7 +1453,7 @@
                             html += `
 <li class="list_content">
 <div>
-<img class="float-start mt10" src="/storage/${image}" width="60">
+<img class="float-start " src="/storage/${image}" width="60">
 
 <p>${item.products.name}</p>
 
@@ -1467,7 +1494,7 @@ min="1">
 
                         html += `
 <li class="list_content_total_price">
-<h5>
+<h5 style="font-weight:600;">
 Total:
 <span id="mini-cart-total" class="float-end">
 ₹${parseFloat(data.total).toFixed(2)}
@@ -1493,6 +1520,12 @@ Total:
                 });
         }
     </script>
+    <script>
+  window.addEventListener("load", function () {
+    document.querySelector(".preloader1").style.display = "none";
+  });
+</script>
+
 </body>
 
 </html>

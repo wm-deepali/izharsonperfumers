@@ -3,11 +3,11 @@
 @section('title', 'Create Account')
 
 @section('content')
-    <section class="our-log-reg bgc-f5">
+    <section class="our-log-reg bgc-f5 p-4">
         <div class="container">
             <div class="row">
                 <div class="col-lg-6 col-xl-5 col-xxl-4 m-auto">
-                    <div class="log_reg_form mt70-992">
+                    <div class="log_reg_form ">
 
                         <h2 class="title">Create your account</h2>
 
@@ -28,7 +28,7 @@
                                 <div class="form-group">
                                     <label class="form-label">Your Name</label>
                                     <input type="text" name="name" value="{{ old('name') }}" class="form-control"
-                                        placeholder="Ali Tufan" required>
+                                        placeholder="Enter your name" required>
                                 </div>
 
                                 <div class="form-group">
@@ -40,7 +40,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label class="form-label">Contact Number</label>
+                                    <label class="form-label">Mobile Number</label>
                                     <input id="mobile_number" type="text" name="mobile_number"
                                         value="{{ old('mobile_number') }}" class="form-control"
                                         placeholder="Enter mobile number" required>
@@ -63,30 +63,21 @@
                                     <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
                                 </div>
 
+<div class="custom-control custom-checkbox mt-4">
+                                    <input type="checkbox" name="remember" class="custom-control-input" id="exampleCheck3">
+                                    <label class="custom-control-label" for="exampleCheck3">I agree to the Terms & Conditions</label>
+                                    
+                                </div>
                                 <button type="submit" class="btn btn-signup btn-thm">
                                     Create Account
                                 </button>
 
                                 <p class="text-center mb25 mt10">
                                     Already have an account?
-                                    <a href="{{ route('customer.login') }}">Sign in</a>
+                                    <a href="{{ route('customer.login') }}" style="color:blue;">Sign in</a>
                                 </p>
 
-                                <div class="hr_content">
-                                    <hr>
-                                    <span class="hr_top_text">or</span>
-                                </div>
 
-                                <ul class="login_with_social text-center mt30 mb0">
-                                    <li class="list-inline-item"><a href="#"><i class="fab fa-facebook"></i></a></li>
-                                    <li class="list-inline-item">
-                                        <a href="{{ route('customer.google.login') }}">
-                                            <i class="fab fa-google"></i>
-                                        </a>
-                                    </li>
-                                    <li class="list-inline-item"><a href="#"><i class="fab fa-x-twitter"></i></a></li>
-                                    <li class="list-inline-item"><a href="#"><i class="fab fa-apple"></i></a></li>
-                                </ul>
 
                             </form>
                         </div>

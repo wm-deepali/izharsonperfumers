@@ -1,6 +1,9 @@
 @extends('front.app')
 
 @section('title', $product->meta_title ?? $product->name)
+<link rel="stylesheet" href="owl.carousel.min.css">
+<link rel="stylesheet" href="owl.theme.default.min.css">
+<script src="owl.carousel.min.js"></script>
 
 
 <style>
@@ -151,7 +154,127 @@ background:linear-gradient(135deg,#6366f1,#4f46e5);
 color:#fff;
 }
 
- 
+  @media(max-width:540px) {
+        .productcard-image {
+            width: 100%;
+            height: auto !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+        }
+
+        .productcard-image {
+            position: relative;
+            background: #f9fafc;
+            padding: 7px;
+            text-align: center;
+        }
+
+        .productcard-title {
+            margin-bottom: 5px;
+            font-size: 15px;
+            margin-bottom: 4px;
+            margin-bottom: 6px;
+            margin-top: 7px;
+        }
+
+        .productcard-btn {
+            flex: 1;
+            padding: 2px;
+            font-size: 13px;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .productcard-rating {
+            display: none;
+        }
+
+        .productcard-body {
+            padding: 0px 7px 7px 7px;
+        }
+
+        .productcard-category {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+            margin-top: 4px;
+            background: #f1f1f145;
+            border-radius: 4px;
+            padding: 0px 10px;
+        }
+
+        .new-iz-section-title {
+            font-size: 16px;
+            letter-spacing: -0.5px;
+            color: #111;
+        }
+
+        .shop-v3-container {
+            padding: 10px !important;
+        }
+        .new-iz-section-title {
+    font-size: 20px !important;
+    margin-top: 18px;
+    letter-spacing: -0.5px;
+    color: #111;
+}
+.productcard-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+    }
+    
+    .shop_item_6grid_slider {
+    position: relative;
+}
+
+.shop_item_6grid_slider .owl-nav {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none; /* important */
+}
+
+.shop_item_6grid_slider .owl-nav button {
+    pointer-events: all;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #000 !important;
+    color: #fff !important;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+}
+
+.shop_item_6grid_slider .owl-nav button:hover {
+    opacity: 1;
+    background: #333 !important;
+}
+
+/* left button */
+.shop_item_6grid_slider .owl-nav .owl-prev {
+    position: absolute;
+    left: -10px;
+}
+
+/* right button */
+.shop_item_6grid_slider .owl-nav .owl-next {
+    position: absolute;
+    right: -10px;
+}
+
 
 </style>
 
@@ -227,10 +350,10 @@ color:#fff;
                 <div class="col-xl-7">
                     <div class="column">
                         <div class="shop_single_natabmenu">
-                            <div class="d-block d-sm-flex align-items-start">
+                            <div class="d-flex flex-column-reverse flex-sm-row align-items-start">
 
                                 <!-- Thumbnails -->
-                                <div class="nav flex-column nav-pills me-0 me-md-3" id="v-pills-tab2" role="tablist"
+                                <div class="nav flex-row mt-2 mt-md-0 flex-md-column nav-pills me-0 me-md-3 gap-2" id="v-pills-tab2" role="tablist"
                                     aria-orientation="vertical">
 
                                     @foreach($images as $key => $img)
@@ -284,7 +407,37 @@ color:#fff;
     padding: 20px;
     border-radius: 10px;">
       <h4 class="title">{{ $product->name }}</h4>
-                            <p class="mb15">{!! nl2br(e($product->short_description)) !!}</p>
+                            <p class="pb-0 m-0">{!! nl2br(e($product->short_description)) !!}</p>
+                            <ul class="db-400 d-flex justify-content-between">
+                                <div class="d-flex gap-2">
+                                   
+                                <li class=" ml0-400">
+                                    <div class="sspd_review mt-0">
+                                        <ul class="mb0  d-flex align-items-center ">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <li class="list-inline-item">
+                                                    <a href="#">
+                                                        <i
+                                                            class="fas fa-star {{ $i <= $product->avg_rating ? '' : 'text-muted' }}"></i>
+                                                    </a>
+                                                </li>
+                                            @endfor
+                                            <li class="me-3 heading-color " style="font-size:15px">
+   ( {{ ($product->reviews_count ?? 0) > 0 
+        ? $product->reviews_count . ' reviews' 
+        : 'No reviews' }} )
+</li>
+
+                                        </ul>
+                                    </div>
+                                </li>
+                                
+                                </div>
+                                
+                                <!--<li class="color-light-green " style="font-size:15px">-->
+                                <!--    {{ $product->stock ?? 0 }} in stock-->
+                                <!--</li>-->
+                            </ul>
                             <hr>
                             <div class="sspd_price mt-2 mb-3">
                                 ₹<span id="product-price">{{ $product->product_options->first()->price }}</span>
@@ -371,7 +524,7 @@ color:#fff;
    Buy Now
 </a></li>
                                 </ul>
-                                <ul class="shop_single_wishlist_area db-400 d-flex align-items-center mb-3">
+                                <ul class="shop_single_wishlist_area  d-flex align-items-center mb-3" style="flex-wrap:nowrap;">
                                     <li class="pe-2 ms-2 ms-sm-0">
                                         <a href="#" class="add-to-wishlist-btn" data-product="{{ $product->id }}">
     <span class="flaticon-heart me-2"
@@ -707,13 +860,28 @@ color:#fff;
                         <div class="shop_single_product_details sidebar  mb-3 mb-xl-0 " style="border: 1px solid #d0cbcb;
     padding: 20px;
     border-radius: 10px;" >
-                            <ul class="db-400 d-flex">
-                                <li class="border-right heading-color fz14">
+                            <ul class="db-400 d-flex justify-content-between">
+                                <div class="d-flex gap-2">
+                                    <li class=" heading-color " style="font-size:15px; font-weight:600;">
                                     {{ $product->categories->name ?? 'Brand' }}
                                 </li>
-                                <li class="mx-3 ml0-400">
+                                
+                                
+                                </div>
+                                
+                                <!--<li class="color-light-green " style="font-size:15px">-->
+                                <!--    {{ $product->stock ?? 0 }} in stock-->
+                                <!--</li>-->
+                            </ul>
+                            <h4 class="title m-0">{{ $product->name }}</h4>
+                            
+                            <p class="m-0">{!! nl2br(e($product->short_description)) !!}</p>
+                             <ul class="db-400 d-flex justify-content-between">
+                                <div class="d-flex gap-2">
+                                   
+                                <li class=" ml0-400">
                                     <div class="sspd_review mt-0">
-                                        <ul class="mb0 me-2">
+                                        <ul class="mb0  d-flex align-items-center ">
                                             @for($i = 1; $i <= 5; $i++)
                                                 <li class="list-inline-item">
                                                     <a href="#">
@@ -722,18 +890,22 @@ color:#fff;
                                                     </a>
                                                 </li>
                                             @endfor
+                                            <li class="me-3 heading-color " style="font-size:15px">
+   ( {{ ($product->reviews_count ?? 0) > 0 
+        ? $product->reviews_count . ' reviews' 
+        : 'No reviews' }} )
+</li>
+
                                         </ul>
                                     </div>
                                 </li>
-                                <li class="border-right me-3 heading-color fz14">
-                                    {{ $product->reviews_count ?? 0 }} reviews
-                                </li>
-                                <li class="color-light-green fz14">
-                                    {{ $product->stock ?? 0 }} in stock
-                                </li>
+                                
+                                </div>
+                                
+                                <!--<li class="color-light-green " style="font-size:15px">-->
+                                <!--    {{ $product->stock ?? 0 }} in stock-->
+                                <!--</li>-->
                             </ul>
-                            <h4 class="title">{{ $product->name }}</h4>
-                            <p class="mb15">{!! nl2br(e($product->short_description)) !!}</p>
                             <hr>
                             <div class="sspd_price mb20 mt20">
                                 ₹<span id="sidebar-price">{{ $product->product_options->first()->price }}</span>
@@ -896,6 +1068,7 @@ color:#fff;
                 {{ Str::limit($item->name, 40) }}
             </a>
         </h3>
+        
 
 
         <!-- RATING -->
@@ -1342,7 +1515,10 @@ document.querySelectorAll('.buy-now-btn').forEach(btn=>{
         .then(res => res.json())
         .then(data => {
 
-            const heartIcon = button.querySelector('span');
+                              const heartIcon = button.querySelector('span, i');
+
+if (!heartIcon) return; // stop error
+
 
             if (data.status === "added") {
                 heartIcon.style.color = "red";

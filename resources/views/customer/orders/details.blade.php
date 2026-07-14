@@ -4,14 +4,14 @@
 
 @section('content')
 
-    <section class="our-dashbord dashbord pb80">
+    <section class="our-dashbord dashbord p-3">
 
         <div class="container">
             <div class="row">
 
                 @include('customer.dashboard-nav')
 
-                <div class="col-lg-9 col-xl-10">
+                <div class="col-lg-9 col-xl-9">
 
                     @include('customer.dashboard-nav-dropdown')
 
@@ -20,7 +20,7 @@
 
                         {{-- ORDER HEADER --}}
                         <div class="mb-3">
-                            <a href="{{ route('customer.orders') }}" class="back-btn">
+                            <a href="{{ route('customer.orders') }}" class="back-btn" style="font-weight:600;">
                                 ← Back to Orders
                             </a>
                         </div>

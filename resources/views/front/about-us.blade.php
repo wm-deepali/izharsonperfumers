@@ -379,7 +379,7 @@
                                         <div class="testimonial_contents text-center">
                                             <p class="main_title">“{{ $feedback->message }}”</p>
                                             <p class="author">{{ $feedback->first_name }} {{ $feedback->last_name }}</p>
-                                            <!-- <p class="author_post">{{ $feedback->email }}</p> -->
+                                            <!--<p class="author_post">{{ $feedback->email }}</p>-->
                                         </div>
                                     </div>
                                 </div>

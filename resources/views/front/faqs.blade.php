@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <style>
+   <style>
         /* IZHARSON FAQ - Brand Matched Colors (Purple + Gold Theme) */
         .iz-faq-hero {
             padding: 50px 0 50px;
@@ -147,7 +147,36 @@
         @media (max-width: 576px) {
             .iz-faq-hero { padding: 80px 0 50px; }
             .iz-faq-title { font-size: 2rem; }
-            .iz-faq-question { padding: 1.4rem 1.6rem; font-size: 1.05rem; }
+            .iz-faq-question { padding: 10px; font-size: 14px; }
+            .iz-faq-question{
+                gap:10px;
+            }
+            .iz-faq-question-number {
+    min-width: 35px;
+    height: 35px;
+    background: linear-gradient(135deg, #d4af37, #facc15);
+    color: #1e1b32;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+.iz-faq-item.active .iz-faq-answer {
+    max-height: 1400px;
+    padding: 15px;
+}
+
+.iz-faq-toggle-icon {
+    margin-left: auto;
+    font-size: 14px;
+    color: #000000;
+    transition: transform 0.4s ease, color 0.3s;
+}
+
         }
     </style>
 
@@ -169,7 +198,7 @@
 
                 <div class="iz-faq-wrapper">
                     @foreach($items as $faq)
-                        <div class="iz-faq-item {{ $loop->first ? 'active' : '' }}">
+                        <div class="iz-faq-item ">
                             <button class="iz-faq-question">
                                 <span class="iz-faq-question-number">{{ str_pad($globalIndex, 2, '0', STR_PAD_LEFT) }}</span>
                                 {{ $faq->question }}

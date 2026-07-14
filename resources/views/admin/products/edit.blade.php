@@ -517,12 +517,25 @@ input[type="file"] {
                                                                 <div class=" row">
                                                                       <div class="col-md-3 form-group">
                                                                         <label class="label-control">Fragrance</label>
-                                                                        @foreach($fragrances as $key=>$fragrance)
-                                                                        <div class="form-check">
-                                                                          <input type="checkbox" class="form-check-input1" <?php if(isset($product->fragrance) && in_array($fragrance->id, json_decode($product->fragrance))){ echo 'checked';}  ?> id="fragrance{{$key}}" name="fragrance[]" value="{{$fragrance->id}}" >
-                                                                          <label class="form-check-label" for="fragrance{{$key}}">{{$fragrance->title}}</label>
-                                                                        </div>
-                                                                        @endforeach
+                                                                        @php
+    $selectedFragrances = is_array($product->fragrance)
+        ? $product->fragrance
+        : json_decode($product->fragrance, true);
+@endphp
+                                                                       @foreach($fragrances as $key=>$fragrance)
+    <div class="form-check">
+        <input type="checkbox"
+            class="form-check-input1"
+            {{ in_array($fragrance->id, $selectedFragrances ?? []) ? 'checked' : '' }}
+            id="fragrance{{$key}}"
+            name="fragrance[]"
+            value="{{$fragrance->id}}">
+
+        <label class="form-check-label" for="fragrance{{$key}}">
+            {{$fragrance->title}}
+        </label>
+    </div>
+@endforeach
                                                 
                                                                         <div class="text-danger validation-err" id="fragrance-err"></div>
                                                                     </div>

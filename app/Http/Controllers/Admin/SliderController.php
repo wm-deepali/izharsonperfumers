@@ -36,12 +36,12 @@ class SliderController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|min:3|max:255',
-            'sub_title' => 'required|min:3|max:255',
-            'content' => 'required|min:3|max:255',
+            'title' => 'nullable|min:3|max:255',
+            'sub_title' => 'nullable|min:3|max:255',
+            'content' => 'nullable|min:3|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
             'status' => 'required',
-            'button_link' => 'required',
+            'button_link' => 'nullable',
         ]);
         
          if ($validator->fails()) {
@@ -99,12 +99,12 @@ class SliderController extends Controller
     public function update(Request $request , $id)
     {
        $validator = Validator::make($request->all(), [
-            'title' => 'required|min:3|max:255',
-            'sub_title' => 'required|min:3|max:255',
-            'content' => 'required|min:3|max:255',
+            'title' => 'nullable|min:3|max:255',
+            'sub_title' => 'nullable|min:3|max:255',
+            'content' => 'nullable|min:3|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
             'status' => 'required',
-            'button_link' => 'required',
+            'button_link' => 'nullable',
         ]);
         
          if ($validator->fails()) {
