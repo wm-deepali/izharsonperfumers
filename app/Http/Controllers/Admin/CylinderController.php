@@ -56,6 +56,9 @@ class CylinderController extends Controller
         if ($validator->passes()) {
             try {
                 $data = $request->all();
+                // if($request->hasFile('image')) {
+                //     $data['image'] = $request->image->store('career');
+                // }
                 Cylinder::create($data);
                 return response()->json([
                     'success' => true,
@@ -144,6 +147,13 @@ class CylinderController extends Controller
             try {
                 $career = Cylinder::findOrFail($id);
                 $data = $request->all();
+                // $data = $request->all();
+                // if($request->hasFile('image')) {
+                //     $data['image'] = $request->image->store('career');
+                //     if(isset($career->image) && Storage::exists($career->image)) {
+                //         Storage::delete($career->image);
+                //     }
+                // }
                 $career->update($data);
                 return response()->json([
                     'success' => true,

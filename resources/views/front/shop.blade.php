@@ -986,7 +986,7 @@
                                     <!-- IMAGE -->
                                     <div class="productcard-image">
 
-                                    <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}">
+                                    <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}" loading="lazy">
 
                                         <!-- ACTION ICONS -->
                                         <div class="productcard-icons">
@@ -1112,7 +1112,7 @@
                                             <!-- IMAGE -->
                                             <div class="productcard-image">
 
-                                                <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}">
+                                                <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}" loading="lazy">
 
                                                 <!-- ACTION ICONS -->
                                                 <div class="productcard-icons">

@@ -10,25 +10,40 @@
     <meta name="description" content="Izharson Perfumers">
     <meta name="CreativeLayers" content="ATFN">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <!-- css file -->
-    <link rel="stylesheet" href="{{ asset('front/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('front/css/ace-responsive-menu.css') }}">
-    <link rel="stylesheet" href="{{ asset('front/css/menu.css') }}">
+    <!-- Critical CSS (Render-blocking, prevents FOUC) -->
+    <link rel="preload" href="{{ asset('front/css/bootstrap.min.css') }}" as="style">
+    <link rel="preload" href="{{ asset('front/css/ace-responsive-menu.css') }}" as="style">
+    <link rel="preload" href="{{ asset('front/css/menu.css') }}" as="style">
+    <link rel="preload" href="{{ asset('front/css/style.css') }}" as="style">
+    <link rel="preload" href="{{ asset('front/css/responsive.css') }}" as="style">
+
+    <link rel="stylesheet" href="{{ asset('front/css/bootstrap.min.css') }}" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="{{ asset('front/css/ace-responsive-menu.css') }}" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="{{ asset('front/css/menu.css') }}" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="{{ asset('front/css/style.css') }}" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="{{ asset('front/css/responsive.css') }}" media="print" onload="this.media='all'">
+
+    <noscript>
+        <link rel="stylesheet" href="{{ asset('front/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/ace-responsive-menu.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/menu.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/style.css') }}">
+        <link rel="stylesheet" href="{{ asset('front/css/responsive.css') }}">
+    </noscript>
+
+    <!-- Non-Critical CSS (Deferred) -->
     <link rel="stylesheet" href="{{ asset('front/css/fontawesome.css') }}" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="{{ asset('front/css/fontawesome-free.css') }}" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="{{ asset('front/css/flaticon.css') }}" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="{{ asset('front/css/bootstrap-select.min.css') }}" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="{{ asset('front/css/animate.css') }}" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="{{ asset('front/css/slider.css') }}" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="{{ asset('front/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('front/css/dashbord_navitaion.css') }}" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="{{ asset('front/css/magnific-popup.css')}}" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css" media="print" onload="this.media='all'">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Poppins:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <!-- Responsive stylesheet -->
-    <link rel="stylesheet" href="{{ asset('front/css/responsive.css') }}">
+    
+    <!-- Google Fonts Deferred -->
+    <link href="../../css2?family=Jost:wght@400;500&family=Poppins:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <!-- Title -->
     <title>@yield('title') | {{ config('app.name', 'Izharson Perfumers') }}</title>
 
@@ -173,7 +188,6 @@
     </style>
 
 
-    @yield('preload')
 </head>
 
 @php
@@ -231,7 +245,6 @@
        <div class="preloader1">
   <div class="loader"></div>
 </div>
-
 
 
         <!-- header middle start-->
@@ -340,8 +353,7 @@
 
                                                 <div class="icon position-relative">
                                                     <span>
-                                                        <img src="{{ asset('front/images/shopping-cart.png') }}"
-                                                            style="width:20px;" alt="" loading="lazy">
+                                                        <img src="{{ asset('front/images/shopping-cart.png') }}" style="width:20px;" alt="" width="20" height="20">
                                                     </span>
 
                                                     <span class="badge" id="cart-count">
@@ -380,7 +392,7 @@
                     <div class="posr logo1 home1_style">
                         <div id="mega-menu"> <a class="btn-mega" href="{{ url('/') }}"> <img class="me-2"
                                     src="{{ asset('front/images/desktop-nav-menu-white.svg') }}"
-                                    alt="Desktop Menu Icon" loading="lazy"> <span class="fw500 fz16 color-white vam">Browse
+                                    alt="Desktop Menu Icon"> <span class="fw500 fz16 color-white vam">Browse
                                     Categories</span> </a>
 
                             <ul class="menu">
@@ -616,7 +628,7 @@
                                                                     <button
                                                                         class="quantity-arrow-minus mini-minus home_page_sidebar"
                                                                         data-id="{{ $item->id }}">
-                                                                        <img src="{{ asset('front/images/icons/minus.svg') }}" loading="lazy">
+                                                                        <img src="{{ asset('front/images/icons/minus.svg') }}">
                                                                     </button>
 
                                                                     <input class="quantity-num home_page_sidebar qty-input"
@@ -807,9 +819,7 @@
                             </li>
                                             
                                 <li class="list-inline-item"> <a class="cart_btn cart-filter-btn"  href="{{ route('cart.index') }}"><span
-                                            class="icon"><img
-                                                src="{{ asset('front/images/shopping-cart.png') }}"
-                                                alt="" style="width:22px;" loading="lazy"></span><span class="badge bgc-thm"> {{ $cartCount }}</span></a> </li>
+                                            class="icon"><img src="{{ asset('front/images/shopping-cart.png') }}" alt="" style="width:22px;" width="22" height="22"></span><span class="badge bgc-thm"> {{ $cartCount }}</span></a> </li>
                             </ul>
                         </div>
                     </div>
@@ -1089,23 +1099,23 @@
                                     <ul class="d-flex mb-0">
                                         <li class="me-2"><a href="#"><img
                                                     src="{{ asset('front/images/resource/visa-card.png') }}"
-                                                    alt="visa-card" loading="lazy"></a></li>
+                                                    alt="visa-card"></a></li>
                                         <li class="me-2"><a href="#"><img
                                                     src="{{ asset('front/images/resource/master-card.png') }}"
-                                                    alt="master-card" loading="lazy"></a></li>
+                                                    alt="master-card"></a></li>
                                         <li class="me-2"><a href="#"><img
                                                     src="{{ asset('front/images/resource/apple-pay.png') }}"
-                                                    alt="apple-pay" loading="lazy"></a></li>
+                                                    alt="apple-pay"></a></li>
                                         <li class="me-2"><a href="#"><img
                                                     src="{{ asset('front/images/resource/discover-card.png') }}"
-                                                    alt="discover-card" loading="lazy"></a>
+                                                    alt="discover-card"></a>
                                         </li>
                                         <li class="me-2"><a href="#"><img
                                                     src="{{ asset('front/images/resource/paypal.png') }}"
-                                                    alt="paypal" loading="lazy"></a>
+                                                    alt="paypal"></a>
                                         </li>
                                         <li><a href="#"><img src="{{ asset('front/images/resource/amex-card.png') }}"
-                                                    alt="amex-card" loading="lazy"></a></li>
+                                                    alt="amex-card"></a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -1127,8 +1137,8 @@
 
     </div>
     <!-- Wrapper End -->
-    <script src="{{ asset('front/js/jquery-3.6.0.js') }}"></script>
-    <script src="{{ asset('front/js/jquery-migrate-3.0.0.min.js') }}"></script>
+    <script defer src="{{ asset('front/js/jquery-3.6.0.js') }}"></script>
+    <script defer src="{{ asset('front/js/jquery-migrate-3.0.0.min.js') }}"></script>
 
     <!-- Magnific Popup -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
@@ -1155,7 +1165,7 @@
     <script defer src="{{ asset('front/js/googlemaps1.js') }}"></script>
     <!-- Custom script for all pages -->
     <script>
-        $(document).ready(function () {
+        document.addEventListener('DOMContentLoaded', function () {
             var scroll_childs = $('.scroll-to-fixed-child');
             for (var i = 0, length = scroll_childs.length; i < length; i++) {
                 var scroll_child = $(scroll_childs[i]);
@@ -1192,7 +1202,7 @@
 <li>
     <a href="/product-details/${product.slug}" class="d-flex align-items-center">
         <div class="thumb">
-        <img src="/storage/${product.image_thumb ?? product.image}" alt="${product.name}" loading="lazy">
+        <img src="/storage/${product.image_thumb ?? product.image}" alt="${product.name}">
         </div>
         <div class="info-product">
             <div class="item_title">${product.name}</div>
@@ -1263,7 +1273,7 @@
 <li>
     <a href="/product-details/${product.slug}" class="d-flex align-items-center">
         <div class="thumb">
-            <img src="/storage/${product.image_thumb ?? product.image}" alt="${product.name}" loading="lazy">
+            <img src="/storage/${product.image_thumb ?? product.image}" alt="${product.name}">
         </div>
         <div class="info-product">
             <div class="item_title">${product.name}</div>
@@ -1456,7 +1466,7 @@
                             html += `
 <li class="list_content">
 <div>
-<img class="float-start " src="/storage/${image}" width="60" loading="lazy">
+<img class="float-start " src="/storage/${image}" width="60">
 
 <p>${item.products.name}</p>
 
@@ -1465,7 +1475,7 @@
 <div class="quantity-block home_page_sidebar">
 
 <button class="quantity-arrow-minus mini-minus" data-id="${item.id}">
-<img src="/front/images/icons/minus.svg" loading="lazy">
+<img src="/front/images/icons/minus.svg">
 </button>
 
 <input class="quantity-num home_page_sidebar qty-input"
@@ -1523,22 +1533,12 @@ Total:
                 });
         }
     </script>
-
-
-
     <script>
-        // Use DOMContentLoaded to hide loader quickly instead of waiting for heavy images
-        document.addEventListener("DOMContentLoaded", function () {
-            setTimeout(function() {
-                var preloader = document.querySelector(".preloader1");
-                if(preloader) preloader.style.display = "none";
-            }, 500); // 500ms delay so it's visible but doesn't ruin load times
-        });
-        window.addEventListener("load", function () {
-            var preloader = document.querySelector(".preloader1");
-            if(preloader) preloader.style.display = "none";
-        });
-    </script>
+  window.addEventListener("load", function () {
+    document.querySelector(".preloader1").style.display = "none";
+  });
+</script>
+
 </body>
 
 </html>

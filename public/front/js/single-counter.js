@@ -1,14 +1,1 @@
-/*Evemt Single Page Counter JS Code*/
-const second = 1000,
-      minute = second * 60,
-      hour = minute * 60,
-      day = hour * 24;
-let countDown = new Date('Dec 31, 2023 00:00:00').getTime(),
-    x = setInterval(function() {
-		let now = new Date().getTime(),
-			distance = countDown - now;
-		document.getElementById("days").innerText = Math.floor(distance / (day)),
-		document.getElementById("hours").innerText = Math.floor((distance % (day)) / (hour)),
-		document.getElementById("minutes").innerText = Math.floor((distance % (hour)) / (minute)),
-		document.getElementById("seconds").innerText = Math.floor((distance % (minute)) / second);
-}, second)
+const second=1e3,minute=6e4,hour=36e5,day=24*hour;let countDown=new Date("Dec 31, 2023 00:00:00").getTime(),x=setInterval(function(){let e=(new Date).getTime(),t=countDown-e;document.getElementById("days").innerText=Math.floor(t/day),document.getElementById("hours").innerText=Math.floor(t%day/hour),document.getElementById("minutes").innerText=Math.floor(t%hour/6e4),document.getElementById("seconds").innerText=Math.floor(t%6e4/1e3)},1e3);
