@@ -497,7 +497,7 @@ class CheckoutController extends Controller
                     ini_set('max_execution_time', 120);
                     ini_set('memory_limit', '512M');
 
-                    $pdf = Pdf::loadView('frontend.customer.invoice', compact(
+                    $pdf = Pdf::loadView('front.invoice', compact(
                         'terms_and_condition',
                         'general_setting',
                         'order',

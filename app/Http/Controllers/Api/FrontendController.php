@@ -2960,7 +2960,7 @@ class FrontendController extends Controller
                     //             ini_set('display_errors', '1');
 // ini_set('display_startup_errors', '1');
 // error_reporting(E_ALL);
-                    $pdf = PDF::loadView('frontend.customer.invoice', compact('terms_and_condition', 'general_setting', 'order', 'gstsetting'));
+                    $pdf = PDF::loadView('front.invoice', compact('terms_and_condition', 'general_setting', 'order', 'gstsetting'));
 
 
                     //Storage::put('invoices/invoices'.strtolower($order->order_number).'.pdf', $pdf->output());

@@ -312,7 +312,7 @@ class OrderController extends Controller
             );
             ini_set('memory_limit', '512M');
             ini_set('max_execution_time', 180);
-            $pdf = PDF::loadView('frontend.customer.invoice',compact('logo_64','terms_and_condition','general_setting','order','gstsetting'));
+            $pdf = PDF::loadView('front.invoice',compact('logo_64','terms_and_condition','general_setting','order','gstsetting'));
             return $pdf->download($order->order_number.'.pdf');
         } catch(\Exception $ex) {
             dd($ex->getMessage());
