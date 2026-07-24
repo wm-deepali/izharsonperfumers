@@ -29,22 +29,23 @@
                 </div>
                 <div class="card-headers">
                     <ul class="nav nav-tabs" role="tablist">
-                    	<li class="nav-item">
-                    		<a class="nav-link active" data-toggle="tab" href="#Successfull " role="tab">Successfull Transaction</a>
-                    	</li>
-                    	<li class="nav-item">
-                    		<a class="nav-link" data-toggle="tab" href="#Failed" role="tab">Failed Transaction</a>
-                    	</li>
-                    	<li class="nav-item">
-                    		<a class="nav-link" data-toggle="tab" href="#Refunds" role="tab">Refunds Transaction</a>
-                    	</li>
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" href="#Successfull " role="tab">Successfull
+                                Transaction</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#Failed" role="tab">Failed Transaction</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#Refunds" role="tab">Refunds Transaction</a>
+                        </li>
                     </ul>
-                   
+
                 </div>
                 <div class="tab-content">
-                	<div class="tab-pane active" id="Successfull" role="tabpanel">
-                
-                		<section>
+                    <div class="tab-pane active" id="Successfull" role="tabpanel">
+
+                        <section>
                             <div class="row">
                                 <div class="col-xs-12">
                                     <div class="card-body collapse in">
@@ -64,12 +65,13 @@
                                                             <th>Payment Status</th>
                                                             <th>Transaction ID</th>
                                                             <th>Payment Method</th>
+                                                            <th>Payment Gateway</th>
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         @foreach($orders as $order)
-                                                        @if($order->payment_status=="success")
+                                                            @if($order->payment_status == "success")
                                                                 <tr>
                                                                     <td>{{$order->created_at}}</td>
                                                                     <td>#{{$order->order_number}}</td>
@@ -78,22 +80,31 @@
                                                                     <td>{{$order->total_item_count}}</td>
                                                                     <td>{{$order->order_amount_after_discount}}</td>
                                                                     <td>{{$order->total_gst_amount}}</td>
-                                                                    <td>{{$order->order_amount_with_shipping}}</td> 
+                                                                    <td>{{$order->order_amount_with_shipping}}</td>
                                                                     <td>{{ucfirst($order->payment_status)}}</td>
-                                                                    <td>#{{$order->transaction_number}}</td>   
+                                                                    <td>#{{$order->transaction_number}}</td>
                                                                     <td>{{ucfirst($order->payment_method)}}</td>
-                                                                         
+                                                                    <td>{{ $order->payment_method == 'online' ? ucfirst($order->payment_gateway ?? 'N/A') : '—' }}
+                                                                    </td>
                                                                     <td class="text-truncate">
-                                                                <ul class="actions">
-                                                                    <li><a href="{{route('admin.manage-order.show',$order->id)}}" class="view-orders" brand_id="#" title="View order details  "><i class="fa fa-eye" aria-hidden="true"></i></a></li>
-                                                                    <li><a href="{{route('admin.invoice',$order->id)}}" class="view-orders" brand_id="#" title="Download Invoice"><i class="fa fa-download" aria-hidden="true"></i></a></li>
-                                                                    <!--<li><a href="javascript:void(0)" class="view-orders rating" id="ratingshow" onclick="showrating({{ $order->id }})" brand_id="{{ $order->id }}" data-toggle="modal" data-target="#ratingmodal" title="View rating  "><i class="fa fa-edit" aria-hidden="true"></i></a></li>-->
-                                                                    <!--<li><a href="javascript:void(0)" class="view-orders" brand_id="" data-toggle="modal" data-target="#complaintmodal" title="View Complaint  "><i class="fa fa-edit" aria-hidden="true"></i></a></li>-->
-                                                                    </ul>
-                                                            </td>
+                                                                        <ul class="actions">
+                                                                            <li><a href="{{route('admin.manage-order.show', $order->id)}}"
+                                                                                    class="view-orders" brand_id="#"
+                                                                                    title="View order details  "><i
+                                                                                        class="fa fa-eye"
+                                                                                        aria-hidden="true"></i></a></li>
+                                                                            <li><a href="{{route('admin.invoice', $order->id)}}"
+                                                                                    class="view-orders" brand_id="#"
+                                                                                    title="Download Invoice"><i
+                                                                                        class="fa fa-download"
+                                                                                        aria-hidden="true"></i></a></li>
+                                                                            <!--<li><a href="javascript:void(0)" class="view-orders rating" id="ratingshow" onclick="showrating({{ $order->id }})" brand_id="{{ $order->id }}" data-toggle="modal" data-target="#ratingmodal" title="View rating  "><i class="fa fa-edit" aria-hidden="true"></i></a></li>-->
+                                                                            <!--<li><a href="javascript:void(0)" class="view-orders" brand_id="" data-toggle="modal" data-target="#complaintmodal" title="View Complaint  "><i class="fa fa-edit" aria-hidden="true"></i></a></li>-->
+                                                                        </ul>
+                                                                    </td>
                                                                 </tr>
-                                                                @endif
-                                                                @endforeach
+                                                            @endif
+                                                        @endforeach
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -102,12 +113,12 @@
                                 </div>
                             </div>
                         </section>
-                	</div>
-                	<div class="tab-pane" id="Failed" role="tabpanel">
-                	     
-                		<section>
+                    </div>
+                    <div class="tab-pane" id="Failed" role="tabpanel">
+
+                        <section>
                             <div class="row">
-                                
+
                                 <div class="col-xs-12">
                                     <div class="card-body collapse in">
                                         <div class="card-block card-dashboard">
@@ -130,8 +141,8 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                                 @foreach($orders as $order)
-                                                                 @if($order->payment_status=="failed")
+                                                        @foreach($orders as $order)
+                                                            @if($order->payment_status == "failed")
                                                                 <tr>
                                                                     <td>{{$order->created_at}}</td>
                                                                     <td>#{{$order->order_number}}</td>
@@ -140,22 +151,37 @@
                                                                     <td>{{$order->total_item_count}}</td>
                                                                     <td>{{$order->order_amount_after_discount}}</td>
                                                                     <td>{{$order->total_gst_amount}}</td>
-                                                                    <td>{{$order->order_amount_with_shipping}}</td> 
+                                                                    <td>{{$order->order_amount_with_shipping}}</td>
                                                                     <td>{{ucfirst($order->payment_status)}}</td>
-                                                                    <td>#{{$order->transaction_number}}</td>   
+                                                                    <td>#{{$order->transaction_number}}</td>
                                                                     <td>{{ucfirst($order->payment_method)}}</td>
-                                                                         
+
                                                                     <td class="text-truncate">
-                                                                <ul class="actions">
-                                                                    <li><a href="{{route('admin.manage-order.show',$order->id)}}" class="view-orders" brand_id="#" title="View order details  "><i class="fa fa-eye" aria-hidden="true"></i></a></li>
-                                                                    <li><a href="{{route('admin.invoice',$order->id)}}" class="view-orders" brand_id="#" title="Download Invoice"><i class="fa fa-download" aria-hidden="true"></i></a></li>
-                                                                    <li><a href="javascript:void(0)" class="view-orders rating" id="ratingshow" onclick="showrating({{ $order->id }})" brand_id="{{ $order->id }}" data-toggle="modal" data-target="#ratingmodal" title="View rating  "><i class="fa fa-edit" aria-hidden="true"></i></a></li>
-                                                                    <!--<li><a href="javascript:void(0)" class="view-orders" brand_id="" data-toggle="modal" data-target="#complaintmodal" title="View Complaint  "><i class="fa fa-edit" aria-hidden="true"></i></a></li>-->
-                                                                    </ul>
-                                                            </td>
+                                                                        <ul class="actions">
+                                                                            <li><a href="{{route('admin.manage-order.show', $order->id)}}"
+                                                                                    class="view-orders" brand_id="#"
+                                                                                    title="View order details  "><i
+                                                                                        class="fa fa-eye"
+                                                                                        aria-hidden="true"></i></a></li>
+                                                                            <li><a href="{{route('admin.invoice', $order->id)}}"
+                                                                                    class="view-orders" brand_id="#"
+                                                                                    title="Download Invoice"><i
+                                                                                        class="fa fa-download"
+                                                                                        aria-hidden="true"></i></a></li>
+                                                                            <li><a href="javascript:void(0)"
+                                                                                    class="view-orders rating" id="ratingshow"
+                                                                                    onclick="showrating({{ $order->id }})"
+                                                                                    brand_id="{{ $order->id }}"
+                                                                                    data-toggle="modal"
+                                                                                    data-target="#ratingmodal"
+                                                                                    title="View rating  "><i class="fa fa-edit"
+                                                                                        aria-hidden="true"></i></a></li>
+                                                                            <!--<li><a href="javascript:void(0)" class="view-orders" brand_id="" data-toggle="modal" data-target="#complaintmodal" title="View Complaint  "><i class="fa fa-edit" aria-hidden="true"></i></a></li>-->
+                                                                        </ul>
+                                                                    </td>
                                                                 </tr>
-                                                                @endif
-                                                                @endforeach
+                                                            @endif
+                                                        @endforeach
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -164,9 +190,9 @@
                                 </div>
                             </div>
                         </section>
-                	</div>
-                	<div class="tab-pane" id="Refunds" role="tabpanel">
-                			<section>
+                    </div>
+                    <div class="tab-pane" id="Refunds" role="tabpanel">
+                        <section>
                             <div class="row">
                                 <div class="col-xs-12">
                                     <div class="card-body collapse in">
@@ -190,32 +216,51 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                                 @foreach($orders as $order)
-                                                                 @if($order->payment_status=="refunded")
+                                                        @foreach($orders as $order)
+                                                            @if($order->payment_status == "refunded")
                                                                 <tr>
                                                                     <td>{{$order->created_at}}</td>
                                                                     <td>#{{$order->order_number}}</td>
                                                                     <td>{{$order->name}}</td>
                                                                     <td>{{$order->mobile_number}}<br>{{$order->email}}</td>
-                                                                    <td>@if(isset($order->cancelorder)) {{$order->cancelorder->request_id}} @endif @if(isset($order->returnorder)) {{$order->returnorder->request_id}}  @endif</td>
+                                                                    <td>@if(isset($order->cancelorder))
+                                                                    {{$order->cancelorder->request_id}} @endif
+                                                                        @if(isset($order->returnorder))
+                                                                        {{$order->returnorder->request_id}} @endif
+                                                                    </td>
                                                                     <td>{{$order->order_amount_after_discount}}</td>
                                                                     <td>{{$order->total_gst_amount}}</td>
-                                                                    <td>{{$order->order_amount_with_shipping}}</td> 
+                                                                    <td>{{$order->order_amount_with_shipping}}</td>
                                                                     <td>{{ucfirst($order->payment_status)}}</td>
-                                                                    <td>#{{$order->transaction_number}}</td>   
+                                                                    <td>#{{$order->transaction_number}}</td>
                                                                     <td>{{ucfirst($order->payment_method)}}</td>
-                                                                         
+
                                                                     <td class="text-truncate">
-                                                                <ul class="actions">
-                                                                    <li><a href="{{route('admin.manage-order.show',$order->id)}}" class="view-orders" brand_id="#" title="View order details  "><i class="fa fa-eye" aria-hidden="true"></i></a></li>
-                                                                    <li><a href="{{route('admin.invoice',$order->id)}}" class="view-orders" brand_id="#" title="Download Invoice"><i class="fa fa-download" aria-hidden="true"></i></a></li>
-                                                                    <li><a href="javascript:void(0)" class="view-orders rating" id="ratingshow" onclick="showrating({{ $order->id }})" brand_id="{{ $order->id }}" data-toggle="modal" data-target="#ratingmodal" title="View rating  "><i class="fa fa-edit" aria-hidden="true"></i></a></li>
-                                                                    <!--<li><a href="javascript:void(0)" class="view-orders" brand_id="" data-toggle="modal" data-target="#complaintmodal" title="View Complaint  "><i class="fa fa-edit" aria-hidden="true"></i></a></li>-->
-                                                                    </ul>
-                                                            </td>
+                                                                        <ul class="actions">
+                                                                            <li><a href="{{route('admin.manage-order.show', $order->id)}}"
+                                                                                    class="view-orders" brand_id="#"
+                                                                                    title="View order details  "><i
+                                                                                        class="fa fa-eye"
+                                                                                        aria-hidden="true"></i></a></li>
+                                                                            <li><a href="{{route('admin.invoice', $order->id)}}"
+                                                                                    class="view-orders" brand_id="#"
+                                                                                    title="Download Invoice"><i
+                                                                                        class="fa fa-download"
+                                                                                        aria-hidden="true"></i></a></li>
+                                                                            <li><a href="javascript:void(0)"
+                                                                                    class="view-orders rating" id="ratingshow"
+                                                                                    onclick="showrating({{ $order->id }})"
+                                                                                    brand_id="{{ $order->id }}"
+                                                                                    data-toggle="modal"
+                                                                                    data-target="#ratingmodal"
+                                                                                    title="View rating  "><i class="fa fa-edit"
+                                                                                        aria-hidden="true"></i></a></li>
+                                                                            <!--<li><a href="javascript:void(0)" class="view-orders" brand_id="" data-toggle="modal" data-target="#complaintmodal" title="View Complaint  "><i class="fa fa-edit" aria-hidden="true"></i></a></li>-->
+                                                                        </ul>
+                                                                    </td>
                                                                 </tr>
-                                                                @endif
-                                                                @endforeach
+                                                            @endif
+                                                        @endforeach
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -224,31 +269,32 @@
                                 </div>
                             </div>
                         </section>
-                	</div>
+                    </div>
                 </div>
-                
+
             </div>
         </div>
     </div>
 </div>
-<div class="modal fade" id="ratingmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Rating</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:-25px">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div id="rating"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <!--<button type="button" class="btn btn-primary">Save changes</button>-->
-      </div>
+<div class="modal fade" id="ratingmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Rating</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:-25px">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="rating"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <!--<button type="button" class="btn btn-primary">Save changes</button>-->
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 
@@ -269,13 +315,13 @@
                     url: `{{ URL::to('admin/manage-faq/${id}') }}`,
                     type: "DELETE",
                     dataType: "json",
-                    success: function(result) {
+                    success: function (result) {
                         if (result.success) {
                             Swal.fire(
                                 'Deleted!',
                                 'success'
                             );
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 location.reload();
                             }, 400);
                         } else {
@@ -287,21 +333,21 @@
             }
         })
     };
-    
-    function showrating(id){
+
+    function showrating(id) {
         $("#ratingmodal #rating").html("");
-         $.ajax({
-                url: `{{ URL::to('admin/manage-order/rating/${id}') }}`,
-                type: "GET",
-                dataType: "json",
-                success: function(result) {
-                   
-                       for(let x=0; x<result.length;x++){
-                            var data = '';
-                   for(let y=0; y<result[x]['rating'];y++){
-                    data += ' <i class="fa fa-star"></i>';
-                   }
-                            $("#ratingmodal #rating").append(`
+        $.ajax({
+            url: `{{ URL::to('admin/manage-order/rating/${id}') }}`,
+            type: "GET",
+            dataType: "json",
+            success: function (result) {
+
+                for (let x = 0; x < result.length; x++) {
+                    var data = '';
+                    for (let y = 0; y < result[x]['rating']; y++) {
+                        data += ' <i class="fa fa-star"></i>';
+                    }
+                    $("#ratingmodal #rating").append(`
                             <div class="form-group">
                                 <label for="exampleInputEmail1">${result[x]['product']['name']}</label>
                                 <label for="exampleInputEmail1"><div class="review-star">${data}</div></label>
@@ -309,18 +355,18 @@
                                 
                               </div>
                             `);
-                        }
                 }
-            });
+            }
+        });
     };
-    $(document).ready(function() {
-       
-        $(document).on("click", ".add-faq", function(event) {
+    $(document).ready(function () {
+
+        $(document).on("click", ".add-faq", function (event) {
             $.ajax({
                 url: "{{ URL::to('admin/manage-faq/create') }}",
                 type: "GET",
                 dataType: "json",
-                success: function(result) {
+                success: function (result) {
                     if (result.success) {
                         $("#faq-modal").html(result.html);
                         $("#faq-modal").modal('show');
@@ -331,13 +377,13 @@
             });
         });
 
-        $(document).on("click", ".edit-faq", function(event) {
+        $(document).on("click", ".edit-faq", function (event) {
             let id = $(this).attr('faq_id');
             $.ajax({
                 url: `{{ URL::to('admin/manage-faq/${id}/edit') }}`,
                 type: "get",
                 dataType: "json",
-                success: function(result) {
+                success: function (result) {
                     if (result.success) {
                         $("#faq-modal").html(result.html);
                         $("#faq-modal").modal('show');
@@ -345,13 +391,13 @@
                         toastr.error('error encountered ' + result.msgText);
                     }
                 },
-                error: function(error) {
+                error: function (error) {
                     toastr.error('error encountered ' + error.statusText);
                 }
             });
         });
 
-        $(document).on('change', '.order_status', function() {
+        $(document).on('change', '.order_status', function () {
             var order_id = $(this).attr('data-id');
             // console.log(order_id);return false;
             var status = $(this).val();
@@ -374,13 +420,13 @@
             }).then((result) => {
                 // console.log(result.value);return false;
                 if (result.value == true) {
-                    if(order_id){
+                    if (order_id) {
                         $.ajax({
-                            url : "{{ URL::to('admin/update-order-status') }}",
+                            url: "{{ URL::to('admin/update-order-status') }}",
                             type: "POST",
                             data: post_data,
-                            success: function(data) {
-                                if(data == 200){
+                            success: function (data) {
+                                if (data == 200) {
                                     // selectedRow.remove();
                                     swal.fire(
                                         'Updated',

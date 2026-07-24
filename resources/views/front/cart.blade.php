@@ -166,16 +166,22 @@
                         </ul>
                       </th>
 
-                      <td>
-                        <span class="text-muted text-decoration-line-through">
-                          ₹{{ number_format($item->product_options->mrp, 2) }}
-                        </span>
-                        <br>
-                        <span class="fw-bold text-danger">
-                          ₹{{ number_format($item->product_options->price, 2) }}
-                        </span>
-                      </td>
-
+                      @php
+    $cartOptPrice = (float) $item->product_options->price;
+    $cartOptMrp = $item->product_options->mrp ?? null;
+    $cartHasDiscount = !is_null($cartOptMrp) && (float) $cartOptMrp > 0 && (float) $cartOptMrp > $cartOptPrice;
+@endphp
+<td>
+  @if($cartHasDiscount)
+    <span class="text-muted text-decoration-line-through">
+      ₹{{ number_format($cartOptMrp, 2) }}
+    </span>
+    <br>
+  @endif
+  <span class="fw-bold text-danger">
+    ₹{{ number_format($cartOptPrice, 2) }}
+  </span>
+</td>
 
                       <td>
                         @if(($item->product_options->discount_amount ?? 0) > 0)
@@ -229,24 +235,34 @@
                   <div class="cart-card">
 
                     <!-- TOP -->
-                    <div class="cart-card-top">
-                      <img
-                        src="{{ asset('storage/' . ($item->product_options->image_thumb ?? $item->product_options->image ?? $item->products->image_thumb ?? $item->products->image)) }}"
-                        <div class="cart-info">
-                      <h4>{{ $item->products->name }}</h4>
-                      <p>
-                        {{ $item->product_options->packaging->quantity ?? '' }}
-                        {{ $item->product_options->packaging->quantity_in ?? '' }}
-                      </p>
+                    @php
+    $cartOptPrice = (float) $item->product_options->price;
+    $cartOptMrp = $item->product_options->mrp ?? null;
+    $cartHasDiscount = !is_null($cartOptMrp) && (float) $cartOptMrp > 0 && (float) $cartOptMrp > $cartOptPrice;
+@endphp
+<div class="cart-card-top">
+  <img
+    src="{{ asset('storage/' . ($item->product_options->image_thumb ?? $item->product_options->image ?? $item->products->image_thumb ?? $item->products->image)) }}"
+    style="width:70px;height:70px;border-radius:8px;object-fit:cover;">
 
-                      <div class="price">
-                        <span class="new">₹{{ number_format($item->product_options->price, 2) }}</span>
-                        <span class="old">₹{{ number_format($item->product_options->mrp, 2) }}</span>
-                      </div>
-                    </div>
+  <div class="cart-info">
+    <h4>{{ $item->products->name }}</h4>
+    <p>
+      {{ $item->product_options->packaging->quantity ?? '' }}
+      {{ $item->product_options->packaging->quantity_in ?? '' }}
+    </p>
 
-                    <span class="remove remove-item" data-id="{{ $item->id }}">✕</span>
-                  </div>
+    <div class="price">
+      <span class="new">₹{{ number_format($cartOptPrice, 2) }}</span>
+      @if($cartHasDiscount)
+        <span class="old">₹{{ number_format($cartOptMrp, 2) }}</span>
+      @endif
+    </div>
+  </div>
+
+  <span class="remove remove-item" data-id="{{ $item->id }}">✕</span>
+</div>
+
 
                   <!-- MIDDLE -->
                   <div class="cart-card-middle">
@@ -392,209 +408,225 @@
     </div>
     </div>
   </section>
-  <script>
 
-    document.addEventListener("click", function (e) {
+<script>
 
-      // ➕ increase qty
-      if (e.target.closest(".quantity-arrow-plus")) {
-        let id = e.target.closest("button").dataset.id;
-        updateQty(id, 1);
+  document.addEventListener("click", function (e) {
+
+    // ➕ increase qty (desktop)
+    if (e.target.closest(".quantity-arrow-plus")) {
+      const btn = e.target.closest("button");
+      updateQty(btn.dataset.id, 1, btn);
+    }
+
+    // ➖ decrease qty (desktop)
+    if (e.target.closest(".quantity-arrow-minus")) {
+      const btn = e.target.closest("button");
+      updateQty(btn.dataset.id, -1, btn);
+    }
+
+    // ➕ increase qty (mobile)
+    if (e.target.closest(".mini-plus")) {
+      const btn = e.target.closest("button");
+      updateQty(btn.dataset.id, 1, btn);
+    }
+
+    // ➖ decrease qty (mobile)
+    if (e.target.closest(".mini-minus")) {
+      const btn = e.target.closest("button");
+      updateQty(btn.dataset.id, -1, btn);
+    }
+
+    // ❌ remove item
+    if (e.target.closest(".remove-item")) {
+      const el = e.target.closest(".remove-item");
+      removeItem(el.dataset.id, el);
+    }
+  });
+
+  document.addEventListener("change", function (e) {
+
+    if (e.target.classList.contains("qty-input")) {
+
+      let id = e.target.dataset.id;
+      let value = parseInt(e.target.value);
+
+      if (value < 1) {
+        e.target.value = 1;
+        value = 1;
       }
 
-      // ➖ decrease qty
-      if (e.target.closest(".quantity-arrow-minus")) {
-        let id = e.target.closest("button").dataset.id;
-        updateQty(id, -1);
-      }
-
-      // ❌ remove item
-      if (e.target.closest(".remove-item")) {
-        let id = e.target.closest(".remove-item").dataset.id;
-        removeItem(id);
-      }
-    });
-
-    document.addEventListener("change", function (e) {
-
-      if (e.target.classList.contains("qty-input")) {
-
-        let id = e.target.dataset.id;
-        let value = parseInt(e.target.value);
-
-        if (value < 1) {
-          e.target.value = 1;
-          value = 1;
-        }
-
-        fetch("/cart/set-quantity/" + id, {
-          method: "POST",
-          headers: {
-            "X-CSRF-TOKEN": "{{ csrf_token() }}",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ quantity: value })
-        })
-          .then(() => location.reload());
-
-      }
-
-    });
-
-    function updateQty(id, change) {
-
-      const row = document.querySelector(`tr [data-id="${id}"]`).closest("tr");
-      const qtyInput = row.querySelector(".qty-input");
-      const totalCell = row.querySelector(".item-total");
-
-      // show loading effect
-      row.style.opacity = "0.5";
-
-      fetch("/cart/update/" + id, {
+      fetch("/cart/set-quantity/" + id, {
         method: "POST",
         headers: {
           "X-CSRF-TOKEN": "{{ csrf_token() }}",
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ change: change })
+        body: JSON.stringify({ quantity: value })
       })
-        .then(res => res.json())
-        .then(() => {
-          location.reload();
-        })
-        .catch(() => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Update failed',
-            text: 'Unable to update quantity'
-          });
-          row.style.opacity = "1";
-        });
+        .then(() => location.reload());
 
     }
 
-    function removeItem(id) {
+  });
 
-      Swal.fire({
-        title: 'Remove this item?',
-        text: "This product will be removed from cart",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, remove it'
-      }).then((result) => {
+  // pass the clicked element in, so we find the right container
+  // (desktop <tr> or mobile .cart-card) without ambiguous lookups
+  function updateQty(id, change, sourceEl) {
 
-        if (result.isConfirmed) {
-          const row = document.querySelector(`tr [data-id="${id}"]`).closest("tr");
+    const container = sourceEl.closest("tr, .cart-card");
+    if (!container) return;
 
-          row.style.transition = "0.3s";
-          row.style.opacity = "0";
-          row.style.transform = "translateX(50px)";
+    // show loading effect
+    container.style.opacity = "0.5";
 
-          setTimeout(() => {
-            fetch("/cart/remove/" + id, {
-              method: "POST",
-              headers: {
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-              }
-            }).then(() => {
-              Swal.fire({
-                icon: 'success',
-                title: 'Removed!',
-                text: 'Item removed from cart',
-                timer: 1200,
-                showConfirmButton: false
-              }).then(() => location.reload());
-            });
-          }, 300);
-
-        }
-
+    fetch("/cart/update/" + id, {
+      method: "POST",
+      headers: {
+        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ change: change })
+    })
+      .then(res => res.json())
+      .then(() => {
+        location.reload();
+      })
+      .catch(() => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Update failed',
+          text: 'Unable to update quantity'
+        });
+        container.style.opacity = "1";
       });
-    }
 
-    // click on anchor triggers form submit
-    document.getElementById('applyCouponBtn')?.addEventListener('click', function (e) {
-      e.preventDefault();
-      document.getElementById('couponForm').dispatchEvent(new Event('submit'));
-    });
+  }
 
-    document.getElementById('couponForm')?.addEventListener('submit', function (e) {
-      e.preventDefault();
+  function removeItem(id, sourceEl) {
 
-      let code = document.getElementById('coupon_code').value.trim();
+    Swal.fire({
+      title: 'Remove this item?',
+      text: "This product will be removed from cart",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, remove it'
+    }).then((result) => {
 
-      if (!code) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Oops...',
-          text: 'Please enter coupon code'
-        });
-        return;
-      }
-      @if(!Auth::guard('customer')->check())
-        Swal.fire({
-          icon: 'info',
-          title: 'Login Required',
-          text: 'Please login to apply coupon'
-        }).then(() => {
-          window.location.href = "{{ route('customer.login') }}";
-        });
-        return;
-      @endif
+      if (result.isConfirmed) {
+        const container = sourceEl.closest("tr, .cart-card");
+        if (!container) return;
 
-      fetch("{{ route('customer.cart.applyCoupon') }}", {
-        method: "POST",
-        headers: {
-          "X-CSRF-TOKEN": "{{ csrf_token() }}",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ coupon_code: code })
-      })
-        .then(res => res.json())
-        .then(data => {
+        container.style.transition = "0.3s";
+        container.style.opacity = "0";
+        container.style.transform = "translateX(50px)";
 
-          Swal.fire({
-            icon: data.success ? 'success' : 'error',
-            title: data.success ? 'Coupon Applied' : 'Coupon Failed',
-            text: data.message,
-            confirmButtonColor: '#3085d6'
-          }).then(() => {
-            if (data.success) location.reload();
-          });
-
-        });
-
-    });
-
-
-    document.getElementById('removeCoupon')?.addEventListener('click', function () {
-
-      Swal.fire({
-        title: 'Remove coupon?',
-        text: "Discount will be removed",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, remove it'
-      }).then((result) => {
-
-        if (result.isConfirmed) {
-          fetch("{{ route('customer.cart.removeCoupon') }}", {
+        setTimeout(() => {
+          fetch("/cart/remove/" + id, {
             method: "POST",
             headers: {
               "X-CSRF-TOKEN": "{{ csrf_token() }}"
             }
-          })
-            .then(res => res.json())
-            .then(() => location.reload());
-        }
+          }).then(() => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Removed!',
+              text: 'Item removed from cart',
+              timer: 1200,
+              showConfirmButton: false
+            }).then(() => location.reload());
+          });
+        }, 300);
+
+      }
+
+    });
+  }
+
+  // click on anchor triggers form submit
+  document.getElementById('applyCouponBtn')?.addEventListener('click', function (e) {
+    e.preventDefault();
+    document.getElementById('couponForm').dispatchEvent(new Event('submit'));
+  });
+
+  document.getElementById('couponForm')?.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    let code = document.getElementById('coupon_code').value.trim();
+
+    if (!code) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Oops...',
+        text: 'Please enter coupon code'
+      });
+      return;
+    }
+    @if(!Auth::guard('customer')->check())
+      Swal.fire({
+        icon: 'info',
+        title: 'Login Required',
+        text: 'Please login to apply coupon'
+      }).then(() => {
+        window.location.href = "{{ route('customer.login') }}";
+      });
+      return;
+    @endif
+
+    fetch("{{ route('customer.cart.applyCoupon') }}", {
+      method: "POST",
+      headers: {
+        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ coupon_code: code })
+    })
+      .then(res => res.json())
+      .then(data => {
+
+        Swal.fire({
+          icon: data.success ? 'success' : 'error',
+          title: data.success ? 'Coupon Applied' : 'Coupon Failed',
+          text: data.message,
+          confirmButtonColor: '#3085d6'
+        }).then(() => {
+          if (data.success) location.reload();
+        });
 
       });
-    });
 
-  </script>
+  });
+
+
+  document.getElementById('removeCoupon')?.addEventListener('click', function () {
+
+    Swal.fire({
+      title: 'Remove coupon?',
+      text: "Discount will be removed",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, remove it'
+    }).then((result) => {
+
+      if (result.isConfirmed) {
+        fetch("{{ route('customer.cart.removeCoupon') }}", {
+          method: "POST",
+          headers: {
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+          }
+        })
+          .then(res => res.json())
+          .then(() => location.reload());
+      }
+
+    });
+  });
+
+</script>
+
 
 @endsection

@@ -29,8 +29,14 @@
         <div class="col-lg-6">
           <div class="order_complete_message text-center">
             <div class="icon bgc-thm"><span class="fa fa-check color-white"></span></div>
-            <h2 class="title">Your Order Is Completed !</h2>
-            <p class="para">Thank you. Your order has been received.</p>
+
+            @if($order->payment_method === 'offline' && $order->payment_status === 'pending')
+              <h2 class="title">Order Received !</h2>
+              <p class="para">Thank you. Your order has been received and is awaiting payment confirmation.</p>
+            @else
+              <h2 class="title">Your Order Is Completed !</h2>
+              <p class="para">Thank you. Your order has been received.</p>
+            @endif
           </div>
         </div>
       </div>
@@ -53,9 +59,29 @@
                 </li>
                 <li class="list-inline-item">
                   <p>Payment Method</p>
-                  <h5>{{ $order->payment_method === 'offline' ? 'Direct Bank Transfer' : 'CCavenue' }}</h5>
+                  <h5>
+                    @if($order->payment_method === 'offline')
+                      Direct Bank Transfer
+                    @elseif($order->payment_method === 'online')
+                      {{ ucfirst($order->payment_gateway ?? 'Online') }}
+                    @else
+                      {{ ucfirst($order->payment_method) }}
+                    @endif
+                  </h5>
+                </li>
+                <li class="list-inline-item">
+                  <p>Payment Status</p>
+                  <h5>{{ ucfirst($order->payment_status) }}</h5>
                 </li>
               </ul>
+
+              @if($order->invoice_url)
+                <div class="mt15">
+                  <a href="{{ url('storage' . $order->invoice_url) }}" class="btn btn-thm" target="_blank">
+                    Download Invoice
+                  </a>
+                </div>
+              @endif
             </div>
             <div class="order_details">
               <h4 class="title mb25">Order Details</h4>

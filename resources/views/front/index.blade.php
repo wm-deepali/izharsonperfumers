@@ -507,8 +507,11 @@
                                 <div class="item ovh">
                                     <div class="shop_item bdrtrb1 px-2 px-sm-3 wow fadeIn" data-wow-duration="1.0s">
                                         <div class="thumb pb30">
+                                              <a href="{{ url('product-details/' . $product->slug) }}">
+      
                                             <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}"
                                                 alt="{{ $product->name }}" loading="lazy" width="300" height="300" style="aspect-ratio: 1/1; object-fit: contain;">
+    </a>
                                             <div class="thumb_info">
                                                 <ul class="mb0">
                                                     <li>
@@ -561,25 +564,30 @@
                                                     <a href="#">{{ $product->review_count }} reviews</a>
                                                 </div>
                                             </div>
-                                            {{-- PRICE --}}
-                                            <div class="si_footer">
-                                                <div class="price">
-                                                    ₹{{ $product->product_options[0]->price ?? $product->min_price }}
+                                           {{-- PRICE --}}
+@php
+    $dealPrice = (float) ($product->product_options[0]->price ?? $product->min_price);
+    $dealMrp = $product->product_options[0]->mrp ?? null;
+    $dealHasDiscount = !is_null($dealMrp) && (float) $dealMrp > 0 && (float) $dealMrp > $dealPrice;
+@endphp
+<div class="si_footer">
+    <div class="price">
+        ₹{{ $product->product_options[0]->price ?? $product->min_price }}
 
-                                                    @if(!empty($product->product_options[0]->mrp))
-                                                        <small>
-                                                            <del>₹{{ $product->product_options[0]->mrp }}</del>
-                                                            <span
-                                                                class="off_tag text-thm1">{{ $product->product_options[0]->discount_percentage }}
-                                                                %off</span>
-                                                        </small>
-                                                    @endif
-                                                </div>
-                                                <div class="line mt20"></div>
-                                                <div class="sell_stock mt10">
-                                                    <div class="sell">Sold 56</div>
-                                                </div>
-                                            </div>
+        @if($dealHasDiscount)
+            <small>
+                <del>₹{{ $dealMrp }}</del>
+                <span
+                    class="off_tag text-thm1">{{ $product->product_options[0]->discount_percentage }}
+                    %off</span>
+            </small>
+        @endif
+    </div>
+    <div class="line mt20"></div>
+    <div class="sell_stock mt10">
+        <div class="sell">Sold 56</div>
+    </div>
+</div>
 
                                         </div>
                                     </div>
@@ -1302,11 +1310,34 @@
     @endif
     <!-- === END LAZY LOADED SECTIONS === -->
 
-    <script>const dealEndTime = "{{ optional($maxDealEnd)->toIso8601String() }}"; if (!dealEndTime) { document.getElementById("timer").innerHTML = "No active deals"; } function makeTimer() { const endTime = new Date(dealEndTime).getTime(); const now = new Date().getTime(); const timeLeft = endTime - now; if (timeLeft <= 0) { document.getElementById("timer").innerHTML = "Deal Expired"; return; } const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24)); const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)); const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000); document.querySelector(".days").innerHTML = days; document.querySelector(".hours").innerHTML = hours.toString().padStart(2, '0'); document.querySelector(".minutes").innerHTML = minutes.toString().padStart(2, '0'); document.querySelector(".seconds").innerHTML = seconds.toString().padStart(2, '0'); } setInterval(makeTimer, 1000); makeTimer();</script>
+   <script>const dealEndTime = "{{ optional($maxDealEnd)->toIso8601String() }}"; if (!dealEndTime) { document.getElementById("timer").innerHTML = "No active deals"; } function makeTimer() { const endTime = new Date(dealEndTime).getTime(); const now = new Date().getTime(); const timeLeft = endTime - now; if (timeLeft <= 0) { document.getElementById("timer").innerHTML = "Deal Expired"; return; } const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24)); const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)); const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000); document.querySelector(".days").innerHTML = days; document.querySelector(".hours").innerHTML = hours.toString().padStart(2, '0'); document.querySelector(".minutes").innerHTML = minutes.toString().padStart(2, '0'); document.querySelector(".seconds").innerHTML = seconds.toString().padStart(2, '0'); } setInterval(makeTimer, 1000); makeTimer();</script>
 
-    <script>document.querySelectorAll('.add-to-cart-btn').forEach(btn => { btn.addEventListener('click', function (e) { e.preventDefault(); const button = this; const productId = button.dataset.product; const optionId = button.dataset.option || null; const quantity = 1; button.disabled = true; Swal.fire({ title: 'Adding to cart...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); fetch("{{ route('cart.store') }}", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" }, body: JSON.stringify({ product_id: productId, product_option_id: optionId, quantity: quantity, device_id: localStorage.getItem("device_id") }) }).then(res => res.json()).then(data => { button.disabled = false; if (data.cart_count !== undefined) { document.getElementById("cart-count").innerText = data.cart_count; document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2); refreshMiniCart(); } Swal.fire({ icon: 'success', title: 'Added!', text: data.message, timer: 1200, showConfirmButton: false }); }).catch(() => { button.disabled = false; Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to add product' }); }); }); }); document.querySelectorAll('.add-to-wishlist-btn').forEach(btn => { btn.addEventListener('click', function (e) { e.preventDefault(); const button = this; const productId = button.dataset.product; Swal.fire({ title: 'Updating wishlist...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } }); fetch("/wishlist/toggle", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" }, body: JSON.stringify({ product_id: productId }) }).then(res => res.json()).then(data => { Swal.close(); const heartIcon = button.querySelector('span, i'); if (!heartIcon) return; if (data.status == "added") { heartIcon.style.color = "red"; } if (data.status == "removed") { heartIcon.style.color = ""; } if (data.status == "login_required") { window.location.href = "/customer/login"; } }).catch(error => { Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to update wishlist' }); console.error("Wishlist error:", error); }); }); });</script>
+<script>document.querySelectorAll('.add-to-cart-btn').forEach(btn => { btn.addEventListener('click', function (e) { e.preventDefault(); const button = this; const productId = button.dataset.product; const optionId = button.dataset.option || null; const quantity = 1; button.disabled = true; Swal.fire({ title: 'Adding to cart...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); fetch("{{ route('cart.store') }}", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" }, body: JSON.stringify({ product_id: productId, product_option_id: optionId, quantity: quantity, device_id: localStorage.getItem("device_id") }) }).then(res => res.json()).then(data => { button.disabled = false; if (data.cart_count !== undefined) { document.getElementById("cart-count").innerText = data.cart_count; document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2); refreshMiniCart(); } Swal.fire({ icon: 'success', title: 'Added!', text: data.message, timer: 1200, showConfirmButton: false }); }).catch(() => { button.disabled = false; Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to add product' }); }); }); }); document.querySelectorAll('.add-to-wishlist-btn').forEach(btn => { btn.addEventListener('click', function (e) { e.preventDefault(); const button = this; const productId = button.dataset.product; Swal.fire({ title: 'Updating wishlist...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } }); fetch("/wishlist/toggle", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" }, body: JSON.stringify({ product_id: productId }) }).then(res => res.json()).then(data => { Swal.close(); const heartIcon = button.querySelector('span, i'); if (!heartIcon) return; if (data.status == "added") { heartIcon.style.color = "red"; } if (data.status == "removed") { heartIcon.style.color = ""; } if (data.status == "login_required") { window.location.href = "/customer/login"; } }).catch(error => { Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to update wishlist' }); console.error("Wishlist error:", error); }); }); });</script>
 
-    <script>const track = document.querySelector(".productslider-track"); const prev = document.querySelector(".productslider-prev"); const next = document.querySelector(".productslider-next"); let position = 0; next.addEventListener("click", () => { position -= 25; track.style.transform = `translateX(${position}%)`; }); prev.addEventListener("click", () => { position += 25; track.style.transform = `translateX(${position}%)`; });</script>
+<script>
+document.querySelectorAll(".productslider-wrapper").forEach(wrapper => {
+    const track = wrapper.querySelector(".productslider-track");
+    const prev  = wrapper.querySelector(".prev, .productslider-prev");
+    const next  = wrapper.querySelector(".next, .productslider-next");
 
-    <script>document.querySelectorAll(".productslider-wrapper").forEach(wrapper => { let track = wrapper.querySelector(".productslider-track"); let prev = wrapper.querySelector(".prev"); let next = wrapper.querySelector(".next"); let position = 0; next.onclick = () => { position -= 25; track.style.transform = `translateX(${position}%)`; } prev.onclick = () => { position += 25; track.style.transform = `translateX(${position}%)`; } }); document.querySelectorAll(".productslider-wrapper").forEach(wrapper => { let track = wrapper.querySelector(".productslider-track"); let prev = wrapper.querySelector(".prev"); let next = wrapper.querySelector(".next"); let position = 0; next.onclick = () => { position -= 25; track.style.transform = `translateX(${position}%)`; } prev.onclick = () => { position += 25; track.style.transform = `translateX(${position}%)`; } });</script>
+    if (!track || !prev || !next) return; // skip incomplete sliders safely
+
+    let position = 0;
+    const itemsVisible = window.innerWidth <= 768 ? 2
+                        : window.innerWidth <= 992 ? 3
+                        : 4;
+    const step = 100 / itemsVisible;
+    const maxPosition = -Math.max(track.children.length - itemsVisible, 0) * step;
+
+    next.addEventListener("click", () => {
+        position = Math.max(position - step, maxPosition);
+        track.style.transform = `translateX(${position}%)`;
+    });
+
+    prev.addEventListener("click", () => {
+        position = Math.min(position + step, 0);
+        track.style.transform = `translateX(${position}%)`;
+    });
+});
+</script>
 @endsection

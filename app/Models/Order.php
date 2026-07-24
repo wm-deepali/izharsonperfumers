@@ -59,6 +59,7 @@ class Order extends Model
         'tracking_number',
         'tracking_detail',
         'payment_method',
+        'payment_gateway',
         'paymentid',
         'average_rating',
         'invoice_number',

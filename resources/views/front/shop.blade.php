@@ -983,27 +983,29 @@
                             <div class="col-6 col-md-4 col-xl-4 product-item">
                                 <div class="productcard-card">
 
-                                    <!-- IMAGE -->
-                                    <div class="productcard-image">
+                                   <!-- IMAGE -->
+<div class="productcard-image">
 
-                                    <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}" loading="lazy">
+    <a href="{{ url('product-details/' . $product->slug) }}">
+        <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}" loading="lazy">
+    </a>
 
-                                        <!-- ACTION ICONS -->
-                                        <div class="productcard-icons">
+    <!-- ACTION ICONS -->
+    <div class="productcard-icons">
 
-                                            <a href="#" class="productcard-icon add-to-wishlist-btn"
-                                                data-product="{{ $product->id }}">
-                                                <i class="flaticon-heart"
-                                                    style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}"></i>
-                                            </a>
+        <a href="#" class="productcard-icon add-to-wishlist-btn"
+            data-product="{{ $product->id }}">
+            <i class="flaticon-heart"
+                style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}"></i>
+        </a>
 
-                                            <a href="{{ url('product-details/' . $product->slug) }}" class="productcard-icon">
-                                                <i class="flaticon-show"></i>
-                                            </a>
+        <a href="{{ url('product-details/' . $product->slug) }}" class="productcard-icon">
+            <i class="flaticon-show"></i>
+        </a>
 
-                                        </div>
+    </div>
 
-                                    </div>
+</div>
 
 
                                     <!-- DETAILS -->
@@ -1035,17 +1037,24 @@
 
 
                                         <!-- PRICE -->
-                                        <div class="productcard-price">
+                                        @php
+    $prodPrice = (float) ($product->product_options[0]->price ?? $product->min_price);
+    $prodMrp = $product->product_options[0]->mrp ?? null;
+    $prodHasDiscount = !is_null($prodMrp) && (float) $prodMrp > 0 && (float) $prodMrp > $prodPrice;
+@endphp
 
-                                            ₹{{ $product->product_options[0]->price ?? $product->min_price }}
+<!-- PRICE -->
+<div class="productcard-price">
 
-                                            @if(!empty($product->product_options[0]->mrp))
-                                                <span class="productcard-oldprice">
-                                                    ₹{{ $product->product_options[0]->mrp }}
-                                                </span>
-                                            @endif
+    ₹{{ $product->product_options[0]->price ?? $product->min_price }}
 
-                                        </div>
+    @if($prodHasDiscount)
+        <span class="productcard-oldprice">
+            ₹{{ $prodMrp }}
+        </span>
+    @endif
+
+</div>
 
 
                                         <!-- BUTTONS -->
@@ -1109,27 +1118,29 @@
                                     <div class="col-6 col-md-4 col-xl-4 product-item">
                                         <div class="productcard-card">
 
-                                            <!-- IMAGE -->
-                                            <div class="productcard-image">
+                                           <!-- IMAGE -->
+<div class="productcard-image">
 
-                                                <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}" loading="lazy">
+    <a href="{{ url('product-details/' . $product->slug) }}">
+        <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}" loading="lazy">
+    </a>
 
-                                                <!-- ACTION ICONS -->
-                                                <div class="productcard-icons">
+    <!-- ACTION ICONS -->
+    <div class="productcard-icons">
 
-                                                    <a href="#" class="productcard-icon add-to-wishlist-btn"
-                                                        data-product="{{ $product->id }}">
-                                                        <i class="flaticon-heart"
-                                                            style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}"></i>
-                                                    </a>
+        <a href="#" class="productcard-icon add-to-wishlist-btn"
+            data-product="{{ $product->id }}">
+            <i class="flaticon-heart"
+                style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}"></i>
+        </a>
 
-                                                    <a href="{{ url('product-details/' . $product->slug) }}"
-                                                        class="productcard-icon">
-                                                        <i class="flaticon-show"></i>
-                                                    </a>
+        <a href="{{ url('product-details/' . $product->slug) }}"
+            class="productcard-icon">
+            <i class="flaticon-show"></i>
+        </a>
 
-                                                </div>
-                                            </div>
+    </div>
+</div>
 
                                             <!-- DETAILS -->
                                             <div class="productcard-body">
@@ -1160,17 +1171,24 @@
 
 
                                                 <!-- PRICE -->
-                                                <div class="productcard-price">
+                                                @php
+    $bsPrice = (float) ($product->product_options[0]->price ?? $product->min_price);
+    $bsMrp = $product->product_options[0]->mrp ?? null;
+    $bsHasDiscount = !is_null($bsMrp) && (float) $bsMrp > 0 && (float) $bsMrp > $bsPrice;
+@endphp
 
-                                                    ₹{{ $product->product_options[0]->price ?? $product->min_price }}
+<!-- PRICE -->
+<div class="productcard-price">
 
-                                                    @if(!empty($product->product_options[0]->mrp))
-                                                        <span class="productcard-oldprice">
-                                                            ₹{{ $product->product_options[0]->mrp }}
-                                                        </span>
-                                                    @endif
+    ₹{{ $product->product_options[0]->price ?? $product->min_price }}
 
-                                                </div>
+    @if($bsHasDiscount)
+        <span class="productcard-oldprice">
+            ₹{{ $bsMrp }}
+        </span>
+    @endif
+
+</div>
 
 
                                                 <!-- BUTTONS -->

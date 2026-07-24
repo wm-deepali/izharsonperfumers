@@ -2987,12 +2987,6 @@ class FrontendController extends Controller
                     // $emailfromname = $emailsetting->name;
                     $pdfurl = $data['pdf_url'];
                     $admin = User::first();
-                    //  dispatch(new \App\Jobs\SendEmailJob($customer->email,$datas,$admin->alert_email));
-                    //   Mail::to($customer->email)->send(new OrderMail($datas));
-                    //   Mail::to($admin->alert_email)->send(new AdminOrderMail($datas));
-                    //   print_r(Mail::to([$customer->email,$admin->alert_email])->send(new OrderMail($datas)));
-                    //   die();
-
 
                     $this->sendAdminmsg($customer->name, $customer->email, $customer->mobile_number, $cart_total_with_shipping);
 

@@ -347,6 +347,12 @@ color:#fff;
             'thumb' => $product->image_thumb ?? $product->image,
         ];
     }
+
+    // ✅ Discount calculation for main + sidebar price blocks
+    $mainOpt = $product->product_options->first();
+    $mainOptPrice = (float) ($mainOpt->price ?? 0);
+    $mainOptMrp = $mainOpt->mrp ?? null;
+    $mainHasDiscount = !is_null($mainOptMrp) && (float) $mainOptMrp > 0 && (float) $mainOptMrp > $mainOptPrice;
 @endphp
 
     <!-- Shop Single Content -->
@@ -440,9 +446,9 @@ color:#fff;
                             </ul>
                             <hr>
                             <div class="sspd_price mt-2 mb-3">
-                                ₹<span id="product-price">{{ $product->product_options->first()->price }}</span>
-                                <small>
-                                    <del>₹<span id="product-mrp">{{ $product->product_options->first()->mrp }}</span></del>
+                                ₹<span id="product-price">{{ $mainOptPrice }}</span>
+                                <small id="product-mrp-wrap" style="{{ $mainHasDiscount ? '' : 'display:none;' }}">
+                                    <del>₹<span id="product-mrp">{{ $mainOptMrp }}</span></del>
                                 </small>
                             </div>
                             @if(!empty($product->fragrance_names))
@@ -908,10 +914,10 @@ color:#fff;
                             </ul>
                             <hr>
                             <div class="sspd_price mb20 mt20">
-                                ₹<span id="sidebar-price">{{ $product->product_options->first()->price }}</span>
+                                ₹<span id="sidebar-price">{{ $mainOptPrice }}</span>
 
-                                <small>
-                                    <del>₹<span id="sidebar-mrp">{{ $product->product_options->first()->mrp }}</span></del>
+                                <small id="sidebar-mrp-wrap" style="{{ $mainHasDiscount ? '' : 'display:none;' }}">
+                                    <del>₹<span id="sidebar-mrp">{{ $mainOptMrp }}</span></del>
                                 </small>
                             </div>
                             @if(!empty($product->fragrance_names))
@@ -1029,14 +1035,20 @@ color:#fff;
                     <div
                         class="navi_pagi_top_right related_product_slider slider_dib_sm shop_item_6grid_slider owl-theme owl-carousel">
                         @foreach($relatedProducts as $item)
+                            @php
+                                $relPrice = (float) ($item->product_options[0]->price ?? $item->min_price);
+                                $relMrp = $item->product_options[0]->mrp ?? null;
+                                $relHasDiscount = !is_null($relMrp) && (float) $relMrp > 0 && (float) $relMrp > $relPrice;
+                            @endphp
                             <div class="item">
                                 <div class="productcard-card">
 
     <!-- IMAGE -->
     <div class="productcard-image">
-
+ <a href="{{ url('product-details/' . $item->slug) }}">
+      
         <img src="{{ asset('storage/' . ($item->image_thumb ?? $item->image)) }}" alt="{{ $item->name }}">
-
+</a>
         <!-- ACTION ICONS -->
         <div class="productcard-icons">
 
@@ -1088,9 +1100,9 @@ color:#fff;
 
             ₹{{ $item->product_options[0]->price ?? $item->min_price }}
 
-            @if(!empty($item->product_options[0]->mrp))
+            @if($relHasDiscount)
             <span class="productcard-oldprice">
-                ₹{{ $item->product_options[0]->mrp }}
+                ₹{{ $relMrp }}
             </span>
             @endif
 
@@ -1137,14 +1149,20 @@ color:#fff;
                     <div
                         class="navi_pagi_top_right related_product_slider slider_dib_sm shop_item_6grid_slider owl-theme owl-carousel ">
                         @foreach($recommendedProducts as $item)
+                            @php
+                                $recPrice = (float) ($item->product_options[0]->price ?? $item->min_price);
+                                $recMrp = $item->product_options[0]->mrp ?? null;
+                                $recHasDiscount = !is_null($recMrp) && (float) $recMrp > 0 && (float) $recMrp > $recPrice;
+                            @endphp
                             <div class="item ">
  <div class="productcard-card">
 
     <!-- IMAGE -->
     <div class="productcard-image">
-
+ <a href="{{ url('product-details/' . $item->slug) }}">
+      
         <img src="{{ asset('storage/' . ($item->image_thumb ?? $item->image)) }}" alt="{{ $item->name }}">
-
+</a>
         <!-- ACTION ICONS -->
         <div class="productcard-icons">
 
@@ -1195,9 +1213,9 @@ color:#fff;
 
             ₹{{ $item->product_options[0]->price ?? $item->min_price }}
 
-            @if(!empty($item->product_options[0]->mrp))
+            @if($recHasDiscount)
             <span class="productcard-oldprice">
-                ₹{{ $item->product_options[0]->mrp }}
+                ₹{{ $recMrp }}
             </span>
             @endif
 
@@ -1233,109 +1251,123 @@ color:#fff;
              
         </div>
     </section>
-    <script src="{{ asset('front/js/jquery-3.6.0.js') }}"></script>
-    <script>
+   <script src="{{ asset('front/js/jquery-3.6.0.js') }}"></script>
+<script>
+document.querySelectorAll('.card-header').forEach(header => {
+    header.style.cursor = 'pointer';
+    header.addEventListener('click', function (e) {
+        // agar seedha button pe click hua hai, toh use apna kaam karne do (double trigger na ho)
+        if (e.target.closest('button')) return;
 
-    document.addEventListener("DOMContentLoaded", function () {
-        
-        if($("#mainProductImage").length){
-            $("#mainProductImage").ezPlus();
-        }
-        
-        let priceEl = document.getElementById("product-price");
-        let mrpEl = document.getElementById("product-mrp");
-
-        let basePrice = priceEl ? parseFloat(priceEl.innerText) : 0;
-        let baseMrp = mrpEl ? parseFloat(mrpEl.innerText) : 0;
-
-        const qtyInputs = document.querySelectorAll(".quantity-input");
-
-        function getQty() {
-            let qty = parseInt(qtyInputs[0].value) || 1;
-            return qty < 1 ? 1 : qty;
-        }
-
-        function syncQty(value) {
-            qtyInputs.forEach(input => input.value = value);
-        }
-
-            function updateTotal() {
-                let qty = getQty();
-
-                syncQty(qty);
-
-                const totalPrice = (basePrice * qty).toFixed(2);
-                const totalMrp = (baseMrp * qty).toFixed(2);
-
-                if (document.getElementById("product-price"))
-                    document.getElementById("product-price").innerText = totalPrice;
-
-                if (document.getElementById("sidebar-price"))
-                    document.getElementById("sidebar-price").innerText = totalPrice;
-
-                if (document.getElementById("product-mrp"))
-                    document.getElementById("product-mrp").innerText = totalMrp;
-
-                if (document.getElementById("sidebar-mrp"))
-                    document.getElementById("sidebar-mrp").innerText = totalMrp;
-            }
-
-            // manual typing
-            qtyInputs.forEach(input => {
-                input.addEventListener("input", updateTotal);
-            });
-
-            // PLUS buttons
-            document.querySelectorAll('.quantity-arrow-plus2').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    let input = this.parentElement.querySelector('.quantity-input');
-                    let value = parseInt(input.value) || 1;
-                    value++;
-                    syncQty(value);
-                    updateTotal();
-                });
-            });
-
-            // MINUS buttons
-            document.querySelectorAll('.quantity-arrow-minus2').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    let input = this.parentElement.querySelector('.quantity-input');
-                    let value = parseInt(input.value) || 1;
-                    value = value > 1 ? value - 1 : 1;
-                    syncQty(value);
-                    updateTotal();
-                });
-            });
-
-
-            // variant change
-document.querySelectorAll('[data-price]').forEach(btn => {
-    btn.addEventListener('click', function () {
-
-        basePrice = parseFloat(this.dataset.price);
-        baseMrp   = parseFloat(this.dataset.mrp);
-
-        updateTotal();
-
-        // 🔥 change main image
-        const newImage = this.dataset.image;
-        const mainImg = document.getElementById('mainProductImage');
-
-        if(mainImg && newImage){
-
-    $('.zoomContainer').remove();
-    $('#mainProductImage').removeData('ezPlus');
-
-    mainImg.src = newImage;
-    mainImg.setAttribute("data-zoom-image", newImage);
-
-    $("#mainProductImage").ezPlus();
-
-}
+        const btn = this.querySelector('button[data-bs-toggle="collapse"]');
+        if (btn) btn.click();
     });
 });
+(function () {
+
+   
+ try {
+        if ($("#mainProductImage").length && typeof $.fn.ezPlus === 'function') {
+            $("#mainProductImage").ezPlus();
+        }
+    } catch (e) {
+        console.warn("ezPlus zoom init failed:", e);
+    }
+
+
+    let priceEl = document.getElementById("product-price");
+    let mrpEl = document.getElementById("product-mrp");
+
+    let basePrice = priceEl ? parseFloat(priceEl.innerText) : 0;
+    let baseMrp = mrpEl ? parseFloat(mrpEl.innerText) : 0;
+
+    const qtyInputs = document.querySelectorAll(".quantity-input");
+
+    function getQty() {
+        let qty = parseInt(qtyInputs[0].value) || 1;
+        return qty < 1 ? 1 : qty;
+    }
+
+    function syncQty(value) {
+        qtyInputs.forEach(input => input.value = value);
+    }
+
+    function updateTotal() {
+        let qty = getQty();
+        syncQty(qty);
+
+        const totalPrice = (basePrice * qty).toFixed(2);
+        const totalMrp = (baseMrp * qty).toFixed(2);
+        const hasDiscount = baseMrp > 0 && baseMrp > basePrice;
+
+        if (document.getElementById("product-price"))
+            document.getElementById("product-price").innerText = totalPrice;
+        if (document.getElementById("sidebar-price"))
+            document.getElementById("sidebar-price").innerText = totalPrice;
+        if (document.getElementById("product-mrp"))
+            document.getElementById("product-mrp").innerText = totalMrp;
+        if (document.getElementById("sidebar-mrp"))
+            document.getElementById("sidebar-mrp").innerText = totalMrp;
+
+        const productMrpWrap = document.getElementById("product-mrp-wrap");
+        const sidebarMrpWrap = document.getElementById("sidebar-mrp-wrap");
+        if (productMrpWrap) productMrpWrap.style.display = hasDiscount ? "" : "none";
+        if (sidebarMrpWrap) sidebarMrpWrap.style.display = hasDiscount ? "" : "none";
+    }
+
+    // manual typing
+    qtyInputs.forEach(input => {
+        input.addEventListener("input", function () {
+            let val = parseInt(this.value) || 1;
+            if (val < 1) val = 1;
+            syncQty(val);
+            updateTotal();
         });
-  
+    });
+
+    // PLUS buttons
+    document.querySelectorAll('.quantity-arrow-plus2').forEach(btn => {
+        btn.addEventListener('click', function () {
+            let input = this.parentElement.querySelector('.quantity-input');
+            let value = (parseInt(input.value) || 1) + 1;
+            syncQty(value);
+            updateTotal();
+        });
+    });
+
+    // MINUS buttons
+    document.querySelectorAll('.quantity-arrow-minus2').forEach(btn => {
+        btn.addEventListener('click', function () {
+            let input = this.parentElement.querySelector('.quantity-input');
+            let value = parseInt(input.value) || 1;
+            value = value > 1 ? value - 1 : 1;
+            syncQty(value);
+            updateTotal();
+        });
+    });
+
+    // variant change
+    document.querySelectorAll('[data-price]').forEach(btn => {
+        btn.addEventListener('click', function () {
+            basePrice = parseFloat(this.dataset.price);
+            baseMrp = parseFloat(this.dataset.mrp);
+            updateTotal();
+
+            const newImage = this.dataset.image;
+            const mainImg = document.getElementById('mainProductImage');
+            if (mainImg && newImage) {
+                $('.zoomContainer').remove();
+                $('#mainProductImage').removeData('ezPlus');
+                mainImg.src = newImage;
+                mainImg.setAttribute("data-zoom-image", newImage);
+                $("#mainProductImage").ezPlus();
+            }
+        });
+    });
+
+})();
+
+
 document.getElementById('shareProduct')?.addEventListener('click', function(e){
     e.preventDefault();
 
@@ -1373,7 +1405,6 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn=>{
         const productId = this.dataset.product;
         const quantity = document.querySelector('.quantity-input').value || 1;
 
-        // 🔵 show loading
         Swal.fire({
             title: 'Adding to cart...',
             allowOutsideClick: false,
@@ -1460,8 +1491,7 @@ document.querySelectorAll('.buy-now-btn').forEach(btn=>{
                             document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2);
                             refreshMiniCart();
                         }
-                        
-                        
+
             Swal.fire({
                 icon: 'success',
                 title: 'Redirecting to checkout...',
@@ -1484,7 +1514,7 @@ document.querySelectorAll('.buy-now-btn').forEach(btn=>{
 });
 
 
-  document.querySelectorAll('.add-to-wishlist-btn').forEach(btn => {
+document.querySelectorAll('.add-to-wishlist-btn').forEach(btn => {
 
     btn.addEventListener('click', function (e) {
 
@@ -1493,7 +1523,6 @@ document.querySelectorAll('.buy-now-btn').forEach(btn=>{
         const button = this;
         const productId = button.dataset.product;
 
-        // 🔵 show loading
         Swal.fire({
             title: 'Updating Wishlist...',
             allowOutsideClick: false,
@@ -1515,10 +1544,8 @@ document.querySelectorAll('.buy-now-btn').forEach(btn=>{
         .then(res => res.json())
         .then(data => {
 
-                              const heartIcon = button.querySelector('span, i');
-
-if (!heartIcon) return; // stop error
-
+            const heartIcon = button.querySelector('span, i');
+            if (!heartIcon) return;
 
             if (data.status === "added") {
                 heartIcon.style.color = "red";
@@ -1533,7 +1560,6 @@ if (!heartIcon) return; // stop error
                 return;
             }
 
-            // ✅ close loading
             Swal.close();
 
         })
@@ -1552,7 +1578,6 @@ if (!heartIcon) return; // stop error
     });
 
 });
-
 
 </script>
 <script>

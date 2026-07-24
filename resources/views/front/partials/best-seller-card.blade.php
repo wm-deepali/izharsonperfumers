@@ -196,29 +196,38 @@ color:#fff;
 
 </style>
 
+@php
+    $productcardPrice = $product->product_options[0]->price ?? $product->min_price;
+    $productcardMrp = $product->product_options[0]->mrp ?? null;
+    $productcardHasDiscount = !empty($productcardMrp) && $productcardMrp > $productcardPrice;
+@endphp
+
+
 <div class="item">
 <div class="productcard-card">
 
-    <!-- IMAGE -->
-    <div class="productcard-image">
+   <!-- IMAGE -->
+<div class="productcard-image">
 
+    <a href="{{ url('product-details/' . $product->slug) }}">
         <img src="{{ asset('storage/' . ($product->image_thumb ?? $product->image)) }}" alt="{{ $product->name }}">
+    </a>
 
-        <!-- ACTION ICONS -->
-        <div class="productcard-icons">
+    <!-- ACTION ICONS -->
+    <div class="productcard-icons">
 
-            <a href="#" class="productcard-icon add-to-wishlist-btn" data-product="{{ $product->id }}">
-                <i class="flaticon-heart"
-                style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}"></i>
-            </a>
+        <a href="#" class="productcard-icon add-to-wishlist-btn" data-product="{{ $product->id }}">
+            <i class="flaticon-heart"
+            style="{{ collect($wishlistIds)->contains($product->id) ? 'color:red;' : '' }}"></i>
+        </a>
 
-            <a href="{{ url('product-details/' . $product->slug) }}" class="productcard-icon">
-                <i class="flaticon-show"></i>
-            </a>
-
-        </div>
+        <a href="{{ url('product-details/' . $product->slug) }}" class="productcard-icon">
+            <i class="flaticon-show"></i>
+        </a>
 
     </div>
+
+</div>
 
 
     <!-- DETAILS -->
@@ -252,11 +261,11 @@ color:#fff;
         <!-- PRICE -->
         <div class="productcard-price">
 
-            ₹{{ $product->product_options[0]->price ?? $product->min_price }}
+            ₹{{ $productcardPrice }}
 
-            @if(!empty($product->product_options[0]->mrp))
+            @if($productcardHasDiscount)
             <span class="productcard-oldprice">
-                ₹{{ $product->product_options[0]->mrp }}
+                ₹{{ $productcardMrp }}
             </span>
             @endif
 

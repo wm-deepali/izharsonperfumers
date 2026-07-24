@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -76,28 +75,43 @@ a:hover {
     <div class="wrapper">
         <div class="container">
             <div class="p-1">
-<img src="{{ URL::asset('storage/' . $headerdata->header_logo) }}" style="height: 50px;">
-</div>
+                <img src="{{ URL::asset('storage/' . $headerdata->header_logo) }}" style="height: 50px;">
+            </div>
             <div class="mt-4 heading">
                 <h2>Order Confirmation</h2>
-                <p><b>Customer Name:-</b>{{$data['name']}}</p>
-                <p><b>Email Id:-</b>{{$data['email']}}</p>
-                <p><b>Mobile Number:-</b>{{$data['mobile_number']}}</p>
-                <p><b>Order Amount:-</b>INR {{$data['order']['order_amount_with_shipping']}}</p>
-                <p><b>Payment Method:-</b>{{$data['order']['payment_method'] == "offline" ? "Direct Bank Transfer":$data['order']['payment_method']}}</p>
-                <p><b>Payment:-</b>{{$data['order']['payment_status']}}</p>
+                <p><b>Order ID:-</b> #{{ $data['order']['order_number'] }}</p>
+                <p><b>Customer Name:-</b> {{ $data['name'] }}</p>
+                <p><b>Email Id:-</b> {{ $data['email'] }}</p>
+                <p><b>Mobile Number:-</b> {{ $data['mobile_number'] }}</p>
+                <p><b>Order Amount:-</b> INR {{ $data['order']['order_amount_with_shipping'] }}</p>
+                <p>
+                    <b>Payment Method:-</b>
+                    @if($data['order']['payment_method'] == "offline")
+                        Direct Bank Transfer
+                    @elseif($data['order']['payment_method'] == "online")
+                        Online ({{ ucfirst($data['order']['payment_gateway'] ?? 'N/A') }})
+                    @else
+                        {{ ucfirst($data['order']['payment_method']) }}
+                    @endif
+                </p>
+                <p><b>Payment Status:-</b> {{ ucfirst($data['order']['payment_status']) }}</p>
+
+                @if(!empty($data['pdf_url']))
+                <p>
+                    <a href="{{ $data['pdf_url'] }}" class="btn-btnverify" target="_blank">Download Invoice</a>
+                </p>
+                @endif
             </div>
         </div>
         <div class="container mt-3">
             <div class="footer-logo">
-                  <img src="{{ URL::asset('storage/' . $headerdata->footer_logo) }}" style="height: 50px;">      
+                <img src="{{ URL::asset('storage/' . $headerdata->footer_logo) }}" style="height: 50px;">
             </div>
             <div class="footer-copyright">
-                &copy; {{date('Y')}} IZARHSON PERFUMERS PVT. LTD.
+                &copy; {{ date('Y') }} IZARHSON PERFUMERS PVT. LTD.
             </div>
         </div>
     </div>
 </body>
 
 </html>
-

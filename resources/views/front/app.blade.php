@@ -671,7 +671,7 @@
             <div class="hsidebar_footer_content">
                 <div class="list_last_content">
                     <div class="lc">
-                        <p class="para">Buy ₹98.00 more to enjoy FREE Shipping</p>
+                        <p class="para">Buy ₹2,000.00 or more to enjoy FREE Shipping</p>
                         <div class="uilayout_range home1_style">
                             <div class="sidebar_range_slider mb30 mt25">
                                 <input class="range-example-km" value="80" type="text">
@@ -999,15 +999,17 @@
                                 <div class="footer_contact_iconbox d-flex mb-2">
                                     <div class="icon"><span class="flaticon-location"></span></div>
                                     <div class="details ms-4">
-
-                                        <a href="#">{{ $settings->address }}</a>
+                                    <p><strong>Chowk Branch: </strong>Akbari Gate, Chowk, Lucknow</p>
+                                    <p><strong>Hazratganj Branch (Sunday Closed): </strong>C-5, Janpath Market, Hazratganj, Lucknow, India</p>
+                                       <!-- <a href="#">{{ $settings->address }}</a> -->
                                     </div>
                                 </div>
                                 <div class="footer_contact_iconbox d-flex mb-2">
                                     <div class="icon"><span class="flaticon-phone-call"></span></div>
                                     <div class="details ms-4">
-                                        <h5 class="title">Monday-Friday: 08am-9pm</h5>
-                                        <a href="#">{{ $settings->tollfree_number }}</a>
+                                       <h5> <a href="#">{{ $settings->tollfree_number }}</a> </h5>
+                                        <h5 class="title">All Days Open: 11:00 AM - 9:00 PM</h5>
+                                        
                                     </div>
                                 </div>
                                 <div class="footer_contact_iconbox d-flex">
@@ -1060,25 +1062,16 @@
                                 <h4 class="title">Follow us</h4>
                                 <div class="social_icon_list mt30">
                                     <ul class="mb20">
-                                        <li class="list-inline-item"><a href="{{ $socialLinks->fb_name }}"><i
-                                                    class="fab fa-facebook"></i></a>
+                                       <li class="list-inline-item"><a href="https://www.facebook.com/izharson.perfumers/" class="text-dark fs-4"><i class="fab fa-facebook"></i></a></li>
+                                     <li class="list-inline-item"><a href="https://www.instagram.com/izharson/" class="text-dark fs-4"><i class="fab fa-instagram"></i></a></li>
+                                     <li class="list-inline-item"><a href="https://www.youtube.com/@IzharsonPerfumers" class="text-dark fs-4"><i class="fab fa-youtube"></i></a></li>
+                                    <li class="list-inline-item">
+    <a href="https://wa.me/917800001928" target="_blank" class="text-dark fs-4"><i class="fab fa-whatsapp"></i></a></li>
                                         </li>
-                                        <li class="list-inline-item"><a href="{{ $socialLinks->twit_name }}"><i
-                                                    class="fab fa-x-twitter"></i></a>
-                                        </li>
-                                        <li class="list-inline-item"><a href="{{ $socialLinks->insta_name }}"><i
-                                                    class="fab fa-instagram"></i></a>
-                                        </li>
-                                        <li class="list-inline-item"><a href="{{ $socialLinks->linkedin_name }}"><i
-                                                    class="fab fa-linkedin-in"></i></a>
-                                        </li>
-                                        <li class="list-inline-item"><a href="{{ $socialLinks->youtube_name }}"><i
-                                                    class="fab fa-youtube"></i></a>
-                                        </li>
-                                        <li class="list-inline-item"><a
+                                        <!-- <li class="list-inline-item"><a
                                                 href="https://wa.me/{{ $settings->whatsapp_number }}" target="_blank"><i
                                                     class="fab fa-whatsapp"></i></a>
-                                        </li>
+                                        </li> -->
                                     </ul>
                                 </div>
                             </div>
@@ -1175,24 +1168,24 @@
         });
 
         const shopURL = "{{ route('shop.category') }}"; // main listing page
+        const storageBaseUrl = "{{ asset('storage') }}";
+    const productDetailsBaseUrl = "{{ url('product-details') }}";
 
         // search suggestions for desktop
         document.getElementById('searchInput').addEventListener('keyup', function () {
 
-            let query = this.value;
-
-            fetch(`/search-suggestions?q=${query}`)
-                .then(res => res.json())
-                .then(data => {
-
-                    let html = '';
-
-                    data.forEach(product => {
-                        html += `
+           let query = this.value;
+fetch(`/search-suggestions?q=${query}`)
+    .then(res => res.json())
+    .then(data => {
+        let html = '';
+        data.forEach(product => {
+            const imagePath = product.image_thumb ?? product.image;
+            html += `
 <li>
-    <a href="/product-details/${product.slug}" class="d-flex align-items-center">
+    <a href="${productDetailsBaseUrl}/${product.slug}" class="d-flex align-items-center">
         <div class="thumb">
-        <img src="/storage/${product.image_thumb ?? product.image}" alt="${product.name}" loading="lazy">
+            <img src="${storageBaseUrl}/${imagePath}" alt="${product.name}" loading="lazy">
         </div>
         <div class="info-product">
             <div class="item_title">${product.name}</div>
@@ -1205,10 +1198,9 @@
     </a>
 </li>
             `;
-                    });
-
-                    document.getElementById('suggestionList').innerHTML = html;
-                });
+        });
+        document.getElementById('suggestionList').innerHTML = html;
+    });
         });
 
         // search button click
@@ -1255,15 +1247,15 @@
                 fetch(`/search-suggestions?q=${query}`)
                     .then(res => res.json())
                     .then(data => {
-
                         let html = '';
 
                         data.forEach(product => {
+ const imagePath = product.image_thumb ?? product.image;
                             html += `
 <li>
-    <a href="/product-details/${product.slug}" class="d-flex align-items-center">
+    <a href="${productDetailsBaseUrl}/${product.slug}" class="d-flex align-items-center">
         <div class="thumb">
-            <img src="/storage/${product.image_thumb ?? product.image}" alt="${product.name}" loading="lazy">
+            <img src="${storageBaseUrl}/${imagePath}" alt="${product.name}" loading="lazy">
         </div>
         <div class="info-product">
             <div class="item_title">${product.name}</div>
@@ -1456,7 +1448,7 @@
                             html += `
 <li class="list_content">
 <div>
-<img class="float-start " src="/storage/${image}" width="60" loading="lazy">
+<img class="float-start " src="/public/storage/${image}" width="60" loading="lazy">
 
 <p>${item.products.name}</p>
 
@@ -1465,7 +1457,7 @@
 <div class="quantity-block home_page_sidebar">
 
 <button class="quantity-arrow-minus mini-minus" data-id="${item.id}">
-<img src="/front/images/icons/minus.svg" loading="lazy">
+<img src="/public/front/images/icons/minus.svg" loading="lazy">
 </button>
 
 <input class="quantity-num home_page_sidebar qty-input"

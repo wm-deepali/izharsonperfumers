@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\AdminPaymentMail;
 use App\Models\BankAccount;
 use App\Models\CCAvenue;
+use App\Models\CashfreeOrder;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\OrderStatus;
@@ -22,6 +23,8 @@ use App\Models\ShippingCost;
 use App\Models\SiteGstSetting;
 use App\Models\State;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
@@ -35,12 +38,11 @@ use Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 
+
 class CheckoutController extends Controller
 {
     public function checkout()
     {
-
-        // ✅ require login
         if (!Auth::guard('customer')->check()) {
             return redirect()
                 ->route('customer.login')
@@ -67,7 +69,6 @@ class CheckoutController extends Controller
         $countries = Country::all();
         $bank = BankAccount::first();
 
-        // dd($shippingAddresses->toArray(), $billingAddresses->toArray());
         return view('front.checkout', compact(
             'cart',
             'cartItems',
@@ -81,20 +82,13 @@ class CheckoutController extends Controller
 
     public function states($countryId)
     {
-        $states = State::where('country_id', $countryId)
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
+        $states = State::where('country_id', $countryId)->orderBy('name')->get(['id', 'name']);
         return response()->json($states);
     }
 
-    // GET CITIES BY STATE
     public function cities($stateId)
     {
-        $cities = City::where('state_id', $stateId)
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
+        $cities = City::where('state_id', $stateId)->orderBy('name')->get(['id', 'name']);
         return response()->json($cities);
     }
 
@@ -102,7 +96,7 @@ class CheckoutController extends Controller
     {
         $data = $request->validate([
             'name' => 'required',
-            'email'=> 'required',
+            'email' => 'required',
             'mobile_number' => 'required',
             'country' => 'required',
             'state' => 'required',
@@ -113,10 +107,7 @@ class CheckoutController extends Controller
 
         $data['customer_id'] = auth()->id();
 
-        CustomerBillingAddress::updateOrCreate(
-            ['id' => $request->id],
-            $data
-        );
+        CustomerBillingAddress::updateOrCreate(['id' => $request->id], $data);
 
         return response()->json(['success' => true]);
     }
@@ -125,7 +116,7 @@ class CheckoutController extends Controller
     {
         $data = $request->validate([
             'name' => 'required',
-             'email'=> 'required',
+            'email' => 'required',
             'mobile_number' => 'required',
             'country' => 'required',
             'state' => 'required',
@@ -136,14 +127,10 @@ class CheckoutController extends Controller
 
         $data['customer_id'] = auth()->id();
 
-        CustomerAddress::updateOrCreate(
-            ['id' => $request->id],
-            $data
-        );
+        CustomerAddress::updateOrCreate(['id' => $request->id], $data);
 
         return response()->json(['success' => true]);
     }
-
 
     public function copyBillingToShipping(Request $request)
     {
@@ -153,7 +140,6 @@ class CheckoutController extends Controller
             ->where('customer_id', $customer->id)
             ->firstOrFail();
 
-        // check if same shipping address already exists
         $existingShipping = CustomerAddress::where('customer_id', $customer->id)
             ->where('name', $billing->name)
             ->where('email', $billing->email)
@@ -173,11 +159,10 @@ class CheckoutController extends Controller
             ]);
         }
 
-        // otherwise create new shipping
         $shipping = CustomerAddress::create([
             'customer_id' => $customer->id,
             'name' => $billing->name,
-            'email'=>$billing->email,
+            'email' => $billing->email,
             'mobile_number' => $billing->mobile_number,
             'country' => $billing->country,
             'state' => $billing->state,
@@ -196,32 +181,26 @@ class CheckoutController extends Controller
 
     public function placeOrder(Request $request)
     {
-        // dd($request->all());
         $validator = Validator::make($request->all(), [
             'shipping_type' => 'required',
             'billing_id' => 'required',
             'shipping_id' => 'required',
             'payment_mode' => 'required',
+            'payment_gateway' => 'required_if:payment_mode,online|in:cashfree,ccavenue',
             'payment_proof' => 'nullable|image:mimes,jpg,png,pneg',
         ]);
+
         if ($validator->passes()) {
             DB::beginTransaction();
             try {
                 $general_setting = SiteGstSetting::firstOrFail();
                 $customer = Auth::guard('customer')->user();
-
-                //   $way_of_billing = $request->way_of_billing;
                 $paymentMethod = $request->payment_mode;
 
-                // for cash on delivery 
                 if ($paymentMethod) {
 
-
-                    // if($way_of_billing == 'billing'){
                     $customer_billing_address = CustomerBillingAddress::where('id', $request->billing_id)->where('customer_id', $customer->id)->firstOrFail();
-                    //   }else{
                     $customer_address = CustomerAddress::where('id', $request->shipping_id)->where('customer_id', $customer->id)->firstOrFail();
-                    //  }
 
                     if ($request->iscountryindia != "false") {
                         $shipping_type = FreeShiping::orderBy('id', 'desc')->first();
@@ -229,9 +208,9 @@ class CheckoutController extends Controller
                             $shipping_type = FreeShiping::orderBy('id', 'desc')->first();
                         } else {
                             $shipping_type = ShippingCost::where('id', $request->shipping_type)->firstOrFail();
-
                         }
                     }
+
                     $cart = Cart::where('customer_id', $customer->id)->firstOrFail();
                     $cart_details = CartDetail::where('cart_id', $cart->id)->get();
                     $gst_type = 'GST';
@@ -248,7 +227,7 @@ class CheckoutController extends Controller
                     $totalQuantity = $cart_details->SUM('quantity');
                     $TotalShipCost = 0;
                     $deliveryday = "";
-                    // shipping cost
+
                     if ($request->iscountryindia != "false") {
                         $shippingCost = ShippingCost::find($request->shipping_type);
                     }
@@ -289,7 +268,7 @@ class CheckoutController extends Controller
                             $deliveryday = $default_shipping_cost->day_range_inter_state;
                         }
                     }
-                    // shipping cost end 
+
                     if ($default_shipping_cost->id != $request->shipping_type) {
                         if ($general_setting->gst_status == "yes") {
                             if ($general_setting->state_id == $customer_address->state) {
@@ -306,19 +285,16 @@ class CheckoutController extends Controller
                                     $TotalShipCost = 3500;
                                 }
 
-
                                 $total_gst_percentage = $cgst_percentage + $sgst_percentage;
                                 $sgst_amount = ($cart->total_price_after_discount + $TotalShipCost) * ($sgst_percentage / 100);
                                 $cgst_amount = ($cart->total_price_after_discount + $TotalShipCost) * ($cgst_percentage / 100);
                                 $total_gst_amount = $sgst_amount + $cgst_amount;
                                 $cart_total_with_gst = $cart->total_price_after_discount + $total_gst_amount;
                                 $gst_type = 'CGST + SGST';
-
                                 $deliveryday = $shipping_type->delivery_days_range;
                             }
 
                             if ($general_setting->state_id != $customer_address->state) {
-
                                 $igst_percentage = $general_setting->igst_percent;
                                 $total_gst_percentage = $igst_percentage;
                                 if ($request->iscountryindia != "false") {
@@ -337,8 +313,6 @@ class CheckoutController extends Controller
                                 $total_gst_amount = $igst_amount;
                                 $cart_total_with_gst = $cart->total_price_after_discount + $total_gst_amount;
                                 $gst_type = 'IGST';
-
-
                             }
                         } else {
                             $vat_percentage = $general_setting->vat;
@@ -370,13 +344,10 @@ class CheckoutController extends Controller
                                     $deliveryday = $shipping_type->delivery_days_range;
                                 }
                             }
-                            // $TotalShipCost =   (float)$shippingCost->vat *  $totalQuantity;
                             $igst_amount = ($cart->total_price_after_discount + $TotalShipCost) * ($vat_percentage / 100);
                             $total_gst_amount = $igst_amount;
                             $cart_total_with_gst = $cart->total_price_after_discount + $total_gst_amount;
                             $gst_type = 'VAT';
-
-
                         }
                     }
 
@@ -392,11 +363,13 @@ class CheckoutController extends Controller
                             break;
                         }
                     }
+
                     if ($request->hasFile('payment_proof')) {
                         $payment_image = $request->payment_proof->store('payment');
                     } else {
                         $payment_image = "";
                     }
+
                     $orderData = array(
                         'customer_id' => $customer->id,
                         'order_number' => $order_number,
@@ -438,6 +411,7 @@ class CheckoutController extends Controller
                         'delivered_on_date' => Null,
                         'payment_status' => 'pending',
                         'payment_method' => $paymentMethod,
+                        'payment_gateway' => $paymentMethod === 'online' ? $request->payment_gateway : null,
                         'paymentid' => $request->paymentid,
                         'refrence_id' => $request->reference_id ?? null,
                         'order_status' => 'New Order',
@@ -445,12 +419,13 @@ class CheckoutController extends Controller
                         'transaction_number' => 'TRN' . random_int(100000, 999999),
                         'transaction_detail' => 'Dummy Details',
                     );
-                    //   dd( $orderData);
+
                     $order = Order::create($orderData);
                     OrderStatus::create([
                         'order_id' => $order->id,
                         'order_status' => 'New Order'
                     ]);
+
                     foreach ($cart_details as $cart_detail) {
                         $product = Product::findOrFail($cart_detail->product_id);
                         $product_option = ProductOption::findOrFail($cart_detail->product_option_id);
@@ -469,7 +444,6 @@ class CheckoutController extends Controller
                             'quantity' => $cart_detail->quantity,
                             'total_price' => $product_option->price * $cart_detail->quantity,
                         );
-                        // dd($orderDetailData);
                         OrderDetail::create($orderDetailData);
                         $product_option->update([
                             'stock' => $product_option->stock - $cart_detail->quantity
@@ -478,84 +452,38 @@ class CheckoutController extends Controller
                             'stock' => $product->product_options->SUM('stock')
                         ]);
                     }
-                    $headerdata = HeaderSetting::first();
+
                     CartDetail::where('cart_id', $cart->id)->delete();
                     $cart->delete();
-                    $data['order_id'] = $order->order_number;
-                    $data['customer_name'] = $customer->name;
-                    $data['mobile_number'] = $headerdata->tollfree_number;
-                    $data['delivery_day'] = $order->shipping_type_maximum_days;
-                    $data['ordersid'] = encrypt($order->id);
-
-
-                    $general_setting = GeneralSetting::firstOrFail();
-                    $order = Order::where('id', $order->id)->with('order_detailss')->first();
-                    //dd($order);
-                    $terms_and_condition = Policy::where('name', 'terms_and_condition')->first();
-                    $gstsetting = SiteGstSetting::firstOrFail();
-                    set_time_limit(120);
-                    ini_set('max_execution_time', 120);
-                    ini_set('memory_limit', '512M');
-
-                    $pdf = Pdf::loadView('front.invoice', compact(
-                        'terms_and_condition',
-                        'general_setting',
-                        'order',
-                        'gstsetting'
-                    ));
-                    $content = $pdf->download()->getOriginalContent();
-                    Storage::put('invoices/invoices' . strtolower($order->order_number) . '.pdf', $content);
-
-                    $data['pdf_url'] = url('storage') . '/invoices/invoices' . strtolower($order->order_number) . '.pdf';
-                    $order->update([
-                        'invoice_number' => $gstsetting->invoice_prefix . "-" . $gstsetting->financial_year . "/" . $gstsetting->invoice_number,
-                        'invoice_url' => '/invoices/invoices' . strtolower($order->order_number) . '.pdf',
-                    ]);
-
-                    $datas = array(
-                        'email' => $customer->email,
-                        'mobile_number' => $customer->mobile_number,
-                        'name' => $customer->name,
-                        'order_id' => $order->order_number,
-                        'pdf_url' => $data['pdf_url'],
-                        'order' => $order,
-
-                    );
-                    ;
-                    $pdfurl = $data['pdf_url'];
-                    $admin = User::first();
-                    $this->sendAdminmsg($customer->name, $customer->email, $customer->mobile_number, $cart_total_with_shipping);
 
                     DB::commit();
 
-                    // decide redirect based on payment method
-                    if ($paymentMethod === 'online') {
+                    // Invoice generation, confirmation email, and admin SMS now run on the
+                    // order-success page load (see success()/finalizeOrder()) instead of here,
+                    // so this response comes back to the customer as fast as possible.
 
+                    if ($paymentMethod === 'online') {
                         return response()->json([
                             'success' => true,
                             'payment_url' => route('customer.payment.request', $order->id),
                             'message' => 'Redirecting to payment gateway'
                         ]);
-
-                    } else {
-
-                        return response()->json([
-                            'success' => true,
-                            'redirect_url' => url('/customer/order-success/' . $order->id),
-                            'message' => 'Order placed successfully'
-                        ]);
                     }
+
+                    return response()->json([
+                        'success' => true,
+                        'redirect_url' => url('/customer/order-success/' . $order->id),
+                        'message' => 'Order placed successfully'
+                    ]);
+
                 } else {
                     DB::rollback();
                     return response()->json([
                         'success' => false,
                         'code' => 421,
                         'messsge' => 'Something Went Wrong! please try again.',
-                        // 'msgText' => $ex->getMessage() .'-'.$ex->getLine(),
                     ]);
-
                 }
-                //for cash on delivery option ended 
 
             } catch (\Exception $ex) {
                 DB::rollback();
@@ -575,67 +503,28 @@ class CheckoutController extends Controller
         }
     }
 
-
-    public function sendAdminmsg($name, $email, $mobile, $amount)
-    {
-
-
-        $message = "Received an order from {$name}, Mob: {$mobile}, and Email: {$email} today, Billed Amount {$amount}, \nThanks & Regards \nIzharsons Perfumers";
-
-        $dlt_id = '1307175755306351640';
-        $pe_id = '1301169510661908409';
-        $request_parameter = array(
-            'authkey' => '468706Au6g3Hg7oQKn68c3a8c6P1',
-            'mobiles' => '8188983264',
-            'sender' => 'IZHARS',
-            'message' => urlencode($message),
-            'route' => '4',
-            'country' => '91',
-            //'unicode'   => '1',
-        );
-        $url = "http://sms.webmingo.in/api/sendhttp.php?";
-        foreach ($request_parameter as $key => $val) {
-            $url .= $key . '=' . $val . '&';
-        }
-        $url .= 'DLT_TE_ID=' . $dlt_id . '&PE_ID=' . $pe_id;
-        $url = rtrim($url, "&");
-
-        try {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            //get response
-            $output = curl_exec($ch);
-
-            curl_close($ch);
-
-            // return true;
-        } catch (\Exception $e) {
-            //dd($e->getMessage());
-        }
-    }
-
-
-
+    /**
+     * Dispatches to the correct online gateway based on what the
+     * customer chose at checkout.
+     */
     public function request($orderId)
     {
         $order = Order::findOrFail($orderId);
-        $customer = Customer::findOrFail($order->customer_id);
 
-        // generate unique transaction id
+        if ($order->payment_gateway === 'cashfree') {
+            return $this->cashfreeRequest($order);
+        }
+
+        return $this->ccavenueRequest($order);
+    }
+
+    protected function ccavenueRequest(Order $order)
+    {
+        $customer = Customer::findOrFail($order->customer_id);
         $transactionId = 'TXN' . time();
 
-        /*
-        |--------------------------------------------------------------------------
-        | STORE PAYMENT INITIATION
-        |--------------------------------------------------------------------------
-        */
         CCAvenue::updateOrCreate(
-            [
-                'order_id' => $order->order_number,
-                'status' => 'active'
-            ],
+            ['order_id' => $order->order_number, 'status' => 'active'],
             [
                 'user_id' => $customer->id,
                 'billing_id' => $order->customer_billing_address_id,
@@ -648,30 +537,18 @@ class CheckoutController extends Controller
             ]
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | PREPARE CC AVENUE REQUEST DATA
-        |--------------------------------------------------------------------------
-        */
-
-        // If city/state stored as relation, adjust accordingly
         $city = $order->city ?? '';
         $state = $order->state ?? '';
         $country = "India";
 
         $data = [
-
-            // REQUIRED
             "merchant_id" => config('ccavenue.merchant_id'),
             "order_id" => $order->order_number,
             "amount" => $order->order_amount_with_shipping,
             "currency" => "INR",
             "redirect_url" => url('/customer/payment/response'),
             "cancel_url" => url('/customer/payment/response'),
-            
             "language" => "EN",
-
-            // BILLING DETAILS
             "billing_name" => $order->name,
             "billing_address" => $order->address,
             "billing_city" => $city,
@@ -680,8 +557,6 @@ class CheckoutController extends Controller
             "billing_country" => $country,
             "billing_tel" => $order->mobile_number,
             "billing_email" => $order->email,
-
-            // DELIVERY DETAILS
             "delivery_name" => $order->name,
             "delivery_address" => $order->address,
             "delivery_city" => $city,
@@ -692,26 +567,155 @@ class CheckoutController extends Controller
             "delivery_email" => $order->email,
         ];
 
-        /*
-        |--------------------------------------------------------------------------
-        | ENCRYPT DATA
-        |--------------------------------------------------------------------------
-        */
         $encrypted = encryptCCavenue($data);
 
-        /*
-        |--------------------------------------------------------------------------
-        | REDIRECT TO CC AVENUE (POST FORM)
-        |--------------------------------------------------------------------------
-        */
         return view('front.ccavenue_redirect', compact('encrypted'));
     }
 
+    protected function cashfreeRequest(Order $order)
+{
+    $baseUrl = config('cashfree.mode') === 'production'
+        ? 'https://api.cashfree.com/pg'
+        : 'https://sandbox.cashfree.com/pg';
+
+    $payload = [
+        'order_id' => $order->order_number,
+        'order_amount' => (float) $order->order_amount_with_shipping,
+        'order_currency' => 'INR',
+        'customer_details' => [
+            'customer_id' => 'cust_' . $order->customer_id,
+            'customer_phone' => $order->mobile_number,
+            'customer_email' => $order->email,
+            'customer_name'  => $order->name,
+        ],
+        'order_meta' => [
+            'return_url' => route('customer.payment.cashfree.return', $order->id) . '?order_id={order_id}',
+            'notify_url' => route('customer.payment.cashfree.webhook'),
+        ],
+    ];
+
+    $response = Http::withHeaders([
+        'x-client-id'     => config('cashfree.app_id'),
+        'x-client-secret' => config('cashfree.secret_key'),
+        'x-api-version'   => '2023-08-01',
+        'Content-Type'    => 'application/json',
+    ])->post($baseUrl . '/orders', $payload);
+
+    if (!$response->successful()) {
+        Log::error('Cashfree order creation failed for order ' . $order->id . ': ' . $response->body());
+        return redirect(route('order.failed'))->with('error', 'Unable to start payment. Please try again.');
+    }
+
+    $result = $response->json();
+
+    CashfreeOrder::updateOrCreate(
+        ['order_id' => $order->order_number],
+        [
+            'user_id'        => $order->customer_id,
+            'link_id'        => $result['cf_order_id'] ?? $order->order_number,
+            'cf_link_url'    => $result['payment_session_id'] ?? null, // storing session id here
+            'amount'         => $order->order_amount_with_shipping,
+            'payment_status' => 'pending',
+            'status'         => 'active',
+        ]
+    );
+
+    if (empty($result['payment_session_id'])) {
+        Log::error('Cashfree order response missing payment_session_id for order ' . $order->id . ': ' . $response->body());
+        return redirect(route('order.failed'))->with('error', 'Unable to start payment. Please try again.');
+    }
+
+    // Orders API doesn't give a direct redirect URL — it gives a payment_session_id
+    // which the Cashfree Checkout JS SDK uses to open the hosted payment page.
+    return view('front.cashfree_checkout', [
+        'paymentSessionId' => $result['payment_session_id'],
+    ]);
+}
+
+    /**
+     * Customer is bounced back here by Cashfree after attempting payment.
+     * We re-check status with Cashfree directly rather than trusting the redirect alone.
+     */
+   public function cashfreeReturn(Request $request, $orderId)
+{
+    $order = Order::findOrFail($orderId);
+    $cashfree = CashfreeOrder::where('order_id', $order->order_number)->first();
+
+    $status = $this->getCashfreeLinkStatus($order->order_number); // ✅ order_number use karo, link_id nahi
+
+    if ($status === 'PAID') {
+        $cashfree?->update(['payment_status' => 'success', 'status' => 'completed']);
+        $order->update(['payment_status' => 'success']);
+
+        return redirect('/customer/order-success/' . $order->id);
+    }
+
+    $cashfree?->update(['payment_status' => strtolower($status ?? 'failed')]);
+    $order->update(['payment_status' => 'failed']);
+
+    return redirect(route('order.failed'));
+}
+
+    /**
+     * Cashfree server-to-server webhook — the reliable source of truth,
+     * independent of whether the customer's browser makes it back to return_url.
+     * TODO: verify x-webhook-signature / x-webhook-timestamp headers against
+     * config('cashfree.secret_key') per Cashfree's webhook docs before trusting this.
+     */
+   public function cashfreeWebhook(Request $request)
+{
+    $payload = $request->all();
+
+    Log::info('Cashfree webhook received', $payload);
+
+    $orderId = $payload['data']['order']['order_id'] ?? null;
+    $paymentStatus = $payload['data']['payment']['payment_status'] ?? null;
+
+    if (!$orderId) {
+        return response()->json(['status' => 'ignored'], 200);
+    }
+
+    $order = Order::where('order_number', $orderId)->first();
+    $cashfree = CashfreeOrder::where('order_id', $orderId)->first();
+
+    if (!$order) {
+        return response()->json(['status' => 'ignored'], 200);
+    }
+
+    if (strtoupper($paymentStatus) === 'SUCCESS') {
+        $order->update(['payment_status' => 'success']);
+        $cashfree?->update(['payment_status' => 'success', 'status' => 'completed']);
+    } elseif (in_array(strtoupper($paymentStatus), ['FAILED', 'USER_DROPPED'])) {
+        $order->update(['payment_status' => 'failed']);
+        $cashfree?->update(['payment_status' => 'failed']);
+    }
+
+    return response()->json(['status' => 'ok'], 200);
+}
+
+   protected function getCashfreeLinkStatus($orderNumber)
+{
+    $baseUrl = config('cashfree.mode') === 'production'
+        ? 'https://api.cashfree.com/pg'
+        : 'https://sandbox.cashfree.com/pg';
+
+    $response = Http::withHeaders([
+        'x-client-id'     => config('cashfree.app_id'),
+        'x-client-secret' => config('cashfree.secret_key'),
+        'x-api-version'   => '2023-08-01',
+    ])->get($baseUrl . '/orders/' . $orderNumber);
+
+    if (!$response->successful()) {
+        return null;
+    }
+
+    return $response->json('order_status'); // ACTIVE, PAID, EXPIRED
+}
 
     public function response(Request $request)
     {
         $response = decryptCCavenue($request->encResp);
-   
+
         $order = Order::where('order_number', $response['order_id'])->first();
         $ccavenue = CCAvenue::where('order_id', $response['order_id'])->first();
 
@@ -721,15 +725,17 @@ class CheckoutController extends Controller
 
         if ($response['order_status'] === "Success") {
 
-            $ccavenue->update(['payment_status'=>$order_status,'status'=>'completed']);
+            $ccavenue->update(['payment_status' => 'Success', 'status' => 'completed']);
             $order->update([
                 'payment_status' => 'success',
                 'transaction_number' => $response['tracking_id'] ?? null,
                 'payment_message' => $response['status_message'] ?? null
             ]);
-            
+
             $admin = User::first();
-            Mail::to($admin->alert_email)->send(new AdminPaymentMail($order));
+            if ($admin) {
+                Mail::to($admin->alert_email)->send(new AdminPaymentMail($order));
+            }
 
             return redirect('/customer/order-success/' . $order->id);
 
@@ -747,10 +753,58 @@ class CheckoutController extends Controller
 
     public function success($orderId)
     {
-
-        $order = Order::with('order_detailss')
-            ->findOrFail($orderId);
+        $order = Order::with('order_detailss')->findOrFail($orderId);
+        
+        // Runs once — invoice_url stays null until this succeeds, so a page
+        // refresh or a slow gateway redirect back here can't double-send mail/SMS.
+        // if (!$order->invoice_url) {
+            $this->finalizeOrder($order);
+            $order->refresh();
+        // }
         return view('front.order_success', compact('order'));
     }
+
+    /**
+     * Everything that isn't essential to placing the order itself:
+     * invoice PDF, invoice numbering, confirmation email, admin SMS.
+     * Runs on the success page instead of inside placeOrder().
+     */
+    protected function finalizeOrder(Order $order)
+{
+    try {
+        $general_setting = GeneralSetting::firstOrFail();
+        $terms_and_condition = Policy::where('name', 'terms_and_condition')->first();
+        $gstsetting = SiteGstSetting::firstOrFail();
+        $orderForInvoice = Order::with('order_detailss')->findOrFail($order->id);
+
+        $pdf = Pdf::loadView('front.invoice', [
+            'terms_and_condition' => $terms_and_condition,
+            'general_setting' => $general_setting,
+            'order' => $orderForInvoice,
+            'gstsetting' => $gstsetting,
+        ]);
+        $content = $pdf->download()->getOriginalContent();
+        Storage::put('invoices/invoices' . strtolower($order->order_number) . '.pdf', $content);
+
+        $order->update([
+            'invoice_number' => $gstsetting->invoice_prefix . "-" . $gstsetting->financial_year . "/" . $gstsetting->invoice_number,
+            'invoice_url' => '/invoices/invoices' . strtolower($order->order_number) . '.pdf',
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Invoice generation failed for order ' . $order->id . ': ' . $e->getMessage());
+    }
+
+    try {
+        \App\Jobs\SendOrderMailJob::dispatch($order->id);
+    } catch (\Exception $e) {
+        Log::error('SendOrderMailJob dispatch failed for order ' . $order->id . ': ' . $e->getMessage());
+    }
+
+    try {
+        \App\Jobs\SendAdminSmsJob::dispatch($order->name, $order->email, $order->mobile_number, $order->order_amount_with_shipping);
+    } catch (\Exception $e) {
+        Log::error('SendAdminSmsJob dispatch failed for order ' . $order->id . ': ' . $e->getMessage());
+    }
+}
 
 }

@@ -4,7 +4,6 @@
 
 @section('content')
 
-
   <!-- Inner Page Breadcrumb -->
   <section class="inner_page_breadcrumb">
     <div class="container">
@@ -31,18 +30,18 @@
       </div>
     </div>
   </section>
-<div class="row " style="background:#f9f9f9; width:100%; height:100px; ">
-        <div class="col-sm-6 col-lg-4 m-auto">
-          <div class=" text-center ">
-            <h2 class="title m-0">Checkout</h2>
-          </div>
-        </div>
-        
+  <div class="row " style="background:#f9f9f9; width:100%; height:100px; ">
+    <div class="col-sm-6 col-lg-4 m-auto">
+      <div class=" text-center ">
+        <h2 class="title m-0">Checkout</h2>
       </div>
+    </div>
+
+  </div>
   <!-- Shop Checkouts Content -->
   <section class="shop-checkouts pt30">
     <div class="container">
-      
+
       <div class="row">
         <div class="col-lg-8 col-xl-8">
           <div class="checkout_form style2">
@@ -73,8 +72,8 @@
                       📞 {{ $addr->mobile_number }}
                     </div>
 
-                    <button type="button" class="btn btn-sm btn-outline-secondary editBillingBtn" style="height:30px;border:1px solid gray;"
-                      data-address='@json($addr->toArray())'>
+                    <button type="button" class="btn btn-sm btn-outline-secondary editBillingBtn"
+                      style="height:30px;border:1px solid gray;" data-address='@json($addr->toArray())'>
                       Edit
                     </button>
 
@@ -107,8 +106,7 @@
                   </div>
 
                   <div class="col-md-6 mb-2">
-                    <input type="email" name="email" id="billing_email" class="form-control" placeholder="Email"
-                      required>
+                    <input type="email" name="email" id="billing_email" class="form-control" placeholder="Email" required>
                   </div>
 
                   <div class="col-md-6 mb-2">
@@ -193,8 +191,8 @@
                         📞 {{ $addr->mobile_number }}
                       </div>
 
-                      <button type="button" class="btn btn-sm btn-outline-secondary editShippingBtn" style="height:30px; border:1px solid gray;"
-                        data-address='@json($addr->toArray())'>
+                      <button type="button" class="btn btn-sm btn-outline-secondary editShippingBtn"
+                        style="height:30px; border:1px solid gray;" data-address='@json($addr->toArray())'>
                         Edit
                       </button>
 
@@ -356,23 +354,34 @@
 
             <div class="payment_method">
 
-              {{-- CC Avenue Payment --}}
+              {{-- Online Payment --}}
               <div class="ui_kit_radiobox pm_content bb1">
-                <div class="radio mb10">
-                  <input id="pay_ccavenue" name="payment_method" type="radio" value="online" checked>
-                  <label class="pmtitle" for="pay_ccavenue">
+                <div class="radio mb10 d-flex align-items-center">
+                  <input id="pay_online" name="payment_method" type="radio" value="online" checked>
+                  <label class="pmtitle" for="pay_online">
                     <span class="radio-label"></span>
                     Pay Online (Card / UPI / Net Banking)
                   </label>
                 </div>
-                <div class="pm_details">
-                  <p>Secure payment via CC Avenue.</p>
+                <div class="pm_details" id="onlineGatewayBox">
+                  <p class="mb-2">Choose a payment gateway:</p>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="payment_gateway" id="gateway_ccavenue"
+                      value="ccavenue" checked>
+                    <label class="form-check-label" for="gateway_ccavenue">CCAvenue</label>
+                  </div>
+                   <div class="form-check">
+                    <input class="form-check-input" type="radio" name="payment_gateway" id="gateway_cashfree"
+                      value="cashfree">
+                    <label class="form-check-label" for="gateway_cashfree">Cashfree (Card / UPI / Net Banking /
+                      Wallets)</label>
+                  </div>
                 </div>
               </div>
 
               {{-- Bank Transfer --}}
               <div class="ui_kit_radiobox pm_content">
-                <div class="radio mb10">
+                <div class="radio mb10 d-flex align-items-center">
                   <input id="pay_bank" name="payment_method" type="radio" value="offline">
                   <label class="pmtitle" for="pay_bank">
                     <span class="radio-label"></span>
@@ -393,7 +402,7 @@
 
               <h5>Bank Transfer Details</h5>
 
-              <img src="{{ asset('storage/' . $bank->payment_image) }}" width="220" class="mb-2" alt="QR Code">
+              <!--<img src="{{ asset('storage/' . $bank->payment_image) }}" width="220" class="mb-2" alt="QR Code">-->
 
               <p><strong>A/C Name:</strong> {{ $bank->ac_name }}</p>
               <p><strong>A/C Number:</strong> {{ $bank->ac_number }}</p>
@@ -808,6 +817,11 @@
       formData.append('shipping_type', shipping_type);
       formData.append('iscountryindia', isIndia);
 
+      if (payment === 'online') {
+        const gatewayEl = document.querySelector('input[name="payment_gateway"]:checked');
+        formData.append('payment_gateway', gatewayEl ? gatewayEl.value : 'ccavenue');
+      }
+
       if (payment === 'offline') {
 
         const reference = document.getElementById('reference_id').value;
@@ -873,6 +887,20 @@
         btn.innerText = "Place Order";
       }
     });
+
+
+    function toggleGatewayBox() {
+      const selected = document.querySelector('input[name="payment_method"]:checked');
+      const box = document.getElementById('onlineGatewayBox');
+      if (!selected || !box) return;
+      box.style.display = selected.value === 'online' ? 'block' : 'none';
+    }
+
+    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+      radio.addEventListener('change', toggleGatewayBox);
+    });
+
+    toggleGatewayBox();
 
     function toggleBankBox() {
       const selected = document.querySelector('input[name="payment_method"]:checked');

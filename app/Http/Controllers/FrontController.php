@@ -40,26 +40,51 @@ class FrontController extends Controller
             ->where('status', 'active')
             ->get(['id', 'button_link', 'title', 'sub_title', 'content', 'image', 'color']);
 
-        $categories = Category::whereNull('parent_id')
-            ->where('status', 'active')
-            ->with(['direct_childs'])
+       /*
+|--------------------------------------------------------------------------
+| ✅ Categories with product counts (single query, no double-counting)
+|--------------------------------------------------------------------------
+*/
+$categories = Category::whereNull('parent_id')
+    ->where('status', 'active')
+    ->with(['direct_childs'])
+    ->get();
+
+// Fetch category_id + subcategory_id pairs for ALL active products once
+$productCategoryPairs = Product::where('status', 'active')
+    ->get(['category_id', 'subcategory_id']);
+
+$categories = $categories->map(function ($category) use ($productCategoryPairs) {
+
+    $childIds = $category->direct_childs->pluck('id')->toArray();
+
+    $count = $productCategoryPairs->filter(function ($product) use ($category, $childIds) {
+        return $product->category_id == $category->id
+            || in_array($product->subcategory_id, $childIds);
+    })->count();
+
+    $category->items_count = $count;
+
+    return $category;
+});
+        /*
+        |--------------------------------------------------------------------------
+        | ✅ Fetch OrderDetail "last 30 days sales" data ONCE, reuse everywhere
+        |--------------------------------------------------------------------------
+        */
+        $recentSales = OrderDetail::select('product_id')
+            ->whereHas('order', function ($q) {
+                $q->where('created_at', '>=', Carbon::now()->subDays(30));
+            })
+            ->selectRaw('SUM(quantity) as total_sold')
+            ->groupBy('product_id')
+            ->orderByDesc('total_sold')
+            ->with(['product.product_options', 'product.categories'])
+            ->limit(50) // cap it — we never need more than ~20 anywhere below
             ->get()
-            ->map(function ($category) {
-
-                $childIds = $category->direct_childs->pluck('id');
-
-                $count = Product::where('status', 'active')
-                    ->where(function ($q) use ($category, $childIds) {
-                        $q->where('category_id', $category->id)
-                            ->orWhereIn('subcategory_id', $childIds);
-                    })
-                    ->count();
-
-                $category->items_count = $count;
-
-                return $category;
-            });
-
+            ->pluck('product')
+            ->filter() // remove nulls (deleted products)
+            ->values();
 
         // Premium New Arrivals
         $premiumNewArrivals = Product::with('product_options')
@@ -69,53 +94,35 @@ class FrontController extends Controller
             ->take(20)
             ->get();
 
-
-        // Premium Best Sellers (last 30 days)
-        $premiumBestSellers = OrderDetail::select('product_id')
-            ->whereHas('order', function ($q) {
-                $q->where('created_at', '>=', Carbon::now()->subDays(30));
-            })
-            ->selectRaw('SUM(quantity) as total_sold')
-            ->groupBy('product_id')
-            ->orderByDesc('total_sold')
-            ->with('product.product_options')
-            ->get()
-            ->pluck('product')
-            ->filter(fn($p) => $p && $p->is_premium === 'yes')
+        // Premium Best Sellers — reuse $recentSales instead of new query
+        $premiumBestSellers = $recentSales
+            ->filter(fn($p) => $p->is_premium === 'yes')
+            ->take(20)
             ->values();
 
-
-        // Premium Best Rated
-        $premiumBestRated = Product::with('product_options', 'product_review')
+        // Premium Best Rated — use withCount/withAvg instead of loading all reviews into PHP
+        $premiumBestRated = Product::with('product_options')
+            ->withAvg('product_review', 'rating')
             ->where('is_premium', 'yes')
             ->where('status', 'active')
-            ->get()
-            ->sortByDesc(fn($p) => $p->product_review->avg('rating'))
+            ->orderByDesc('product_review_avg_rating')
             ->take(20)
-            ->values();
+            ->get();
 
-        $bestSellers = OrderDetail::select('product_id')
-            ->whereHas('order', function ($q) {
-                $q->where('created_at', '>=', Carbon::now()->subDays(30));
-            })
-            ->selectRaw('SUM(quantity) as total_sold')
-            ->groupBy('product_id')
-            ->orderByDesc('total_sold')
-            ->with(['product.product_options', 'product.categories'])
-            ->take(20)
-            ->get()
-            ->pluck('product');
+        // Best Sellers — reuse $recentSales
+        $bestSellers = $recentSales->take(20)->values();
 
-
-        // Attars category best sellers
+        // Attars / Perfumes best sellers — reuse $recentSales (no new query)
         $attarBestSellers = $bestSellers->filter(function ($product) {
             return optional($product->categories)->name === 'Attars';
-        });
+        })->values();
 
-        // Perfumes category best sellers
         $perfumeBestSellers = $bestSellers->filter(function ($product) {
             return optional($product->categories)->name === 'Perfumes';
-        });
+        })->values();
+
+        // Top Selling Arrivals — reuse $recentSales
+        $topSellingArrivals = $recentSales->take(12)->values();
 
         // get 3 categories for tabs
         $tabCategories = Category::whereIn('name', ['Attars', 'Perfumes', 'Gifts and Kits'])
@@ -129,7 +136,7 @@ class FrontController extends Controller
                 ->where('status', 'active')
                 ->with('product_options')
                 ->latest()
-                ->take(12)   // ✅ 12 per category from DB
+                ->take(12)
                 ->get();
         }
 
@@ -139,18 +146,6 @@ class FrontController extends Controller
             ->latest()
             ->take(12)
             ->get();
-
-        $topSellingArrivals = OrderDetail::select('product_id')
-            ->whereHas('order', function ($q) {
-                $q->where('created_at', '>=', Carbon::now()->subDays(30));
-            })
-            ->selectRaw('SUM(quantity) as total_sold')
-            ->groupBy('product_id')
-            ->orderByDesc('total_sold')
-            ->with('product.product_options')
-            ->take(12)
-            ->get()
-            ->pluck('product');
 
         $attarArrivals = Product::with('product_options')
             ->whereHas('categories', function ($q) {
@@ -178,6 +173,7 @@ class FrontController extends Controller
                 ->map(fn($id) => (int) $id)
                 ->toArray();
         }
+
         return view('front.index', compact(
             'banner',
             'deliveryBanner1',
@@ -205,10 +201,14 @@ class FrontController extends Controller
     public function suggestions(Request $request)
     {
         $products = Product::where('name', 'like', '%' . $request->q . '%')
-            ->with('product_options')
             ->where('status', 'active')
+            ->with([
+                'product_options' => function ($q) {
+                    $q->orderBy('price', 'asc'); // ya jo bhi order tumhare hisaab se sahi ho
+                }
+            ])
             ->take(5)
-            ->get(['name', 'slug', 'image', 'min_price']);
+            ->get(['id', 'name', 'slug', 'image', 'image_thumb', 'min_price']);
 
         return response()->json($products);
     }
@@ -487,17 +487,11 @@ class FrontController extends Controller
 
     public function productDetails($slug)
     {
+        
         $product = Product::with(['product_options', 'categories', 'subcategories'])
             ->where('slug', $slug)
             ->firstOrFail();
 
-        // dd($product->toArray());
-
-        /*
-        |--------------------------------------------------------------------------
-        | Related Products (same subcategory/category)
-        |--------------------------------------------------------------------------
-        */
         $relatedProducts = Product::where('status', 'active')
             ->where('id', '!=', $product->id)
             ->when($product->subcategory_id, function ($q) use ($product) {
@@ -509,18 +503,17 @@ class FrontController extends Controller
             ->take(12)
             ->get();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | You May Also Like (random products)
-        |--------------------------------------------------------------------------
-        */
-        $recommendedProducts = Product::where('status', 'active')
-            ->where('id', '!=', $product->id)
-            ->inRandomOrder()
-            ->take(12)
-            ->get();
-
+     
+    /*
+|--------------------------------------------------------------------------
+| ✅ "You May Also Like" — just take first 12 latest products
+|--------------------------------------------------------------------------
+*/
+$recommendedProducts = Product::where('status', 'active')
+    ->where('id', '!=', $product->id)
+    ->latest()
+    ->take(12)
+    ->get();
         $wishlistIds = [];
 
         if (auth()->guard('customer')->check()) {
@@ -529,7 +522,6 @@ class FrontController extends Controller
                 ->map(fn($id) => (int) $id)
                 ->toArray();
         }
-        // dd($relatedProducts->toArray());
 
         $canReview = false;
         $orderId = null;
@@ -541,10 +533,9 @@ class FrontController extends Controller
 
             $orderDetail = OrderDetail::whereHas('order', function ($q) use ($customerId) {
                 $q->where('customer_id', $customerId);
-                // ->where('order_status', 'Delivered'); // optional
             })
                 ->where('product_id', $product->id)
-                ->latest() // get latest purchase (important)
+                ->latest()
                 ->first();
 
             if ($orderDetail) {

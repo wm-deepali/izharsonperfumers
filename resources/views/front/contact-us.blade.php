@@ -323,27 +323,41 @@
                     <!-- Get in Touch Card -->
                     <div class="card shadow-lg border-0 mb-4 h-100">
                         <div class="card-body p-4 p-md-5">
-                            <h2 class="card-title mb-4">Get in touch with us today</h2>
-                            <p class="text-muted mb-4">{{ $settings->address }}</p>
+                            <h2 class="card-title mb-4">Chowk Branch</h2>
+                            <h5>{{ $settings->address }}</h5>
+                           
 
                             <div class="contact_icon_box mb-4">
                                 <div class="d-flex mb-3">
                                     <div class="icon fs-4 me-3 text-primary"><span class="flaticon-phone-call"></span></div>
                                     <div>
-                                        <h5>Monday-Friday: 08am-9pm</h5>
-                                        <a href="tel:{{ $settings->tollfree_number }}" class="text-decoration-none">
-                                            {{ $settings->tollfree_number }}
-                                        </a>
+                                        <h5>All Days Open: 09:00 AM - 10:00 PM</h5>
+                                       <h5> <a href="tel:{{ $settings->tollfree_number }}" class="text-decoration-none">
+                                            +91 - {{ $settings->tollfree_number }}
+                                        </a> </h5>
                                     </div>
                                 </div>
+<h2 class="card-title mb-4">Hazratganj Branch</h2>
+                            <h5>C-5, Janpath Market, Hazratganj, Lucknow</h5>
+                           
 
+                            <div class="contact_icon_box mb-4">
+                                <div class="d-flex mb-3">
+                                    <div class="icon fs-4 me-3 text-primary"><span class="flaticon-phone-call"></span></div>
+                                    <div>
+                                        <h5>Monday - Saturday: 11:00 AM - 9:00 PM (Sunday Closed)</h5>
+                                      <h5>  <a href="tel:{{ $settings->tollfree_number }}" class="text-decoration-none">
+                                           +91 - {{ $settings->tollfree_number }}
+                                        </a> </h5>
+                                    </div>
+                                </div>
                                 <div class="d-flex">
                                     <div class="icon fs-4 me-3 text-primary"><span class="flaticon-email"></span></div>
                                     <div>
                                         <h5>Need help with your order?</h5>
-                                        <a href="mailto:{{ $settings->email }}" class="text-decoration-none">
+                                        <h5><a href="mailto:{{ $settings->email }}" class="text-decoration-none">
                                             {{ $settings->email }}
-                                        </a>
+                                        </a> </h5>
                                     </div>
                                 </div>
                             </div>
@@ -351,14 +365,16 @@
                             <div class="mt-4">
                                 <h5 class="mb-3">Follow us</h5>
                                 <ul class="social_icon_list list-inline mb-0">
-                                    <li class="list-inline-item"><a href="{{ $socialLinks->fb_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-facebook"></i></a></li>
-                                    <li class="list-inline-item"><a href="{{ $socialLinks->twit_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-x-twitter"></i></a></li>
-                                    <li class="list-inline-item"><a href="{{ $socialLinks->insta_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-instagram"></i></a></li>
-                                    <li class="list-inline-item"><a href="{{ $socialLinks->linkedin_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-linkedin-in"></i></a></li>
-                                    <li class="list-inline-item"><a href="{{ $socialLinks->youtube_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-youtube"></i></a></li>
-                                    <li class="list-inline-item"><a href="https://wa.me/{{ $settings->whatsapp_number ?? '' }}" target="_blank" class="text-dark fs-4"><i class="fab fa-whatsapp"></i></a></li>
-                                </ul>
-                            </div>
+                                    <li class="list-inline-item"><a href="https://www.facebook.com/izharson.perfumers/" class="text-dark fs-4"><i class="fab fa-facebook"></i></a></li>
+                                     <li class="list-inline-item"><a href="https://www.instagram.com/izharson/" class="text-dark fs-4"><i class="fab fa-instagram"></i></a></li>
+                                     <li class="list-inline-item"><a href="https://www.youtube.com/@IzharsonPerfumers" class="text-dark fs-4"><i class="fab fa-youtube"></i></a></li>
+                                    <li class="list-inline-item">
+    <a href="https://wa.me/917800001928" target="_blank" class="text-dark fs-4"><i class="fab fa-whatsapp"></i></a></li>
+    
+     <!--  <li class="list-inline-item"><a href="{{ $socialLinks->twit_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-x-twitter"></i></a></li>
+     <li class="list-inline-item"><a href="{{ $socialLinks->linkedin_name ?? '#' }}" class="text-dark fs-4"><i class="fab fa-linkedin-in"></i></a></li> -->
+                                    </ul>
+                            </div> </div>
                         </div>
                     </div>
 
@@ -424,7 +440,7 @@
             </div>
 
             <!-- Our Offices / Branches -->
-            <div class="row mt-5 pt-5 border-top">
+        <!--    <div class="row mt-5 pt-5 border-top">
                 <div class="col-12 text-center mb-5">
                     <h2>Come and visit one of our offices</h2>
                     <p class="text-muted">We have multiple locations ready to welcome you</p>
@@ -462,7 +478,7 @@
                         </div>
                     </div>
                 @endforeach
-            </div>
+            </div> -->
 
             <!-- FAQ Section -->
             <div class="row mt-5 pt-5 border-top">
