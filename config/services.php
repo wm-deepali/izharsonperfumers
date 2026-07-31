@@ -14,6 +14,14 @@ return [
     |
     */
 
+    'sms' => [
+        'auth_key' => env('SMS_AUTH_KEY'),
+        'sender' => env('SMS_SENDER'),
+        'dlt_te_id' => env('SMS_DLT_TE_ID'),
+        'pe_id' => env('SMS_PE_ID'),
+        'base_url' => env('SMS_BASE_URL'),
+    ],
+
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
@@ -29,9 +37,9 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-    'google' => [  
-        'client_id' => env('GOOGLE_CLIENT_ID'),  
-        'client_secret' => env('GOOGLE_CLIENT_SECRET'),  
-        'redirect' => env('GOOGLE_CLIENT_REDIRECT'),  
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_CLIENT_REDIRECT'),
     ],
 ];

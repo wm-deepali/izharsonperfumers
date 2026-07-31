@@ -573,88 +573,88 @@ class CheckoutController extends Controller
     }
 
     protected function cashfreeRequest(Order $order)
-{
-    $baseUrl = config('cashfree.mode') === 'production'
-        ? 'https://api.cashfree.com/pg'
-        : 'https://sandbox.cashfree.com/pg';
+    {
+        $baseUrl = config('cashfree.mode') === 'production'
+            ? 'https://api.cashfree.com/pg'
+            : 'https://sandbox.cashfree.com/pg';
 
-    $payload = [
-        'order_id' => $order->order_number,
-        'order_amount' => (float) $order->order_amount_with_shipping,
-        'order_currency' => 'INR',
-        'customer_details' => [
-            'customer_id' => 'cust_' . $order->customer_id,
-            'customer_phone' => $order->mobile_number,
-            'customer_email' => $order->email,
-            'customer_name'  => $order->name,
-        ],
-        'order_meta' => [
-            'return_url' => route('customer.payment.cashfree.return', $order->id) . '?order_id={order_id}',
-            'notify_url' => route('customer.payment.cashfree.webhook'),
-        ],
-    ];
+        $payload = [
+            'order_id' => $order->order_number,
+            'order_amount' => (float) $order->order_amount_with_shipping,
+            'order_currency' => 'INR',
+            'customer_details' => [
+                'customer_id' => 'cust_' . $order->customer_id,
+                'customer_phone' => $order->mobile_number,
+                'customer_email' => $order->email,
+                'customer_name' => $order->name,
+            ],
+            'order_meta' => [
+                'return_url' => route('customer.payment.cashfree.return', $order->id) . '?order_id={order_id}',
+                'notify_url' => route('customer.payment.cashfree.webhook'),
+            ],
+        ];
 
-    $response = Http::withHeaders([
-        'x-client-id'     => config('cashfree.app_id'),
-        'x-client-secret' => config('cashfree.secret_key'),
-        'x-api-version'   => '2023-08-01',
-        'Content-Type'    => 'application/json',
-    ])->post($baseUrl . '/orders', $payload);
+        $response = Http::withHeaders([
+            'x-client-id' => config('cashfree.app_id'),
+            'x-client-secret' => config('cashfree.secret_key'),
+            'x-api-version' => '2023-08-01',
+            'Content-Type' => 'application/json',
+        ])->post($baseUrl . '/orders', $payload);
 
-    if (!$response->successful()) {
-        Log::error('Cashfree order creation failed for order ' . $order->id . ': ' . $response->body());
-        return redirect(route('order.failed'))->with('error', 'Unable to start payment. Please try again.');
+        if (!$response->successful()) {
+            Log::error('Cashfree order creation failed for order ' . $order->id . ': ' . $response->body());
+            return redirect(route('order.failed'))->with('error', 'Unable to start payment. Please try again.');
+        }
+
+        $result = $response->json();
+
+        CashfreeOrder::updateOrCreate(
+            ['order_id' => $order->order_number],
+            [
+                'user_id' => $order->customer_id,
+                'link_id' => $result['cf_order_id'] ?? $order->order_number,
+                'cf_link_url' => $result['payment_session_id'] ?? null, // storing session id here
+                'amount' => $order->order_amount_with_shipping,
+                'payment_status' => 'pending',
+                'status' => 'active',
+            ]
+        );
+
+        if (empty($result['payment_session_id'])) {
+            Log::error('Cashfree order response missing payment_session_id for order ' . $order->id . ': ' . $response->body());
+            return redirect(route('order.failed'))->with('error', 'Unable to start payment. Please try again.');
+        }
+
+        // Orders API doesn't give a direct redirect URL — it gives a payment_session_id
+        // which the Cashfree Checkout JS SDK uses to open the hosted payment page.
+        return view('front.cashfree_checkout', [
+            'paymentSessionId' => $result['payment_session_id'],
+        ]);
     }
-
-    $result = $response->json();
-
-    CashfreeOrder::updateOrCreate(
-        ['order_id' => $order->order_number],
-        [
-            'user_id'        => $order->customer_id,
-            'link_id'        => $result['cf_order_id'] ?? $order->order_number,
-            'cf_link_url'    => $result['payment_session_id'] ?? null, // storing session id here
-            'amount'         => $order->order_amount_with_shipping,
-            'payment_status' => 'pending',
-            'status'         => 'active',
-        ]
-    );
-
-    if (empty($result['payment_session_id'])) {
-        Log::error('Cashfree order response missing payment_session_id for order ' . $order->id . ': ' . $response->body());
-        return redirect(route('order.failed'))->with('error', 'Unable to start payment. Please try again.');
-    }
-
-    // Orders API doesn't give a direct redirect URL — it gives a payment_session_id
-    // which the Cashfree Checkout JS SDK uses to open the hosted payment page.
-    return view('front.cashfree_checkout', [
-        'paymentSessionId' => $result['payment_session_id'],
-    ]);
-}
 
     /**
      * Customer is bounced back here by Cashfree after attempting payment.
      * We re-check status with Cashfree directly rather than trusting the redirect alone.
      */
-   public function cashfreeReturn(Request $request, $orderId)
-{
-    $order = Order::findOrFail($orderId);
-    $cashfree = CashfreeOrder::where('order_id', $order->order_number)->first();
+    public function cashfreeReturn(Request $request, $orderId)
+    {
+        $order = Order::findOrFail($orderId);
+        $cashfree = CashfreeOrder::where('order_id', $order->order_number)->first();
 
-    $status = $this->getCashfreeLinkStatus($order->order_number); // ✅ order_number use karo, link_id nahi
+        $status = $this->getCashfreeLinkStatus($order->order_number); // ✅ order_number use karo, link_id nahi
 
-    if ($status === 'PAID') {
-        $cashfree?->update(['payment_status' => 'success', 'status' => 'completed']);
-        $order->update(['payment_status' => 'success']);
+        if ($status === 'PAID') {
+            $cashfree?->update(['payment_status' => 'success', 'status' => 'completed']);
+            $order->update(['payment_status' => 'success']);
 
-        return redirect('/customer/order-success/' . $order->id);
+            return redirect('/customer/order-success/' . $order->id);
+        }
+
+        $cashfree?->update(['payment_status' => strtolower($status ?? 'failed')]);
+        $order->update(['payment_status' => 'failed']);
+
+        return redirect(route('order.failed'));
     }
-
-    $cashfree?->update(['payment_status' => strtolower($status ?? 'failed')]);
-    $order->update(['payment_status' => 'failed']);
-
-    return redirect(route('order.failed'));
-}
 
     /**
      * Cashfree server-to-server webhook — the reliable source of truth,
@@ -662,55 +662,55 @@ class CheckoutController extends Controller
      * TODO: verify x-webhook-signature / x-webhook-timestamp headers against
      * config('cashfree.secret_key') per Cashfree's webhook docs before trusting this.
      */
-   public function cashfreeWebhook(Request $request)
-{
-    $payload = $request->all();
+    public function cashfreeWebhook(Request $request)
+    {
+        $payload = $request->all();
 
-    Log::info('Cashfree webhook received', $payload);
+        Log::info('Cashfree webhook received', $payload);
 
-    $orderId = $payload['data']['order']['order_id'] ?? null;
-    $paymentStatus = $payload['data']['payment']['payment_status'] ?? null;
+        $orderId = $payload['data']['order']['order_id'] ?? null;
+        $paymentStatus = $payload['data']['payment']['payment_status'] ?? null;
 
-    if (!$orderId) {
-        return response()->json(['status' => 'ignored'], 200);
+        if (!$orderId) {
+            return response()->json(['status' => 'ignored'], 200);
+        }
+
+        $order = Order::where('order_number', $orderId)->first();
+        $cashfree = CashfreeOrder::where('order_id', $orderId)->first();
+
+        if (!$order) {
+            return response()->json(['status' => 'ignored'], 200);
+        }
+
+        if (strtoupper($paymentStatus) === 'SUCCESS') {
+            $order->update(['payment_status' => 'success']);
+            $cashfree?->update(['payment_status' => 'success', 'status' => 'completed']);
+        } elseif (in_array(strtoupper($paymentStatus), ['FAILED', 'USER_DROPPED'])) {
+            $order->update(['payment_status' => 'failed']);
+            $cashfree?->update(['payment_status' => 'failed']);
+        }
+
+        return response()->json(['status' => 'ok'], 200);
     }
 
-    $order = Order::where('order_number', $orderId)->first();
-    $cashfree = CashfreeOrder::where('order_id', $orderId)->first();
+    protected function getCashfreeLinkStatus($orderNumber)
+    {
+        $baseUrl = config('cashfree.mode') === 'production'
+            ? 'https://api.cashfree.com/pg'
+            : 'https://sandbox.cashfree.com/pg';
 
-    if (!$order) {
-        return response()->json(['status' => 'ignored'], 200);
+        $response = Http::withHeaders([
+            'x-client-id' => config('cashfree.app_id'),
+            'x-client-secret' => config('cashfree.secret_key'),
+            'x-api-version' => '2023-08-01',
+        ])->get($baseUrl . '/orders/' . $orderNumber);
+
+        if (!$response->successful()) {
+            return null;
+        }
+
+        return $response->json('order_status'); // ACTIVE, PAID, EXPIRED
     }
-
-    if (strtoupper($paymentStatus) === 'SUCCESS') {
-        $order->update(['payment_status' => 'success']);
-        $cashfree?->update(['payment_status' => 'success', 'status' => 'completed']);
-    } elseif (in_array(strtoupper($paymentStatus), ['FAILED', 'USER_DROPPED'])) {
-        $order->update(['payment_status' => 'failed']);
-        $cashfree?->update(['payment_status' => 'failed']);
-    }
-
-    return response()->json(['status' => 'ok'], 200);
-}
-
-   protected function getCashfreeLinkStatus($orderNumber)
-{
-    $baseUrl = config('cashfree.mode') === 'production'
-        ? 'https://api.cashfree.com/pg'
-        : 'https://sandbox.cashfree.com/pg';
-
-    $response = Http::withHeaders([
-        'x-client-id'     => config('cashfree.app_id'),
-        'x-client-secret' => config('cashfree.secret_key'),
-        'x-api-version'   => '2023-08-01',
-    ])->get($baseUrl . '/orders/' . $orderNumber);
-
-    if (!$response->successful()) {
-        return null;
-    }
-
-    return $response->json('order_status'); // ACTIVE, PAID, EXPIRED
-}
 
     public function response(Request $request)
     {
@@ -754,12 +754,12 @@ class CheckoutController extends Controller
     public function success($orderId)
     {
         $order = Order::with('order_detailss')->findOrFail($orderId);
-        
+
         // Runs once — invoice_url stays null until this succeeds, so a page
         // refresh or a slow gateway redirect back here can't double-send mail/SMS.
         // if (!$order->invoice_url) {
-            $this->finalizeOrder($order);
-            $order->refresh();
+        $this->finalizeOrder($order);
+        $order->refresh();
         // }
         return view('front.order_success', compact('order'));
     }
@@ -770,41 +770,41 @@ class CheckoutController extends Controller
      * Runs on the success page instead of inside placeOrder().
      */
     protected function finalizeOrder(Order $order)
-{
-    try {
-        $general_setting = GeneralSetting::firstOrFail();
-        $terms_and_condition = Policy::where('name', 'terms_and_condition')->first();
-        $gstsetting = SiteGstSetting::firstOrFail();
-        $orderForInvoice = Order::with('order_detailss')->findOrFail($order->id);
+    {
+        try {
+            $general_setting = GeneralSetting::firstOrFail();
+            $terms_and_condition = Policy::where('name', 'terms_and_condition')->first();
+            $gstsetting = SiteGstSetting::firstOrFail();
+            $orderForInvoice = Order::with('order_detailss')->findOrFail($order->id);
 
-        $pdf = Pdf::loadView('front.invoice', [
-            'terms_and_condition' => $terms_and_condition,
-            'general_setting' => $general_setting,
-            'order' => $orderForInvoice,
-            'gstsetting' => $gstsetting,
-        ]);
-        $content = $pdf->download()->getOriginalContent();
-        Storage::put('invoices/invoices' . strtolower($order->order_number) . '.pdf', $content);
+            $pdf = Pdf::loadView('front.invoice', [
+                'terms_and_condition' => $terms_and_condition,
+                'general_setting' => $general_setting,
+                'order' => $orderForInvoice,
+                'gstsetting' => $gstsetting,
+            ]);
+            $content = $pdf->download()->getOriginalContent();
+            Storage::put('invoices/invoices' . strtolower($order->order_number) . '.pdf', $content);
 
-        $order->update([
-            'invoice_number' => $gstsetting->invoice_prefix . "-" . $gstsetting->financial_year . "/" . $gstsetting->invoice_number,
-            'invoice_url' => '/invoices/invoices' . strtolower($order->order_number) . '.pdf',
-        ]);
-    } catch (\Exception $e) {
-        Log::error('Invoice generation failed for order ' . $order->id . ': ' . $e->getMessage());
+            $order->update([
+                'invoice_number' => $gstsetting->invoice_prefix . "-" . $gstsetting->financial_year . "/" . $gstsetting->invoice_number,
+                'invoice_url' => '/invoices/invoices' . strtolower($order->order_number) . '.pdf',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Invoice generation failed for order ' . $order->id . ': ' . $e->getMessage());
+        }
+
+        try {
+            \App\Jobs\SendOrderMailJob::dispatch($order->id);
+        } catch (\Exception $e) {
+            Log::error('SendOrderMailJob dispatch failed for order ' . $order->id . ': ' . $e->getMessage());
+        }
+
+        try {
+            \App\Jobs\SendAdminSmsJob::dispatch($order->name, $order->email, $order->mobile_number, $order->order_amount_with_shipping);
+        } catch (\Exception $e) {
+            Log::error('SendAdminSmsJob dispatch failed for order ' . $order->id . ': ' . $e->getMessage());
+        }
     }
-
-    try {
-        \App\Jobs\SendOrderMailJob::dispatch($order->id);
-    } catch (\Exception $e) {
-        Log::error('SendOrderMailJob dispatch failed for order ' . $order->id . ': ' . $e->getMessage());
-    }
-
-    try {
-        \App\Jobs\SendAdminSmsJob::dispatch($order->name, $order->email, $order->mobile_number, $order->order_amount_with_shipping);
-    } catch (\Exception $e) {
-        Log::error('SendAdminSmsJob dispatch failed for order ' . $order->id . ': ' . $e->getMessage());
-    }
-}
 
 }

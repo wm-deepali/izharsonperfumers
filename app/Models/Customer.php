@@ -34,6 +34,8 @@ class Customer extends Authenticatable
         'status',
         'token',
         'is_email_verified',
+        'country_code',
+        'mobile_verified_at',
     ];
     protected $hidden = [
         'password'
