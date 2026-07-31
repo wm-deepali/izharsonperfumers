@@ -688,7 +688,7 @@
                                 Checkout
                             </a>
                         @else
-                            <a href="{{ route('customer.login') }}" class="checkout_btns btn btn-thm" style="font-weight:600;">
+                            <a href="{{ route('customer.login', ['redirect' => route('checkout')]) }}" class="checkout_btns btn btn-thm" style="font-weight:600;">
                                 Login to Checkout
                             </a>
                         @endif

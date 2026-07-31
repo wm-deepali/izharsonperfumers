@@ -1651,10 +1651,9 @@ if (!heartIcon) return; // stop error
                             heartIcon.style.color = "";
                         }
 
-                        if (data.status === "login_required") {
-                            window.location.href = "/customer/login";
-                            return;
-                        }
+                       if (data.status == "login_required") {
+    window.location.href = "{{ route('customer.login') }}?redirect=" + encodeURIComponent(window.location.href);
+}
 
                         // ✅ close loading
                         Swal.close();

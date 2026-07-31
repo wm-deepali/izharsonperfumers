@@ -15,30 +15,33 @@ class CustomerAuthController extends Controller
     /**
      * Show Customer Login Page
      */
-    public function showLogin()
+    public function showLogin(Request $request)
     {
         if (Auth::guard('customer')->check()) {
             return redirect()->route('customer.account-details');
+        }
+
+        // store intended redirect for after login
+        if ($request->has('redirect')) {
+            session(['customer_intended_url' => $request->redirect]);
         }
 
         return view('customer.auth.login');
     }
 
-    /**
-     * Show Customer Register Page
-     */
-    public function showRegister()
+    public function showRegister(Request $request)
     {
         if (Auth::guard('customer')->check()) {
             return redirect()->route('customer.account-details');
         }
 
+        if ($request->has('redirect')) {
+            session(['customer_intended_url' => $request->redirect]);
+        }
+
         return view('customer.auth.register');
     }
 
-    /**
-     * Register Customer
-     */
     public function register(Request $request)
     {
         $request->validate([
@@ -49,19 +52,15 @@ class CustomerAuthController extends Controller
             'g-recaptcha-response' => 'required'
         ]);
 
-        // Verify captcha
         $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
             'secret' => env('RECAPTCHA_SECRET_KEY'),
             'response' => $request->input('g-recaptcha-response'),
             'remoteip' => $request->ip(),
         ]);
-
         $result = $response->json();
-
         if (!$result['success']) {
             return back()->withErrors(['captcha' => 'Captcha verification failed'])->withInput();
         }
-
 
         $customer = Customer::create([
             'name' => $request->name,
@@ -70,17 +69,40 @@ class CustomerAuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // auto login after register
         Auth::guard('customer')->login($customer);
 
-        // ⭐ merge guest cart
         $deviceId = $request->device_id ?? session('device_id');
-
         CartController::mergeGuestCart($customer->id, $deviceId);
 
-        return redirect()->route('customer.account-details')
+        $redirectUrl = session()->pull('customer_intended_url');
+
+        return redirect($redirectUrl ?? route('customer.account-details'))
             ->with('success', 'Registration successful!');
     }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if (Auth::guard('customer')->attempt($request->only('email', 'password'), $request->remember)) {
+            $customer = Auth::guard('customer')->user();
+            $deviceId = $request->device_id ?? session('device_id');
+            CartController::mergeGuestCart($customer->id, $deviceId);
+
+            $redirectUrl = session()->pull('customer_intended_url');
+
+            return redirect($redirectUrl ?? route('customer.account-details'))
+                ->with('success', 'Login successful');
+        }
+
+        return back()->withErrors([
+            'email' => 'Invalid email or password'
+        ])->withInput();
+    }
+
 
     public function checkUserExists(Request $request)
     {
@@ -96,32 +118,7 @@ class CustomerAuthController extends Controller
 
         return response()->json($response);
     }
-    /**
-     * Customer Login
-     */
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
 
-        if (Auth::guard('customer')->attempt($request->only('email', 'password'), $request->remember)) {
-
-            $customer = Auth::guard('customer')->user();
-
-            $deviceId = $request->device_id ?? session('device_id');
-
-            CartController::mergeGuestCart($customer->id, $deviceId);
-
-            return redirect()->route('customer.account-details')
-                ->with('success', 'Login successful');
-        }
-
-        return back()->withErrors([
-            'email' => 'Invalid email or password'
-        ])->withInput();
-    }
     /**
      * Logout Customer
      */

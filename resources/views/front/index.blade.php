@@ -399,7 +399,7 @@
                         <div class="banner-style-one owl-theme owl-carousel">
 
                             @foreach($sliders as $slider)
-                                    <div class="slide slide-one" onclick="window.location='{{ $slider->button_link ?? '#' }}'"
+                                    <div class="slide slide-one" onclick="window.location='{{ $slider->button_link ?? route('shop.category') }}'"
                                         style="background-image:url('{{ asset('storage/' . $slider->image) }}'); height:445px; cursor:pointer;"">
 
                                                 <div class=" container">
@@ -524,8 +524,6 @@
                                                     </li>
                                                     <li><a href="{{ url('product-details/' . $product->slug) }}"><span
                                                                 class="flaticon-show"></span></a></li>
-                                                    <li><a href="page-shop-list-v6.html"><span class="flaticon-graph"></span></a>
-                                                    </li>
                                                 </ul>
                                             </div>
                                             <div class="shop_item_cart_btn d-grid">
@@ -672,7 +670,7 @@
                 {{-- Banner 1 --}}
                 <div class="col-lg-6 col-xl-6 wow fadeInUp" data-wow-duration=".7s">
                     <div class="banner_one home1_style color1 mb30">
-                        <a href="{{ $deliveryBanner1->button_link ?? '#' }}">
+                        <a href="{{ $deliveryBanner1->url ?? route('shop.category') }}">
                             <div class="thumb style1">
                                 <img class="float-end" src="{{ asset('storage/' . $deliveryBanner1->image) }}"
                                     alt="{{ $deliveryBanner1->heading }}" fetchpriority="high">
@@ -695,7 +693,7 @@
                 {{-- Banner 2 --}}
                 <div class="col-lg-6 col-xl-6 wow fadeInUp" data-wow-duration=".9s">
                     <div class="banner_one home1_style color2 mb30">
-                        <a href="{{ $deliveryBanner2->button_link ?? '#' }}" class="shop_btn">
+                        <a href="{{ $deliveryBanner2->url ?? route('shop.category') }}" class="shop_btn">
                             <div class="thumb style1">
 
                                 <img class="float-end" src="{{ asset('storage/' . $deliveryBanner2->image) }}"
@@ -1104,7 +1102,7 @@
                     <div class="apple_widget_home1 mb-4 mb-lg-0">
                         <h1 class="title">{{ $banner->heading ?? 'ARABIAN OUD'}}</h1>
                         <p class="para mt-3 mb-4">{!! $banner->content !!}</p>
-                        <a href="page-shop-list-v1.html" class="btn btn-thm">Shop Now</a>
+                        <a href="{{ $banner->url ?? route('shop.category') }}" class="btn btn-thm">Shop Now</a>
                     </div>
                 </div>
                 <div class="col-lg-6 align-self-center">
@@ -1283,16 +1281,19 @@
             
             // Give it a tiny delay to allow the browser to parse the new HTML, then re-init JS
             setTimeout(() => {
-                // Re-run slider.js to initialize the new carousels
-                const script = document.createElement('script');
-                script.src = "{{ asset('front/js/slider.js') }}";
-                document.body.appendChild(script);
-                
-                // Also re-run swiper if needed
-                const swiperScript = document.createElement('script');
-                swiperScript.src = "{{ asset('front/js/swiper-slider.js') }}";
-                document.body.appendChild(swiperScript);
-            }, 100);
+    // Re-run slider.js to initialize the new carousels
+    const script = document.createElement('script');
+    script.src = "{{ asset('front/js/slider.js') }}";
+    document.body.appendChild(script);
+    
+    // Also re-run swiper if needed
+    const swiperScript = document.createElement('script');
+    swiperScript.src = "{{ asset('front/js/swiper-slider.js') }}";
+    document.body.appendChild(swiperScript);
+
+    // ✅ re-bind arrow click handlers for newly injected sliders
+    initProductSliders();
+}, 100);
             
             // Clean up event listeners
             window.removeEventListener('scroll', loadLazySections);
@@ -1312,32 +1313,137 @@
 
    <script>const dealEndTime = "{{ optional($maxDealEnd)->toIso8601String() }}"; if (!dealEndTime) { document.getElementById("timer").innerHTML = "No active deals"; } function makeTimer() { const endTime = new Date(dealEndTime).getTime(); const now = new Date().getTime(); const timeLeft = endTime - now; if (timeLeft <= 0) { document.getElementById("timer").innerHTML = "Deal Expired"; return; } const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24)); const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)); const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000); document.querySelector(".days").innerHTML = days; document.querySelector(".hours").innerHTML = hours.toString().padStart(2, '0'); document.querySelector(".minutes").innerHTML = minutes.toString().padStart(2, '0'); document.querySelector(".seconds").innerHTML = seconds.toString().padStart(2, '0'); } setInterval(makeTimer, 1000); makeTimer();</script>
 
-<script>document.querySelectorAll('.add-to-cart-btn').forEach(btn => { btn.addEventListener('click', function (e) { e.preventDefault(); const button = this; const productId = button.dataset.product; const optionId = button.dataset.option || null; const quantity = 1; button.disabled = true; Swal.fire({ title: 'Adding to cart...', allowOutsideClick: false, didOpen: () => Swal.showLoading() }); fetch("{{ route('cart.store') }}", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" }, body: JSON.stringify({ product_id: productId, product_option_id: optionId, quantity: quantity, device_id: localStorage.getItem("device_id") }) }).then(res => res.json()).then(data => { button.disabled = false; if (data.cart_count !== undefined) { document.getElementById("cart-count").innerText = data.cart_count; document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2); refreshMiniCart(); } Swal.fire({ icon: 'success', title: 'Added!', text: data.message, timer: 1200, showConfirmButton: false }); }).catch(() => { button.disabled = false; Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to add product' }); }); }); }); document.querySelectorAll('.add-to-wishlist-btn').forEach(btn => { btn.addEventListener('click', function (e) { e.preventDefault(); const button = this; const productId = button.dataset.product; Swal.fire({ title: 'Updating wishlist...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } }); fetch("/wishlist/toggle", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" }, body: JSON.stringify({ product_id: productId }) }).then(res => res.json()).then(data => { Swal.close(); const heartIcon = button.querySelector('span, i'); if (!heartIcon) return; if (data.status == "added") { heartIcon.style.color = "red"; } if (data.status == "removed") { heartIcon.style.color = ""; } if (data.status == "login_required") { window.location.href = "/customer/login"; } }).catch(error => { Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to update wishlist' }); console.error("Wishlist error:", error); }); }); });</script>
-
 <script>
-document.querySelectorAll(".productslider-wrapper").forEach(wrapper => {
-    const track = wrapper.querySelector(".productslider-track");
-    const prev  = wrapper.querySelector(".prev, .productslider-prev");
-    const next  = wrapper.querySelector(".next, .productslider-next");
+document.addEventListener('click', function (e) {
 
-    if (!track || !prev || !next) return; // skip incomplete sliders safely
+    // ---- ADD TO CART ----
+    const cartBtn = e.target.closest('.add-to-cart-btn');
+    if (cartBtn) {
+        e.preventDefault();
 
-    let position = 0;
-    const itemsVisible = window.innerWidth <= 768 ? 2
-                        : window.innerWidth <= 992 ? 3
-                        : 4;
-    const step = 100 / itemsVisible;
-    const maxPosition = -Math.max(track.children.length - itemsVisible, 0) * step;
+        const button = cartBtn;
+        const productId = button.dataset.product;
+        const optionId = button.dataset.option || null;
+        const quantity = 1;
 
-    next.addEventListener("click", () => {
-        position = Math.max(position - step, maxPosition);
-        track.style.transform = `translateX(${position}%)`;
-    });
+        button.disabled = true;
 
-    prev.addEventListener("click", () => {
-        position = Math.min(position + step, 0);
-        track.style.transform = `translateX(${position}%)`;
-    });
+        Swal.fire({
+            title: 'Adding to cart...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        fetch("{{ route('cart.store') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                product_option_id: optionId,
+                quantity: quantity,
+                device_id: localStorage.getItem("device_id")
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            button.disabled = false;
+            if (data.cart_count !== undefined) {
+                document.getElementById("cart-count").innerText = data.cart_count;
+                document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2);
+                refreshMiniCart();
+            }
+            Swal.fire({
+                icon: 'success',
+                title: 'Added!',
+                text: data.message,
+                timer: 1200,
+                showConfirmButton: false
+            });
+        })
+        .catch(() => {
+            button.disabled = false;
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to add product' });
+        });
+
+        return; // stop here, don't fall through to wishlist check
+    }
+
+    // ---- ADD TO WISHLIST ----
+    const wishBtn = e.target.closest('.add-to-wishlist-btn');
+    if (wishBtn) {
+        e.preventDefault();
+
+        const button = wishBtn;
+        const productId = button.dataset.product;
+
+        Swal.fire({
+            title: 'Updating wishlist...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        fetch("/wishlist/toggle", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ product_id: productId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            Swal.close();
+            const heartIcon = button.querySelector('span, i');
+            if (!heartIcon) return;
+
+            if (data.status == "added") heartIcon.style.color = "red";
+            if (data.status == "removed") heartIcon.style.color = "";
+            if (data.status == "login_required") {
+    window.location.href = "{{ route('customer.login') }}?redirect=" + encodeURIComponent(window.location.href);
+}
+        })
+        .catch(error => {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to update wishlist' });
+            console.error("Wishlist error:", error);
+        });
+    }
+
 });
+
+function initProductSliders() {
+    document.querySelectorAll(".productslider-wrapper").forEach(wrapper => {
+
+        if (wrapper.dataset.sliderInit === "1") return;
+        wrapper.dataset.sliderInit = "1";
+
+        const track = wrapper.querySelector(".productslider-track");
+        const prev  = wrapper.querySelector(".prev, .productslider-prev");
+        const next  = wrapper.querySelector(".next, .productslider-next");
+
+        if (!track || !prev || !next) return;
+
+        let position = 0;
+        const itemsVisible = window.innerWidth <= 768 ? 2
+                            : window.innerWidth <= 992 ? 3
+                            : 4;
+        const step = 100 / itemsVisible;
+        const maxPosition = -Math.max(track.children.length - itemsVisible, 0) * step;
+
+        next.addEventListener("click", () => {
+            position = Math.max(position - step, maxPosition);
+            track.style.transform = `translateX(${position}%)`;
+        });
+
+        prev.addEventListener("click", () => {
+            position = Math.min(position + step, 0);
+            track.style.transform = `translateX(${position}%)`;
+        });
+    });
+}
+
+initProductSliders();
 </script>
 @endsection

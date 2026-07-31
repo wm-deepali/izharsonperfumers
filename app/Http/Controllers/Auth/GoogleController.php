@@ -3,19 +3,25 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\Customer;
+use App\Http\Controllers\CartController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class GoogleController extends Controller
 {
-    public function redirect()
+    public function redirect(Request $request)
     {
+        if ($request->has('redirect')) {
+            session(['customer_intended_url' => $request->redirect]);
+        }
+
         return Socialite::driver('google')->redirect();
     }
 
-    public function callback()
+    public function callback(Request $request)
     {
         $googleUser = Socialite::driver('google')->stateless()->user();
 
@@ -26,13 +32,20 @@ class GoogleController extends Controller
                 'name' => $googleUser->getName(),
                 'email' => $googleUser->getEmail(),
                 'google_id' => $googleUser->getId(),
-                'password' => Hash::make(rand(100000,999999)),
+                'password' => Hash::make(rand(100000, 999999)),
                 'is_email_verified' => 1,
             ]);
         }
 
         Auth::guard('customer')->login($customer);
 
-        return redirect('/')->with('success','Logged in with Google');
+        // merge guest cart same as normal login/register flow
+        $deviceId = $request->device_id ?? session('device_id');
+        CartController::mergeGuestCart($customer->id, $deviceId);
+
+        $redirectUrl = session()->pull('customer_intended_url');
+
+        return redirect($redirectUrl ?? '/')
+            ->with('success', 'Logged in with Google');
     }
 }

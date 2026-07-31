@@ -1,9 +1,6 @@
 @extends('front.app')
 
 @section('title', $product->meta_title ?? $product->name)
-<link rel="stylesheet" href="owl.carousel.min.css">
-<link rel="stylesheet" href="owl.theme.default.min.css">
-<script src="owl.carousel.min.js"></script>
 
 
 <style>
@@ -229,52 +226,129 @@ color:#fff;
 }
     }
     
-    .shop_item_6grid_slider {
-    position: relative;
-}
+</style>
 
-.shop_item_6grid_slider .owl-nav {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    transform: translateY(-50%);
-    display: flex;
-    justify-content: space-between;
-    pointer-events: none; /* important */
-}
+<style>
 
-.shop_item_6grid_slider .owl-nav button {
-    pointer-events: all;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    background: #000 !important;
-    color: #fff !important;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.8;
-}
+    .productslider-wrapper {
+        position: relative;
+        overflow: hidden;
+    }
 
-.shop_item_6grid_slider .owl-nav button:hover {
-    opacity: 1;
-    background: #333 !important;
-}
+    .productslider-track {
+        display: flex;
+        gap: 20px;
+        transition: transform .4s ease;
+    }
 
-/* left button */
-.shop_item_6grid_slider .owl-nav .owl-prev {
-    position: absolute;
-    left: -10px;
-}
+    .productslider-item {
+        flex: 0 0 25%;
+    }
 
-/* right button */
-.shop_item_6grid_slider .owl-nav .owl-next {
-    position: absolute;
-    right: -10px;
-}
+    @media(max-width:992px) {
+        .productslider-item {
+            flex: 0 0 33.33%;
+        }
+    }
 
+    @media(max-width:768px) {
+        .productslider-item {
+            flex: 0 0 50%;
+        }
+    }
+
+    @media(max-width:480px) {
+        .productslider-item {
+            flex: 0 0 50%;
+        }
+    }
+
+    .productslider-nav {
+        position: absolute;
+        top: 45%;
+        transform: translateY(-50%);
+        background: #fff;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, .2);
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .productslider-prev {
+        left: -10px;
+    }
+
+    .productslider-next {
+        right: -10px;
+    }
+
+    .productslider-wrapper {
+        position: relative;
+        overflow: hidden;
+        padding: 0px 0px 40px 0px;
+    }
+
+    .productslider-track {
+        display: flex;
+        gap: 20px;
+        transition: transform .4s ease;
+    }
+
+    .productslider-item {
+        flex: 0 0 25%;
+    }
+
+    @media(max-width:992px) {
+        .productslider-item {
+            flex: 0 0 33.33%;
+        }
+    }
+
+    @media(max-width:768px) {
+        .productslider-item {
+            flex: 0 0 50%;
+        }
+    }
+
+   
+
+    @media(max-width:480px) {
+        .productslider-item {
+            flex: 0 0 50%;
+        }
+
+        .productslider-track {
+            display: flex;
+            gap: 7px;
+            transition: transform .4s ease;
+        }
+
+    }
+
+    .productslider-nav {
+        position: absolute;
+        top: 45%;
+        transform: translateY(-50%);
+        background: #fff;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, .2);
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .productslider-nav.prev {
+        left: -10px;
+    }
+
+    .productslider-nav.next {
+        right: -10px;
+    }
 
 </style>
 
@@ -1032,106 +1106,27 @@ color:#fff;
                     <div class="main-title">
                         <h2 class="title">Related products</h2>
                     </div>
-                    <div
-                        class="navi_pagi_top_right related_product_slider slider_dib_sm shop_item_6grid_slider owl-theme owl-carousel">
-                        @foreach($relatedProducts as $item)
-                            @php
-                                $relPrice = (float) ($item->product_options[0]->price ?? $item->min_price);
-                                $relMrp = $item->product_options[0]->mrp ?? null;
-                                $relHasDiscount = !is_null($relMrp) && (float) $relMrp > 0 && (float) $relMrp > $relPrice;
-                            @endphp
-                            <div class="item">
-                                <div class="productcard-card">
+                      <div class="productslider-wrapper">
 
-    <!-- IMAGE -->
-    <div class="productcard-image">
- <a href="{{ url('product-details/' . $item->slug) }}">
-      
-        <img src="{{ asset('storage/' . ($item->image_thumb ?? $item->image)) }}" alt="{{ $item->name }}">
-</a>
-        <!-- ACTION ICONS -->
-        <div class="productcard-icons">
+                                    <button class="productslider-nav prev" aria-label="Previous slide">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </button>
 
-            <a href="#" class="productcard-icon add-to-wishlist-btn" data-product="{{ $item->id }}">
-                <i class="flaticon-heart"
-                style="{{ collect($wishlistIds)->contains($item->id) ? 'color:red;' : '' }}"></i>
-            </a>
+                                    <div class="productslider-track">
 
-            <a href="{{ url('product-details/' . $item->slug) }}" class="productcard-icon">
-                <i class="flaticon-show"></i>
-            </a>
+                                        @foreach($relatedProducts as $product)
+                                            <div class="productslider-item">
+                                                @include('front.partials.best-seller-card')
+                                            </div>
+                                        @endforeach
 
-        </div>
+                                    </div>
 
-    </div>
+                                    <button class="productslider-nav next" aria-label="Next slide">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
 
-
-    <!-- DETAILS -->
-    <div class="productcard-body">
-
-        <!-- CATEGORY -->
-        <div class="productcard-category">
-            {{ $item->subcategories->name ?? ($item->categories->name ?? '')}}
-        </div>
-
-        <!-- TITLE -->
-        <h3 class="productcard-title">
-            <a href="{{ url('product-details/' . $item->slug) }}">
-                {{ Str::limit($item->name, 40) }}
-            </a>
-        </h3>
-        
-
-
-        <!-- RATING -->
-        <div class="productcard-rating">
-
-            @for($i = 1; $i <= 5; $i++)
-                <i class="fas fa-star {{ $i <= $item->avg_rating ? 'active' : '' }}"></i>
-            @endfor
-
-            <span>({{ $item->review_count }})</span>
-
-        </div>
-
-
-        <!-- PRICE -->
-        <div class="productcard-price">
-
-            ₹{{ $item->product_options[0]->price ?? $item->min_price }}
-
-            @if($relHasDiscount)
-            <span class="productcard-oldprice">
-                ₹{{ $relMrp }}
-            </span>
-            @endif
-
-        </div>
-
-
-        <!-- BUTTONS -->
-        <div class="productcard-buttons">
-
-            <a href="#"
-               class="productcard-btn productcard-cart add-to-cart-btn"
-               data-product="{{ $item->id }}"
-               data-option="{{ optional($item->product_options->first())->id }}">
-               Add to Cart
-            </a>
-
-            <a href="{{ url('product-details/' . $item->slug) }}"
-               class="productcard-btn productcard-buy">
-               Buy Now
-            </a>
-
-        </div>
-
-    </div>
-
-</div>
-                            </div>
-                        @endforeach
-                    </div>
+                                </div>
                 </div>
             </div>
             
@@ -1146,105 +1141,27 @@ color:#fff;
                     </div>
                     
                     
-                    <div
-                        class="navi_pagi_top_right related_product_slider slider_dib_sm shop_item_6grid_slider owl-theme owl-carousel ">
-                        @foreach($recommendedProducts as $item)
-                            @php
-                                $recPrice = (float) ($item->product_options[0]->price ?? $item->min_price);
-                                $recMrp = $item->product_options[0]->mrp ?? null;
-                                $recHasDiscount = !is_null($recMrp) && (float) $recMrp > 0 && (float) $recMrp > $recPrice;
-                            @endphp
-                            <div class="item ">
- <div class="productcard-card">
+                  <div class="productslider-wrapper">
 
-    <!-- IMAGE -->
-    <div class="productcard-image">
- <a href="{{ url('product-details/' . $item->slug) }}">
-      
-        <img src="{{ asset('storage/' . ($item->image_thumb ?? $item->image)) }}" alt="{{ $item->name }}">
-</a>
-        <!-- ACTION ICONS -->
-        <div class="productcard-icons">
+                                    <button class="productslider-nav prev" aria-label="Previous slide">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </button>
 
-            <a href="#" class="productcard-icon add-to-wishlist-btn" data-product="{{ $item->id }}">
-                <i class="flaticon-heart"
-                style="{{ collect($wishlistIds)->contains($item->id) ? 'color:red;' : '' }}"></i>
-            </a>
+                                    <div class="productslider-track">
 
-            <a href="{{ url('product-details/' . $item->slug) }}" class="productcard-icon">
-                <i class="flaticon-show"></i>
-            </a>
+                                        @foreach($recommendedProducts as $product)
+                                            <div class="productslider-item">
+                                                @include('front.partials.best-seller-card')
+                                            </div>
+                                        @endforeach
 
-        </div>
+                                    </div>
 
-    </div>
+                                    <button class="productslider-nav next" aria-label="Next slide">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
 
-
-    <!-- DETAILS -->
-    <div class="productcard-body">
-
-        <!-- CATEGORY -->
-        <div class="productcard-category">
-            {{ $item->subcategories->name ?? ($item->categories->name ?? '')}}
-        </div>
-
-        <!-- TITLE -->
-        <h3 class="productcard-title">
-            <a href="{{ url('product-details/' . $item->slug) }}">
-                {{ Str::limit($item->name, 40) }}
-            </a>
-        </h3>
-
-
-        <!-- RATING -->
-        <div class="productcard-rating">
-
-            @for($i = 1; $i <= 5; $i++)
-                <i class="fas fa-star {{ $i <= $item->avg_rating ? 'active' : '' }}"></i>
-            @endfor
-
-            <span>({{ $item->review_count }})</span>
-
-        </div>
-
-
-        <!-- PRICE -->
-        <div class="productcard-price">
-
-            ₹{{ $item->product_options[0]->price ?? $item->min_price }}
-
-            @if($recHasDiscount)
-            <span class="productcard-oldprice">
-                ₹{{ $recMrp }}
-            </span>
-            @endif
-
-        </div>
-
-
-        <!-- BUTTONS -->
-        <div class="productcard-buttons">
-
-            <a href="#"
-               class="productcard-btn productcard-cart add-to-cart-btn"
-               data-product="{{ $item->id }}"
-               data-option="{{ optional($item->product_options->first())->id }}">
-               Add to Cart
-            </a>
-
-            <a href="{{ url('product-details/' . $item->slug) }}"
-               class="productcard-btn productcard-buy">
-               Buy Now
-            </a>
-
-        </div>
-
-    </div>
-
-</div>
-                            </div>
-                        @endforeach
-                    </div>
+                                </div>
                 </div>
             </div>
              @endif
@@ -1555,10 +1472,9 @@ document.querySelectorAll('.add-to-wishlist-btn').forEach(btn => {
                 heartIcon.style.color = "";
             }
 
-            if (data.status === "login_required") {
-                window.location.href = "/customer/login";
-                return;
-            }
+            if (data.status == "login_required") {
+    window.location.href = "{{ route('customer.login') }}?redirect=" + encodeURIComponent(window.location.href);
+}
 
             Swal.close();
 
@@ -1598,6 +1514,37 @@ document.querySelectorAll('.rating-star').forEach((star, index) => {
         });
     });
 
+});
+
+
+
+</script>
+
+<script>
+document.querySelectorAll(".productslider-wrapper").forEach(wrapper => {
+
+    const track = wrapper.querySelector(".productslider-track");
+    const prev  = wrapper.querySelector(".prev, .productslider-prev");
+    const next  = wrapper.querySelector(".next, .productslider-next");
+
+    if (!track || !prev || !next) return;
+
+    let position = 0;
+    const itemsVisible = window.innerWidth <= 768 ? 2
+                        : window.innerWidth <= 992 ? 3
+                        : 4;
+    const step = 100 / itemsVisible;
+    const maxPosition = -Math.max(track.children.length - itemsVisible, 0) * step;
+
+    next.addEventListener("click", () => {
+        position = Math.max(position - step, maxPosition);
+        track.style.transform = `translateX(${position}%)`;
+    });
+
+    prev.addEventListener("click", () => {
+        position = Math.min(position + step, 0);
+        track.style.transform = `translateX(${position}%)`;
+    });
 });
 </script>
 
