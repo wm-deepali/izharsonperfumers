@@ -1540,51 +1540,89 @@
     </script>
 
 
-    <script>
+  <script>
 
-        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+// ---- Mark buttons for products already in the cart ----
+function applyCartButtonState(button) {
+    button.classList.add('in-cart');
+    button.innerHTML = 'Added to Cart';
+}
 
-            btn.addEventListener('click', function (e) {
+function markProductsAlreadyInCart() {
+    fetch("{{ route('mini.cart') }}")
+        .then(res => res.json())
+        .then(data => {
+            if (!data.items || !data.items.length) return;
 
-                e.preventDefault();
+            // Adjust `item.product_id` below if your mini.cart JSON nests it differently
+            const cartProductIds = data.items.map(item => String(item.product_id));
 
-                const productId = this.dataset.product;
-                const optionId = this.dataset.option || null;
-                const quantity = 1;
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                const pid = button.dataset.product;
+                if (pid && cartProductIds.includes(String(pid))) {
+                    if (!button.dataset.originalText) {
+                        button.dataset.originalText = button.innerHTML;
+                    }
+                    applyCartButtonState(button);
+                }
+            });
+        })
+        .catch(() => { /* silent — non-critical UI enhancement */ });
+}
 
-                Swal.fire({
-                    title: 'Adding to cart...',
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
+document.addEventListener('DOMContentLoaded', markProductsAlreadyInCart);
 
-                fetch("{{ route('cart.store') }}", {
+// Delegated listeners — cover #productsGrid, Best Sellers grid, and any
+// cards injected later by Load More, without needing to re-bind anything.
+document.addEventListener('click', function (e) {
 
-                    method: "POST",
+    // ---- ADD TO CART ----
+    const cartBtn = e.target.closest('.add-to-cart-btn');
+    if (cartBtn) {
+        e.preventDefault();
 
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    },
+        const button = cartBtn;
 
-                    body: JSON.stringify({
-                        product_id: productId,
-                        product_option_id: optionId,
-                        quantity: quantity,
-                        device_id: localStorage.getItem("device_id")
-                    })
+        // Already in cart — go to cart page instead of re-adding.
+        if (button.classList.contains('in-cart')) {
+            window.location.href = "{{ route('cart.index') }}";
+            return;
+        }
 
-                })
-                    .then(res => res.json())
-                    .then(data => {
+        const productId = button.dataset.product;
+        const optionId = button.dataset.option || null;
+        const quantity = 1;
 
-                        if (data.cart_count !== undefined) {
-                            document.getElementById("cart-count").innerText = data.cart_count;
-                            document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2);
-                            refreshMiniCart();
-                        }
+        if (!button.dataset.originalText) {
+            button.dataset.originalText = button.innerHTML;
+        }
 
-                        Swal.fire({
+        button.style.pointerEvents = 'none';
+
+        fetch("{{ route('cart.store') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                product_option_id: optionId,
+                quantity: quantity,
+                device_id: localStorage.getItem("device_id")
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            button.style.pointerEvents = '';
+
+            if (data.cart_count !== undefined) {
+                document.getElementById("cart-count").innerText = data.cart_count;
+                document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2);
+                refreshMiniCart();
+
+                applyCartButtonState(button); 
+                 Swal.fire({
                             icon: 'success',
                             title: 'Added!',
                             text: data.message,
@@ -1592,88 +1630,70 @@
                             showConfirmButton: false
                         });
 
-                    })
-                    .catch(() => {
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Unable to add product'
-                        });
-
-                    });
-
-            });
-
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Unable to add product' });
+            }
+        })
+        .catch(() => {
+            button.style.pointerEvents = '';
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to add product' });
         });
 
-        document.querySelectorAll('.add-to-wishlist-btn').forEach(btn => {
+        return;
+    }
 
-            btn.addEventListener('click', function (e) {
+    // ---- ADD TO WISHLIST ----
+    const wishBtn = e.target.closest('.add-to-wishlist-btn');
+    if (wishBtn) {
+        e.preventDefault();
 
-                e.preventDefault();
+        const button = wishBtn;
+        const productId = button.dataset.product;
 
-                const button = this;
-                const productId = button.dataset.product;
-
-                // 🔵 show loading
-                Swal.fire({
-                    title: 'Updating Wishlist...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                fetch("/wishlist/toggle", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    },
-                    body: JSON.stringify({
-                        product_id: productId
-                    })
-                })
-                    .then(res => res.json())
-                    .then(data => {
-
-                                         const heartIcon = button.querySelector('span, i');
-
-if (!heartIcon) return; // stop error
-
-
-                        if (data.status === "added") {
-                            heartIcon.style.color = "red";
-                        }
-
-                        if (data.status === "removed") {
-                            heartIcon.style.color = "";
-                        }
-
-                       if (data.status == "login_required") {
-    window.location.href = "{{ route('customer.login') }}?redirect=" + encodeURIComponent(window.location.href);
-}
-
-                        // ✅ close loading
-                        Swal.close();
-
-                    })
-                    .catch(error => {
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Unable to update wishlist'
-                        });
-
-                        console.error("Wishlist error:", error);
-
-                    });
-
-            });
-
+         Swal.fire({
+            title: 'Updating wishlist...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
         });
 
-    </script>
+        fetch("/wishlist/toggle", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ product_id: productId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            Swal.close(); 
+            const heartIcon = button.querySelector('span, i');
+            if (!heartIcon) return;
+
+            if (data.status === "added") heartIcon.style.color = "red";
+            if (data.status === "removed") heartIcon.style.color = "";
+            if (data.status == "login_required") {
+                window.location.href = "{{ route('customer.login') }}?redirect=" + encodeURIComponent(window.location.href);
+            }
+        })
+        .catch(error => {
+            console.error("Wishlist error:", error);
+        });
+    }
+
+});
+
+// Load More injects new .add-to-cart-btn elements — re-check cart state for them.
+// (Your existing loadMoreBtn click handler already appends new .product-item nodes;
+// this just re-scans after that happens.)
+document.addEventListener('DOMContentLoaded', function () {
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function () {
+            setTimeout(markProductsAlreadyInCart, 600);
+        });
+    }
+});
+
+</script>
 @endsection

@@ -87,7 +87,7 @@
 
 
             <!-- Billing Add/Edit Form -->
-            <div id="billingFormBox" class="card p-3 mt-3 d-none">
+            <div id="billingFormBox" class="card p-3 mt-3 {{ $billingAddresses->count() ? 'd-none' : '' }}">
               <h5 class="mb-3">Add / Edit Billing Address</h5>
 
               <form id="billingForm">
@@ -204,7 +204,7 @@
                 <p class="text-muted">No shipping address found.</p>
               @endif
 
-              <div id="shippingFormBox" class="card p-3 mt-3 d-none">
+              <div id="shippingFormBox" class="card p-3 mt-3 {{ $shippingAddresses->count() ? 'd-none' : '' }}">
                 <h5 class="mb-3">Add / Edit Shipping Address</h5>
 
                 <form id="shippingForm">
@@ -352,49 +352,69 @@
           <div class="order_sidebar_widget checkout_page mb30">
             <h4 class="title">Payment Method</h4>
 
+            @php
+              $gatewayStatus = \App\Models\PaymentGatewayStatus::pluck('is_active', 'gateway')->toArray();
+              $cashfreeOn = $gatewayStatus['cashfree'] ?? false;
+              $ccavenueOn = $gatewayStatus['ccavenue'] ?? false;
+              $onlineGatewaysCount = ($cashfreeOn ? 1 : 0) + ($ccavenueOn ? 1 : 0);
+            @endphp
+
             <div class="payment_method">
 
               {{-- Online Payment --}}
-              <div class="ui_kit_radiobox pm_content bb1">
-                <div class="radio mb10 d-flex align-items-center">
-                  <input id="pay_online" name="payment_method" type="radio" value="online" checked>
-                  <label class="pmtitle" for="pay_online">
-                    <span class="radio-label"></span>
-                    Pay Online (Card / UPI / Net Banking)
-                  </label>
-                </div>
-                @php
-                  $gatewayStatus = \App\Models\PaymentGatewayStatus::pluck('is_active', 'gateway')->toArray();
-                @endphp
+              @if($onlineGatewaysCount > 0)
 
-                @if(($gatewayStatus['ccavenue'] ?? false) || ($gatewayStatus['cashfree'] ?? false))
-                  <div class="pm_details" id="onlineGatewayBox">
-                    <p class="mb-2">Choose a payment gateway:</p>
+                @if($onlineGatewaysCount > 1)
 
-                    @if($gatewayStatus['ccavenue'] ?? false)
-                      <div class="form-check">
-                        <input class="form-check-input" type="radio" name="payment_gateway" id="gateway_ccavenue"
-                          value="ccavenue" checked>
-                        <label class="form-check-label" for="gateway_ccavenue">CCAvenue</label>
+                  {{-- Both gateways active — Cashfree shown first --}}
+                  @if($cashfreeOn)
+                    <div class="ui_kit_radiobox pm_content bb1">
+                      <div class="radio mb10 d-flex align-items-center">
+                        <input id="pay_online_cashfree" name="payment_method" type="radio" value="online"
+                          data-gateway="cashfree" checked>
+                        <label class="pmtitle" for="pay_online_cashfree">
+                          <span class="radio-label"></span>
+                          Pay Online Using Cashfree (Using Credit / Debit Cards, Net Banking, UPI or Wallet)
+                        </label>
                       </div>
-                    @endif
+                    </div>
+                  @endif
 
-                    @if($gatewayStatus['cashfree'] ?? false)
-                      <div class="form-check">
-                        <input class="form-check-input" type="radio" name="payment_gateway" id="gateway_cashfree"
-                          value="cashfree" @if(!($gatewayStatus['ccavenue'] ?? false)) checked @endif>
-                        <label class="form-check-label" for="gateway_cashfree">Cashfree (Card / UPI / Net Banking /
-                          Wallets)</label>
+                  @if($ccavenueOn)
+                    <div class="ui_kit_radiobox pm_content bb1">
+                      <div class="radio mb10 d-flex align-items-center">
+                        <input id="pay_online_ccavenue" name="payment_method" type="radio" value="online"
+                          data-gateway="ccavenue" {{ !$cashfreeOn ? 'checked' : '' }}>
+                        <label class="pmtitle" for="pay_online_ccavenue">
+                          <span class="radio-label"></span>
+                          Pay Online Using CCAvenue (Using Credit / Debit Cards, Net Banking, UPI or Wallet)
+                        </label>
                       </div>
-                    @endif
+                    </div>
+                  @endif
+
+                @else
+
+                  {{-- Only one gateway active — generic label, gateway name not shown --}}
+                  <div class="ui_kit_radiobox pm_content bb1">
+                    <div class="radio mb10 d-flex align-items-center">
+                      <input id="pay_online" name="payment_method" type="radio" value="online"
+                        data-gateway="{{ $cashfreeOn ? 'cashfree' : 'ccavenue' }}" checked>
+                      <label class="pmtitle" for="pay_online">
+                        <span class="radio-label"></span>
+                        Pay Online (Using Credit / Debit Cards, Net Banking, UPI or Wallet)
+                      </label>
+                    </div>
                   </div>
+
                 @endif
-              </div>
+
+              @endif
 
               {{-- Bank Transfer --}}
               <div class="ui_kit_radiobox pm_content">
                 <div class="radio mb10 d-flex align-items-center">
-                  <input id="pay_bank" name="payment_method" type="radio" value="offline">
+                  <input id="pay_bank" name="payment_method" type="radio" value="offline" {{ $onlineGatewaysCount == 0 ? 'checked' : '' }}>
                   <label class="pmtitle" for="pay_bank">
                     <span class="radio-label"></span>
                     Bank Transfer / UPI
@@ -829,9 +849,9 @@
       formData.append('shipping_type', shipping_type);
       formData.append('iscountryindia', isIndia);
 
+  
       if (payment === 'online') {
-        const gatewayEl = document.querySelector('input[name="payment_gateway"]:checked');
-        formData.append('payment_gateway', gatewayEl ? gatewayEl.value : 'ccavenue');
+        formData.append('payment_gateway', paymentEl.dataset.gateway || 'cashfree');
       }
 
       if (payment === 'offline') {
@@ -900,19 +920,6 @@
       }
     });
 
-
-    function toggleGatewayBox() {
-      const selected = document.querySelector('input[name="payment_method"]:checked');
-      const box = document.getElementById('onlineGatewayBox');
-      if (!selected || !box) return;
-      box.style.display = selected.value === 'online' ? 'block' : 'none';
-    }
-
-    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
-      radio.addEventListener('change', toggleGatewayBox);
-    });
-
-    toggleGatewayBox();
 
     function toggleBankBox() {
       const selected = document.querySelector('input[name="payment_method"]:checked');

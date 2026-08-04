@@ -1322,6 +1322,43 @@
    <script>const dealEndTime = "{{ optional($maxDealEnd)->toIso8601String() }}"; if (!dealEndTime) { document.getElementById("timer").innerHTML = "No active deals"; } function makeTimer() { const endTime = new Date(dealEndTime).getTime(); const now = new Date().getTime(); const timeLeft = endTime - now; if (timeLeft <= 0) { document.getElementById("timer").innerHTML = "Deal Expired"; return; } const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24)); const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)); const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000); document.querySelector(".days").innerHTML = days; document.querySelector(".hours").innerHTML = hours.toString().padStart(2, '0'); document.querySelector(".minutes").innerHTML = minutes.toString().padStart(2, '0'); document.querySelector(".seconds").innerHTML = seconds.toString().padStart(2, '0'); } setInterval(makeTimer, 1000); makeTimer();</script>
 
 <script>
+
+// ---- Mark buttons for products already in the cart ----
+function applyCartButtonState(button) {
+    button.classList.add('in-cart');
+    button.innerHTML = 'Added to Cart';
+}
+
+function resetCartButtonState(button, originalText) {
+    button.classList.remove('in-cart');
+    button.innerHTML = originalText;
+}
+
+function markProductsAlreadyInCart() {
+    fetch("{{ route('mini.cart') }}")
+        .then(res => res.json())
+        .then(data => {
+            if (!data.items || !data.items.length) return;
+
+            // Adjust `item.product_id` below if your mini.cart JSON nests it differently
+            // (e.g. item.products.id) — see note in chat.
+            const cartProductIds = data.items.map(item => String(item.product_id));
+
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                const pid = button.dataset.product;
+                if (pid && cartProductIds.includes(String(pid))) {
+                    if (!button.dataset.originalText) {
+                        button.dataset.originalText = button.innerHTML;
+                    }
+                    applyCartButtonState(button);
+                }
+            });
+        })
+        .catch(() => { /* silent — non-critical UI enhancement */ });
+}
+
+document.addEventListener('DOMContentLoaded', markProductsAlreadyInCart);
+
 document.addEventListener('click', function (e) {
 
     // ---- ADD TO CART ----
@@ -1330,17 +1367,22 @@ document.addEventListener('click', function (e) {
         e.preventDefault();
 
         const button = cartBtn;
+
+        // Already in cart — send them to view the cart instead of re-adding.
+        if (button.classList.contains('in-cart')) {
+            window.location.href = "{{ route('cart.index') }}";
+            return;
+        }
+
         const productId = button.dataset.product;
         const optionId = button.dataset.option || null;
         const quantity = 1;
 
-        button.disabled = true;
+        if (!button.dataset.originalText) {
+            button.dataset.originalText = button.innerHTML;
+        }
 
-        Swal.fire({
-            title: 'Adding to cart...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
+        button.disabled = true;
 
         fetch("{{ route('cart.store') }}", {
             method: "POST",
@@ -1358,18 +1400,23 @@ document.addEventListener('click', function (e) {
         .then(res => res.json())
         .then(data => {
             button.disabled = false;
+
             if (data.cart_count !== undefined) {
                 document.getElementById("cart-count").innerText = data.cart_count;
                 document.getElementById("cart-total").innerText = "₹" + parseFloat(data.total_price).toFixed(2);
                 refreshMiniCart();
-            }
-            Swal.fire({
+
+                // Stays "Already in Cart" — does not revert
+                applyCartButtonState(button); Swal.fire({
                 icon: 'success',
                 title: 'Added!',
                 text: data.message,
                 timer: 1200,
                 showConfirmButton: false
             });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Unable to add product' });
+            }
         })
         .catch(() => {
             button.disabled = false;
@@ -1403,15 +1450,15 @@ document.addEventListener('click', function (e) {
         })
         .then(res => res.json())
         .then(data => {
-            Swal.close();
-            const heartIcon = button.querySelector('span, i');
+Swal.close();           
+ const heartIcon = button.querySelector('span, i');
             if (!heartIcon) return;
 
             if (data.status == "added") heartIcon.style.color = "red";
             if (data.status == "removed") heartIcon.style.color = "";
             if (data.status == "login_required") {
-    window.location.href = "{{ route('customer.login') }}?redirect=" + encodeURIComponent(window.location.href);
-}
+                window.location.href = "{{ route('customer.login') }}?redirect=" + encodeURIComponent(window.location.href);
+            }
         })
         .catch(error => {
             Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to update wishlist' });
@@ -1453,5 +1500,10 @@ function initProductSliders() {
 }
 
 initProductSliders();
+
+// Re-mark buttons in any lazy-loaded sections once they're injected (mobile)
+window.addEventListener('load', () => {
+    setTimeout(markProductsAlreadyInCart, 1500);
+});
 </script>
 @endsection

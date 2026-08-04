@@ -160,32 +160,6 @@ class CustomerAuthController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function showVerifyOtp()
-    {
-        $identifier = null;
-
-        if ($customerId = session('login_otp_customer_id')) {
-            $customer = Customer::find($customerId);
-            $identifier = $customer?->mobile_number;
-        } elseif ($pendingId = session('pending_registration_id')) {
-            $pending = PendingRegistration::find($pendingId);
-            $identifier = $pending ? ($pending->mobile_number ?: $pending->email) : null;
-        }
-
-        if (!$identifier) {
-            return redirect()->route('customer.login');
-        }
-
-        $isEmail = filter_var($identifier, FILTER_VALIDATE_EMAIL) !== false;
-
-        return view('customer.auth.verify-otp', [
-            'maskedIdentifier' => $isEmail
-                ? Str::mask($identifier, '*', 2, strpos($identifier, '@') - 2)
-                : 'XXXXXX' . substr($identifier, -4),
-            'isEmail' => $isEmail,
-        ]);
-    }
-
     public function verifyOtp(Request $request)
     {
         $request->validate(['otp' => 'required|digits:6']);
@@ -194,37 +168,37 @@ class CustomerAuthController extends Controller
         if ($customerId = session('login_otp_customer_id')) {
             $customer = Customer::find($customerId);
             if (!$customer) {
-                return redirect()->route('customer.login')->withErrors(['otp' => 'Session expired, please try again.']);
+                return $this->otpFailResponse($request, 'Session expired, please try again.', true);
             }
 
             $result = $this->otpService->verify($customer->mobile_number, 'login', $request->otp);
             if (!$result['success']) {
-                return back()->withErrors(['otp' => $result['message']]);
+                return $this->otpFailResponse($request, $result['message']);
             }
 
             session()->forget('login_otp_customer_id');
             Auth::guard('customer')->login($customer);
             $this->mergeCartAndRedirect($request, $customer);
 
-            return redirect($this->resolveRedirect())->with('success', 'Login successful');
+            return $this->otpSuccessResponse($request, $this->resolveRedirect(), 'Login successful');
         }
 
         // Case 2: brand-new mobile number OR email — implicit registration.
         $pending = PendingRegistration::find(session('pending_registration_id'));
 
         if (!$pending) {
-            return redirect()->route('customer.login')->withErrors(['otp' => 'Session expired, please try again.']);
+            return $this->otpFailResponse($request, 'Session expired, please try again.', true);
         }
 
         if ($pending->isExpired()) {
             $pending->delete();
-            return redirect()->route('customer.login')->withErrors(['otp' => 'OTP session expired, please try again.']);
+            return $this->otpFailResponse($request, 'OTP session expired, please try again.', true);
         }
 
         $identifier = $pending->mobile_number ?: $pending->email;
         $result = $this->otpService->verify($identifier, 'register', $request->otp);
         if (!$result['success']) {
-            return back()->withErrors(['otp' => $result['message']]);
+            return $this->otpFailResponse($request, $result['message']);
         }
 
         $customer = $pending->mobile_number
@@ -246,9 +220,39 @@ class CustomerAuthController extends Controller
         Auth::guard('customer')->login($customer);
         $this->mergeCartAndRedirect($request, $customer);
 
-        return redirect($this->resolveRedirect())->with('success', 'Welcome!');
+        return $this->otpSuccessResponse($request, $this->resolveRedirect(), 'Welcome!');
     }
 
+    /**
+     * AJAX callers (the inline OTP box on the login page) get JSON with a
+     * redirect_url; a plain form POST (JS-disabled fallback) still gets a
+     * normal redirect.
+     */
+    protected function otpSuccessResponse(Request $request, string $redirectUrl, string $message)
+    {
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'redirect_url' => $redirectUrl, 'message' => $message]);
+        }
+
+        return redirect($redirectUrl)->with('success', $message);
+    }
+
+    protected function otpFailResponse(Request $request, string $message, bool $redirectToLogin = false)
+    {
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => $message,
+                'redirect_to_login' => $redirectToLogin,
+            ], 422);
+        }
+
+        if ($redirectToLogin) {
+            return redirect()->route('customer.login')->withErrors(['otp' => $message]);
+        }
+
+        return back()->withErrors(['otp' => $message]);
+    }
     public function resendOtp(Request $request)
     {
         if ($customerId = session('login_otp_customer_id')) {

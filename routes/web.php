@@ -119,7 +119,6 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/login/check-type', [CustomerAuthController::class, 'checkLoginType'])->name('login.check-type');
     Route::post('/login/request-otp', [CustomerAuthController::class, 'requestOtp'])->name('login.request-otp');
     Route::post('/login/resend-otp', [CustomerAuthController::class, 'resendOtp'])->name('login.resend-otp');
-    Route::get('/login/verify-otp', [CustomerAuthController::class, 'showVerifyOtp'])->name('login.verify-otp');
     Route::post('/login/verify-otp', [CustomerAuthController::class, 'verifyOtp'])->name('login.verify-otp');
 
     Route::post('/register', [CustomerAuthController::class, 'register'])->name('register');
