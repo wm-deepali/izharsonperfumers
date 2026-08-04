@@ -294,7 +294,7 @@
                     Apply Coupon
                   </a>
                 </form>
-                @if($cart->coupon)
+                @if($cart?->coupon)
                   <div class="coupon-applied-box p-2 rounded bg-light border ms-3">
                     <div class="d-flex justify-content-between align-items-center">
                       <div>
@@ -334,7 +334,7 @@
 
             <ul>
               <li class="subtitle">
-                <p>Product Subtotal <span class="float-end">₹{{ number_format($cart->total_price, 2) }}</span></p>
+                <p>Product Subtotal <span class="float-end">₹{{ number_format($cart?->total_price ?? 0, 2) }}</span></p>
               </li>
 
 
@@ -350,7 +350,7 @@
               </li>
 
               {{-- Product Discounts --}}
-              @if($cart->pre_discount > 0)
+              @if(($cart?->pre_discount ?? 0) > 0)
                 <li class="subtitle">
                   <p>Pre-Discount
                     <span class="float-end" style="color:green;">
@@ -361,7 +361,7 @@
               @endif
 
               {{-- Coupon Discount --}}
-              @if($cart->discount_amount > 0)
+              @if(($cart?->discount_amount ?? 0) > 0)
                 <li class="subtitle">
                   <p>Coupon Discount
                     <span class="float-end text-success">
@@ -388,7 +388,7 @@
                 <p>Total <span class="float-end">
                     ₹{{ number_format(
     $shippingData['shippingCost'][0]['totalCartAmount']
-    ?? $cart->total_price_after_discount,
+    ?? ($cart?->total_price_after_discount ?? 0),
     2
   ) }}
                   </span></p>

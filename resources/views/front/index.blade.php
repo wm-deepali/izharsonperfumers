@@ -372,6 +372,13 @@
     content-visibility: auto;
     contain-intrinsic-size: auto 800px;
 }
+
+.scrollToHome.show {
+    
+    display: none !IMPORTANT;
+}
+
+
 </style>
 
 
@@ -1264,6 +1271,7 @@
         </div>
     </section>
     <!-- Hot New Arrival Product End -->
+
     @if($isMobile)
         </template>
 

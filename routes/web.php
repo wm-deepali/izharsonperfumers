@@ -271,6 +271,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/manage-policy/{name}', [PolicyController::class, 'store']);
     Route::resource('manage-pages', PageController::class);
     Route::get('/manage-account', [GeneralSettingController::class, 'accountSetting'])->name('accountSetting');
+    Route::post('toggle-payment-gateway', [GeneralSettingController::class, 'togglePaymentGateway'])->name('togglePaymentGateway');
     Route::post('update-password', [GeneralSettingController::class, 'updatePasswordnew'])->name('update-password-new');
     Route::post('saverazorpay', [GeneralSettingController::class, 'saverazorpay'])->name('saverazorpay');
     Route::post('updatebank', [GeneralSettingController::class, 'updatebank'])->name('updatebank');

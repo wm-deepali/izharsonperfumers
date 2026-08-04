@@ -363,20 +363,32 @@
                     Pay Online (Card / UPI / Net Banking)
                   </label>
                 </div>
-                <div class="pm_details" id="onlineGatewayBox">
-                  <p class="mb-2">Choose a payment gateway:</p>
-                  <div class="form-check">
-                    <input class="form-check-input" type="radio" name="payment_gateway" id="gateway_ccavenue"
-                      value="ccavenue" checked>
-                    <label class="form-check-label" for="gateway_ccavenue">CCAvenue</label>
+                @php
+                  $gatewayStatus = \App\Models\PaymentGatewayStatus::pluck('is_active', 'gateway')->toArray();
+                @endphp
+
+                @if(($gatewayStatus['ccavenue'] ?? false) || ($gatewayStatus['cashfree'] ?? false))
+                  <div class="pm_details" id="onlineGatewayBox">
+                    <p class="mb-2">Choose a payment gateway:</p>
+
+                    @if($gatewayStatus['ccavenue'] ?? false)
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment_gateway" id="gateway_ccavenue"
+                          value="ccavenue" checked>
+                        <label class="form-check-label" for="gateway_ccavenue">CCAvenue</label>
+                      </div>
+                    @endif
+
+                    @if($gatewayStatus['cashfree'] ?? false)
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment_gateway" id="gateway_cashfree"
+                          value="cashfree" @if(!($gatewayStatus['ccavenue'] ?? false)) checked @endif>
+                        <label class="form-check-label" for="gateway_cashfree">Cashfree (Card / UPI / Net Banking /
+                          Wallets)</label>
+                      </div>
+                    @endif
                   </div>
-                   <div class="form-check">
-                    <input class="form-check-input" type="radio" name="payment_gateway" id="gateway_cashfree"
-                      value="cashfree">
-                    <label class="form-check-label" for="gateway_cashfree">Cashfree (Card / UPI / Net Banking /
-                      Wallets)</label>
-                  </div>
-                </div>
+                @endif
               </div>
 
               {{-- Bank Transfer --}}
