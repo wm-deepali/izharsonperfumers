@@ -112,25 +112,20 @@ Route::get('/order-failed', function () {
 // Customer Routes list
 Route::prefix('customer')->name('customer.')->group(function () {
 
-  // Registration verification
-  Route::get('/register/verify-otp', [CustomerAuthController::class, 'showRegisterOtp'])->name('register.verify-otp');
-  Route::post('/register/verify-otp', [CustomerAuthController::class, 'verifyRegisterOtp'])->name('register.verify-otp.submit');
-  Route::post('/register/resend-otp', [CustomerAuthController::class, 'resendRegisterOtp'])->name('register.resend-otp');
-  Route::get('/register/verify-email/{token}', [CustomerAuthController::class, 'verifyRegisterEmail'])->name('register.verify-email');
-  Route::get('/register/check-email', [CustomerAuthController::class, 'showCheckEmailNotice'])->name('register.check-email');
+  Route::middleware('guest:customer')->group(function () {
+    Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [CustomerAuthController::class, 'login'])->name('login');
 
-  // Login OTP
-  Route::post('/login/check-type', [CustomerAuthController::class, 'checkLoginType'])->name('login.check-type');
-  Route::post('/login/request-otp', [CustomerAuthController::class, 'loginWithOtpRequest'])->name('login.request-otp');
-  Route::get('/login/verify-otp', [CustomerAuthController::class, 'showLoginOtp'])->name('login.verify-otp');
-  Route::post('/login/verify-otp', [CustomerAuthController::class, 'verifyLoginOtp'])->name('login.verify-otp.submit');
-  Route::post('/login/resend-otp', [CustomerAuthController::class, 'resendLoginOtp'])->name('login.resend-otp');
+    Route::post('/login/check-type', [CustomerAuthController::class, 'checkLoginType'])->name('login.check-type');
+    Route::post('/login/request-otp', [CustomerAuthController::class, 'requestOtp'])->name('login.request-otp');
+    Route::post('/login/resend-otp', [CustomerAuthController::class, 'resendOtp'])->name('login.resend-otp');
+    Route::get('/login/verify-otp', [CustomerAuthController::class, 'showVerifyOtp'])->name('login.verify-otp');
+    Route::post('/login/verify-otp', [CustomerAuthController::class, 'verifyOtp'])->name('login.verify-otp');
 
-  Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('login');
-  Route::post('/login', [CustomerAuthController::class, 'login']);
+    Route::post('/register', [CustomerAuthController::class, 'register'])->name('register');
+  });
 
-  Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('register');
-  Route::post('/register', [CustomerAuthController::class, 'register']);
+  Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
 
   Route::get('forgot-password', [CustomerForgotPasswordController::class, 'showForm'])->name('password.request');
   Route::post('forgot-password', [CustomerForgotPasswordController::class, 'sendResetLink'])->name('password.email');
@@ -140,8 +135,6 @@ Route::prefix('customer')->name('customer.')->group(function () {
 
   Route::get('google', [GoogleController::class, 'redirect'])->name('google.login');
   Route::get('google/callback', [GoogleController::class, 'callback']);
-
-  Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
 
   Route::match(['get', 'post'], '/payment/response', [CheckoutController::class, 'response'])->name('payment.response');
   Route::get('/order-success/{id}', [CheckoutController::class, 'success'])->name('order.success');

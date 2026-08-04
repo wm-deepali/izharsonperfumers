@@ -7,12 +7,11 @@ use Illuminate\Http\Request;
 use App\Models\Customer;
 use App\Models\PendingRegistration;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use App\Http\Controllers\CartController;
-use Illuminate\Support\Facades\Http;
 use App\Services\OtpService;
-use App\Jobs\SendRegistrationVerificationMailJob;
+use Illuminate\Support\Str;
+
 
 class CustomerAuthController extends Controller
 {
@@ -24,7 +23,7 @@ class CustomerAuthController extends Controller
     }
 
     /**
-     * Show Customer Login Page
+     * Single Sign-In / Sign-Up page.
      */
     public function showLogin(Request $request)
     {
@@ -39,109 +38,207 @@ class CustomerAuthController extends Controller
         return view('customer.auth.login');
     }
 
-    public function showRegister(Request $request)
+    /**
+     * AJAX: given a login identifier, tell the frontend which mode to show.
+     * - mobile (10 digits) -> always 'otp' (login or implicit registration)
+     * - existing email     -> 'password'
+     * - new email          -> 'otp' (implicit registration via email OTP)
+     */
+    public function checkLoginType(Request $request)
     {
-        if (Auth::guard('customer')->check()) {
-            return redirect()->route('customer.account-details');
+        $request->validate(['login_id' => 'required|string']);
+        $value = trim($request->login_id);
+
+        if (preg_match('/^[0-9]{10}$/', $value)) {
+            return response()->json(['mode' => 'otp']);
         }
 
-        if ($request->has('redirect')) {
-            session(['customer_intended_url' => $request->redirect]);
+        if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            $exists = Customer::where('email', $value)->exists();
+            return response()->json(['mode' => $exists ? 'password' : 'otp']);
         }
 
-        return view('customer.auth.register');
+        return response()->json(['mode' => 'invalid']);
     }
 
     /**
-     * Handle registration submission — writes to pending_registrations,
-     * branches into mobile OTP (India) or email link (non-India).
+     * Password login — existing email/password customers only.
      */
-    public function register(Request $request)
+    public function login(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:customers,email|unique:pending_registrations,email',
-            'country_code' => 'required|string|max:6',
-            'mobile_number' => 'required|digits:10|unique:customers,mobile_number|unique:pending_registrations,mobile_number',
-            'password' => 'required|min:6|confirmed',
-            'g-recaptcha-response' => 'required',
+            'login_id' => 'required|email',
+            'password' => 'required',
         ]);
 
-        $captcha = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => env('RECAPTCHA_SECRET_KEY'),
-            'response' => $request->input('g-recaptcha-response'),
-            'remoteip' => $request->ip(),
-        ])->json();
+        if (
+            Auth::guard('customer')->attempt(
+                ['email' => $request->login_id, 'password' => $request->password],
+                $request->boolean('remember')
+            )
+        ) {
+            $customer = Auth::guard('customer')->user();
+            $this->mergeCartAndRedirect($request, $customer);
 
-        if (!($captcha['success'] ?? false)) {
-            return back()->withErrors(['captcha' => 'Captcha verification failed'])->withInput();
+            return redirect($this->resolveRedirect())->with('success', 'Login successful');
         }
 
-        // clear any stale pending registration with same email/mobile
-        PendingRegistration::where('email', $request->email)
-            ->orWhere('mobile_number', $request->mobile_number)
-            ->delete();
+        return back()->withErrors(['login_id' => 'Invalid credentials'])->withInput();
+    }
 
-        $isIndia = $request->country_code === '+91';
+    /**
+     * AJAX: request OTP. Handles both mobile numbers and brand-new emails —
+     * covers login (existing mobile) and implicit registration (new mobile
+     * or new email) with one endpoint.
+     */
+    public function requestOtp(Request $request)
+    {
+        $request->validate(['login_id' => 'required|string']);
+        $value = trim($request->login_id);
+
+        if (preg_match('/^[0-9]{10}$/', $value)) {
+            return $this->requestMobileOtp($value);
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            return $this->requestEmailOtp($value);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Enter a valid mobile number or email.'], 422);
+    }
+
+    protected function requestMobileOtp(string $mobile)
+    {
+        $customer = Customer::where('mobile_number', $mobile)
+            ->where('country_code', '+91')
+            ->first();
+
+        if ($customer) {
+            $this->otpService->generateAndSend($mobile, 'login');
+            session()->forget('pending_registration_id');
+            session(['login_otp_customer_id' => $customer->id]);
+            return response()->json(['success' => true]);
+        }
+
+        // Brand-new number — clear any stale pending row and start fresh.
+        PendingRegistration::where('mobile_number', $mobile)->delete();
 
         $pending = PendingRegistration::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'country_code' => $request->country_code,
-            'mobile_number' => $request->mobile_number,
-            'password' => Hash::make($request->password),
-            'verification_token' => $isIndia ? null : $this->otpService->generateEmailToken(),
-            'expires_at' => $isIndia ? Carbon::now()->addMinutes(10) : Carbon::now()->addHours(24),
+            'mobile_number' => $mobile,
+            'country_code' => '+91',
+            'expires_at' => Carbon::now()->addMinutes(10),
         ]);
 
-        if ($isIndia) {
-            $this->otpService->generateAndSend($request->mobile_number, 'register');
-            session(['pending_registration_id' => $pending->id]);
-            return redirect()->route('customer.register.verify-otp');
-        }
-
-        SendRegistrationVerificationMailJob::dispatch($pending->id);
+        $this->otpService->generateAndSend($mobile, 'register');
+        session()->forget('login_otp_customer_id');
         session(['pending_registration_id' => $pending->id]);
-        return redirect()->route('customer.register.check-email');
+
+        return response()->json(['success' => true]);
     }
 
-    public function showRegisterOtp()
+    protected function requestEmailOtp(string $email)
     {
-        $pendingId = session('pending_registration_id');
-        if (!$pendingId || !PendingRegistration::find($pendingId)) {
-            return redirect()->route('customer.register');
+        if (Customer::where('email', $email)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This email is already registered — please login with your password.',
+            ], 422);
         }
-        return view('customer.auth.verify-otp', ['purpose' => 'register']);
+
+        // Brand-new email — clear any stale pending row and start fresh.
+        PendingRegistration::where('email', $email)->delete();
+
+        $pending = PendingRegistration::create([
+            'email' => $email,
+            'expires_at' => Carbon::now()->addMinutes(10),
+        ]);
+
+        $this->otpService->generateAndSend($email, 'register');
+        session()->forget('login_otp_customer_id');
+        session(['pending_registration_id' => $pending->id]);
+
+        return response()->json(['success' => true]);
     }
 
-    public function verifyRegisterOtp(Request $request)
+    public function showVerifyOtp()
+    {
+        $identifier = null;
+
+        if ($customerId = session('login_otp_customer_id')) {
+            $customer = Customer::find($customerId);
+            $identifier = $customer?->mobile_number;
+        } elseif ($pendingId = session('pending_registration_id')) {
+            $pending = PendingRegistration::find($pendingId);
+            $identifier = $pending ? ($pending->mobile_number ?: $pending->email) : null;
+        }
+
+        if (!$identifier) {
+            return redirect()->route('customer.login');
+        }
+
+        $isEmail = filter_var($identifier, FILTER_VALIDATE_EMAIL) !== false;
+
+        return view('customer.auth.verify-otp', [
+            'maskedIdentifier' => $isEmail
+                ? Str::mask($identifier, '*', 2, strpos($identifier, '@') - 2)
+                : 'XXXXXX' . substr($identifier, -4),
+            'isEmail' => $isEmail,
+        ]);
+    }
+
+    public function verifyOtp(Request $request)
     {
         $request->validate(['otp' => 'required|digits:6']);
 
-        $pendingId = session('pending_registration_id');
-        $pending = PendingRegistration::find($pendingId);
+        // Case 1: existing customer logging in via mobile OTP.
+        if ($customerId = session('login_otp_customer_id')) {
+            $customer = Customer::find($customerId);
+            if (!$customer) {
+                return redirect()->route('customer.login')->withErrors(['otp' => 'Session expired, please try again.']);
+            }
+
+            $result = $this->otpService->verify($customer->mobile_number, 'login', $request->otp);
+            if (!$result['success']) {
+                return back()->withErrors(['otp' => $result['message']]);
+            }
+
+            session()->forget('login_otp_customer_id');
+            Auth::guard('customer')->login($customer);
+            $this->mergeCartAndRedirect($request, $customer);
+
+            return redirect($this->resolveRedirect())->with('success', 'Login successful');
+        }
+
+        // Case 2: brand-new mobile number OR email — implicit registration.
+        $pending = PendingRegistration::find(session('pending_registration_id'));
+
         if (!$pending) {
-            return redirect()->route('customer.register')->withErrors(['otp' => 'Session expired, please register again.']);
+            return redirect()->route('customer.login')->withErrors(['otp' => 'Session expired, please try again.']);
         }
 
         if ($pending->isExpired()) {
             $pending->delete();
-            return redirect()->route('customer.register')->withErrors(['otp' => 'Registration session expired, please register again.']);
+            return redirect()->route('customer.login')->withErrors(['otp' => 'OTP session expired, please try again.']);
         }
 
-        $result = $this->otpService->verify($pending->mobile_number, 'register', $request->otp);
+        $identifier = $pending->mobile_number ?: $pending->email;
+        $result = $this->otpService->verify($identifier, 'register', $request->otp);
         if (!$result['success']) {
             return back()->withErrors(['otp' => $result['message']]);
         }
 
-        $customer = Customer::create([
-            'name' => $pending->name,
-            'email' => $pending->email,
-            'country_code' => $pending->country_code,
-            'mobile_number' => $pending->mobile_number,
-            'password' => $pending->password,
-            'mobile_verified_at' => Carbon::now(),
-        ]);
+        $customer = $pending->mobile_number
+            ? Customer::create([
+                'name' => 'Guest User',
+                'country_code' => $pending->country_code,
+                'mobile_number' => $pending->mobile_number,
+                'mobile_verified_at' => Carbon::now(),
+            ])
+            : Customer::create([
+                'name' => 'Guest User',
+                'email' => $pending->email,
+                'email_verified_at' => Carbon::now(),
+            ]);
 
         $pending->delete();
         session()->forget('pending_registration_id');
@@ -149,162 +246,30 @@ class CustomerAuthController extends Controller
         Auth::guard('customer')->login($customer);
         $this->mergeCartAndRedirect($request, $customer);
 
-        return redirect()->route('customer.account-details')->with('success', 'Registration successful!');
+        return redirect($this->resolveRedirect())->with('success', 'Welcome!');
     }
 
-    public function resendRegisterOtp(Request $request)
+    public function resendOtp(Request $request)
     {
+        if ($customerId = session('login_otp_customer_id')) {
+            $customer = Customer::find($customerId);
+            if (!$customer) {
+                return response()->json(['success' => false, 'message' => 'Session expired.'], 422);
+            }
+            $this->otpService->generateAndSend($customer->mobile_number, 'login');
+            return response()->json(['success' => true, 'message' => 'OTP resent.']);
+        }
+
         $pending = PendingRegistration::find(session('pending_registration_id'));
         if (!$pending) {
             return response()->json(['success' => false, 'message' => 'Session expired.'], 422);
         }
 
-        $this->otpService->generateAndSend($pending->mobile_number, 'register');
+        $this->otpService->generateAndSend($pending->mobile_number ?: $pending->email, 'register');
         return response()->json(['success' => true, 'message' => 'OTP resent.']);
     }
 
-    public function showCheckEmailNotice()
-    {
-        return view('customer.auth.check-email');
-    }
-
-    public function verifyRegisterEmail(string $token, Request $request)
-    {
-        $pending = PendingRegistration::where('verification_token', $token)->first();
-
-        if (!$pending) {
-            return redirect()->route('customer.register')->withErrors(['token' => 'Invalid or already-used verification link.']);
-        }
-
-        if ($pending->isExpired()) {
-            $pending->delete();
-            return redirect()->route('customer.register')->withErrors(['token' => 'Verification link expired, please register again.']);
-        }
-
-        $customer = Customer::create([
-            'name' => $pending->name,
-            'email' => $pending->email,
-            'country_code' => $pending->country_code,
-            'mobile_number' => $pending->mobile_number,
-            'password' => $pending->password,
-            'email_verified_at' => Carbon::now(),
-        ]);
-
-        $pending->delete();
-
-        Auth::guard('customer')->login($customer);
-        $this->mergeCartAndRedirect($request, $customer);
-
-        return redirect()->route('customer.account-details')->with('success', 'Email verified — registration successful!');
-    }
-
-    /**
-     * AJAX: given a login identifier, tell the frontend which field to show.
-     */
-    public function checkLoginType(Request $request)
-    {
-        $request->validate(['login_id' => 'required|string']);
-        $value = trim($request->login_id);
-
-        if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            return response()->json(['mode' => 'password']);
-        }
-
-        if (preg_match('/^[0-9]{10}$/', $value)) {
-            $customer = Customer::where('mobile_number', $value)->first();
-
-            if (!$customer) {
-                return response()->json(['mode' => 'not_found']);
-            }
-
-            return response()->json([
-                'mode' => $customer->country_code === '+91' ? 'otp' : 'password',
-            ]);
-        }
-
-        return response()->json(['mode' => 'password']);
-    }
-
-    public function login(Request $request)
-    {
-        $request->validate([
-            'login_id' => 'required|string',
-            'password' => 'required',
-        ]);
-
-        $value = trim($request->login_id);
-        $field = filter_var($value, FILTER_VALIDATE_EMAIL) ? 'email' : 'mobile_number';
-
-        if (Auth::guard('customer')->attempt([$field => $value, 'password' => $request->password], $request->boolean('remember'))) {
-            $customer = Auth::guard('customer')->user();
-            $this->mergeCartAndRedirect($request, $customer);
-
-            $redirectUrl = session()->pull('customer_intended_url');
-            return redirect($redirectUrl ?? route('customer.account-details'))->with('success', 'Login successful');
-        }
-
-        return back()->withErrors(['email' => 'Invalid credentials'])->withInput();
-    }
-
-    public function loginWithOtpRequest(Request $request)
-    {
-        $request->validate(['login_id' => 'required|digits:10']);
-
-        $customer = Customer::where('mobile_number', $request->login_id)
-            ->where('country_code', '+91')
-            ->first();
-
-        if (!$customer) {
-            return back()->withErrors(['login_id' => 'No account found for this mobile number.']);
-        }
-
-        $this->otpService->generateAndSend($customer->mobile_number, 'login');
-        session(['login_otp_customer_id' => $customer->id]);
-
-        return redirect()->route('customer.login.verify-otp');
-    }
-
-    public function showLoginOtp()
-    {
-        if (!session('login_otp_customer_id')) {
-            return redirect()->route('customer.login');
-        }
-        return view('customer.auth.verify-otp', ['purpose' => 'login']);
-    }
-
-    public function verifyLoginOtp(Request $request)
-    {
-        $request->validate(['otp' => 'required|digits:6']);
-
-        $customer = Customer::find(session('login_otp_customer_id'));
-        if (!$customer) {
-            return redirect()->route('customer.login')->withErrors(['otp' => 'Session expired, please try again.']);
-        }
-
-        $result = $this->otpService->verify($customer->mobile_number, 'login', $request->otp);
-        if (!$result['success']) {
-            return back()->withErrors(['otp' => $result['message']]);
-        }
-
-        session()->forget('login_otp_customer_id');
-        Auth::guard('customer')->login($customer);
-        $this->mergeCartAndRedirect($request, $customer);
-
-        $redirectUrl = session()->pull('customer_intended_url');
-        return redirect($redirectUrl ?? route('customer.account-details'))->with('success', 'Login successful');
-    }
-
-    public function resendLoginOtp(Request $request)
-    {
-        $customer = Customer::find(session('login_otp_customer_id'));
-        if (!$customer) {
-            return response()->json(['success' => false, 'message' => 'Session expired.'], 422);
-        }
-
-        $this->otpService->generateAndSend($customer->mobile_number, 'login');
-        return response()->json(['success' => true, 'message' => 'OTP resent.']);
-    }
-
+    /** Optional live-check, still handy for the email field. */
     public function checkUserExists(Request $request)
     {
         $response = [];
@@ -314,11 +279,6 @@ class CustomerAuthController extends Controller
                 || PendingRegistration::where('email', $request->email)->exists();
         }
 
-        if ($request->mobile_number) {
-            $response['mobile'] = Customer::where('mobile_number', $request->mobile_number)->exists()
-                || PendingRegistration::where('mobile_number', $request->mobile_number)->exists();
-        }
-
         return response()->json($response);
     }
 
@@ -326,6 +286,15 @@ class CustomerAuthController extends Controller
     {
         Auth::guard('customer')->logout();
         return redirect()->route('customer.login')->with('success', 'Logged out successfully');
+    }
+
+    /**
+     * Where to send the user after ANY successful auth:
+     * back to checkout if that's where they came from, else the dashboard.
+     */
+    protected function resolveRedirect(): string
+    {
+        return session()->pull('customer_intended_url') ?? route('customer.account-details');
     }
 
     protected function mergeCartAndRedirect(Request $request, Customer $customer): void

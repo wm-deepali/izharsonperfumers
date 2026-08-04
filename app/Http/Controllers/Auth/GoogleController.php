@@ -9,6 +9,9 @@ use App\Models\Customer;
 use App\Http\Controllers\CartController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+use Laravel\Socialite\Two\InvalidStateException;
 
 class GoogleController extends Controller
 {
@@ -23,17 +26,38 @@ class GoogleController extends Controller
 
     public function callback(Request $request)
     {
-        $googleUser = Socialite::driver('google')->stateless()->user();
+        try {
+            $googleUser = Socialite::driver('google')->user();
+        } catch (InvalidStateException $e) {
+            return redirect()->route('customer.login')
+                ->with('error', 'Google login session expired, please try again.');
+        } catch (\Exception $e) {
+            Log::error('Google login failed: ' . $e->getMessage());
+            return redirect()->route('customer.login')
+                ->with('error', 'Could not sign in with Google, please try again.');
+        }
 
-        $customer = Customer::where('email', $googleUser->getEmail())->first();
+        $email = $googleUser->getEmail();
+
+        if (!$email) {
+            return redirect()->route('customer.login')
+                ->with('error', 'Your Google account did not share an email address.');
+        }
+
+        $customer = Customer::where('email', $email)->first();
 
         if (!$customer) {
             $customer = Customer::create([
-                'name' => $googleUser->getName(),
-                'email' => $googleUser->getEmail(),
+                'name' => $googleUser->getName() ?: 'Guest User',
+                'email' => $email,
                 'google_id' => $googleUser->getId(),
-                'password' => Hash::make(rand(100000, 999999)),
-                'is_email_verified' => 1,
+                'password' => Hash::make((string) rand(100000, 999999)),
+                'email_verified_at' => Carbon::now(),
+            ]);
+        } elseif (!$customer->google_id || !$customer->email_verified_at) {
+            $customer->update([
+                'google_id' => $customer->google_id ?: $googleUser->getId(),
+                'email_verified_at' => $customer->email_verified_at ?: Carbon::now(),
             ]);
         }
 
@@ -45,7 +69,7 @@ class GoogleController extends Controller
 
         $redirectUrl = session()->pull('customer_intended_url');
 
-        return redirect($redirectUrl ?? '/')
+        return redirect($redirectUrl ?? route('customer.account-details'))
             ->with('success', 'Logged in with Google');
     }
 }

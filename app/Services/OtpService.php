@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\OtpVerification;
+use App\Mail\OtpMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -15,10 +17,10 @@ class OtpService
         $this->sms = $sms;
     }
 
-    public function generateAndSend(string $mobileNumber, string $purpose): OtpVerification
+    public function generateAndSend(string $identifier, string $purpose): OtpVerification
     {
         // invalidate any previous unverified OTPs for this identifier+purpose
-        OtpVerification::where('identifier', $mobileNumber)
+        OtpVerification::where('identifier', $identifier)
             ->where('purpose', $purpose)
             ->whereNull('verified_at')
             ->delete();
@@ -26,26 +28,29 @@ class OtpService
         $otp = (string) random_int(100000, 999999);
 
         $record = OtpVerification::create([
-            'identifier' => $mobileNumber,
+            'identifier' => $identifier,
             'otp_code' => $otp,
             'purpose' => $purpose,
             'attempts' => 0,
             'expires_at' => Carbon::now()->addMinutes(10),
         ]);
 
-        $this->sms->send($mobileNumber, $otp, $purpose);
+        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+            Mail::to($identifier)->send(new OtpMail($otp, $purpose));
+        } else {
+            $this->sms->send($identifier, $otp, $purpose);
+        }
 
         return $record;
     }
 
-    public function verify(string $mobileNumber, string $purpose, string $otpInput): array
+    public function verify(string $identifier, string $purpose, string $otpInput): array
     {
-        $record = OtpVerification::where('identifier', $mobileNumber)
+        $record = OtpVerification::where('identifier', $identifier)
             ->where('purpose', $purpose)
             ->whereNull('verified_at')
             ->latest()
             ->first();
-
         if (!$record) {
             return ['success' => false, 'message' => 'No OTP request found. Please request a new one.'];
         }
